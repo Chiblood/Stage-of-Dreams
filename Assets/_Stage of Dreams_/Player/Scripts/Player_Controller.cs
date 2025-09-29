@@ -12,6 +12,7 @@ public class PlayerScript : MonoBehaviour
     [SerializeField] Rigidbody2D _rb;
     [SerializeField] Animator _animator;
     [SerializeField] SpriteRenderer _spriteRenderer;
+    [SerializeField] Spotlight _spotlight; // Reference to spotlight
     #endregion
 
     #region Internal Fields
@@ -19,11 +20,17 @@ public class PlayerScript : MonoBehaviour
     private PlayerInput _playerInput;
     #endregion
 
+    public bool inSpotlight { get; set; }
+
     private void Awake()
     {
         _rb = GetComponent<Rigidbody2D>();
         _rb.freezeRotation = true;
         _playerInput = GetComponent<PlayerInput>();
+        
+        // Find spotlight if not assigned
+        if (_spotlight == null)
+            _spotlight = FindObjectOfType<Spotlight>();
     }
 
     #region Input System
@@ -45,8 +52,20 @@ public class PlayerScript : MonoBehaviour
     private void Update() // update is called once per frame
     {
         GatherInput();
+        
+        // Check spotlight status each frame
+        if (_spotlight != null)
+        {
+            _spotlight.CheckPlayerInSpotlight(this);
+            
+            // React to spotlight state change
+            if (inSpotlight)
+            {
+                Debug.Log("Player entered spotlight - Begin turn-based mode!");
+                // TODO: Start turn-based gameplay
+            }
+        }
     }
-
     #endregion
 
     #region Movement Logic

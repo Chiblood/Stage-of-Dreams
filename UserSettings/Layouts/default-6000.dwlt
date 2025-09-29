@@ -407,8 +407,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Animation\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 441
-    y: 712
+    x: 1
+    y: 657
     width: 1340
     height: 291
   m_SerializedDataModeController:
@@ -446,8 +446,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Animator\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 441
-    y: 79
+    x: 1
+    y: 24
     width: 1340
     height: 607
   m_SerializedDataModeController:
@@ -686,7 +686,7 @@ MonoBehaviour:
   m_Zoom: 2.8371427
   m_ScrollPosition: {x: 0, y: 0}
   m_SelectedObject: {fileID: 0}
-  m_SelectedSpriteRectGUID: c9cb3f09ce520c347a6e439052aed22a
+  m_SelectedSpriteRectGUID: 00000000000000000000000000000000
   m_LastUsedModuleTypeName: UnityEditor.U2D.Sprites.SpriteFrameModule
 --- !u!114 &20
 MonoBehaviour:
@@ -747,7 +747,7 @@ MonoBehaviour:
   m_Pos:
     serializedVersion: 2
     x: 0
-    y: 1029
+    y: 24
     width: 1437
     height: 317
   m_SerializedDataModeController:
@@ -791,7 +791,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: dce80000
     m_LastClickedID: 59612
-    m_ExpandedIDs: 00000000d0e60000d2e60000d4e60000d6e60000d8e60000dae60000dce60000dee600002ce80000aee80000
+    m_ExpandedIDs: 00000000e6e60000e8e60000eae60000ece60000eee60000f0e60000f2e60000f4e60000f6e60000f8e60000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -820,7 +820,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 00000000d0e60000d2e60000d4e60000d6e60000d8e60000dae60000dce60000dee60000
+    m_ExpandedIDs: 00000000e6e60000e8e60000eae60000ece60000eee60000f0e60000f2e60000f4e60000f6e60000f8e60000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -882,8 +882,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Inspector\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 1783
-    y: 79
+    x: 1784
+    y: 24
     width: 776
     height: 1267
   m_SerializedDataModeController:
@@ -932,7 +932,7 @@ MonoBehaviour:
   m_Pos:
     serializedVersion: 2
     x: 0
-    y: 79
+    y: 24
     width: 440
     height: 924
   m_SerializedDataModeController:
@@ -949,7 +949,7 @@ MonoBehaviour:
   m_SceneHierarchy:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: 80deffff
+      m_SelectedIDs: 
       m_LastClickedID: 0
       m_ExpandedIDs: e6f9ffff2ee6000038e60000
       m_RenameOverlay:
@@ -1686,8 +1686,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Game\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 1438
-    y: 1029
+    x: 1439
+    y: 24
     width: 343
     height: 317
   m_SerializedDataModeController:

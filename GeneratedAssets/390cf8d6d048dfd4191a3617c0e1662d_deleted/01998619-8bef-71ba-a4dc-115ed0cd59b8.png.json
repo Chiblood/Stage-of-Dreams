@@ -1,0 +1,20 @@
+{
+    "asset": "390cf8d6d048dfd4191a3617c0e1662d",
+    "fileName": "01998619-8bef-71ba-a4dc-115ed0cd59b8.png",
+    "prompt": "tileset for a transparent triangle light from a stage spotlight, bright, shining from a 45 degree angle and another set from a 90 degree angle",
+    "negativePrompt": "",
+    "model": "242b56c1-2224-41c4-8949-2ba760bbfc69",
+    "modelName": "16-bit Pixel",
+    "customSeed": -1,
+    "w3CTraceId": "5921a8cd78d5555c03a1fb1fc220302c",
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0
+}

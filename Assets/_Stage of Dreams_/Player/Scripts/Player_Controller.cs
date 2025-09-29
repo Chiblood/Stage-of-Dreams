@@ -10,6 +10,8 @@ public class PlayerScript : MonoBehaviour
 
     [Header("Dependencies")]
     [SerializeField] Rigidbody2D _rb;
+    [SerializeField] Animator _animator;
+    [SerializeField] SpriteRenderer _spriteRenderer;
     #endregion
 
     #region Internal Fields
@@ -30,11 +32,6 @@ public class PlayerScript : MonoBehaviour
         if (_playerInput != null)
         {
             _moveDir = _playerInput.actions["Move"].ReadValue<Vector2>();
-            Debug.Log($"MoveDir: {_moveDir}");
-        }
-        else
-        {
-            Debug.Log("Player Input is null");
         }
     }
 

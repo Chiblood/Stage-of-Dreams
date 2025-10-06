@@ -24,6 +24,9 @@ public class DialoguePopupSystem : MonoBehaviour
     [SerializeField] private float animationDuration = 0.3f;
     [SerializeField] private float fadeInAlpha = 0.9f;
     
+    [Header("Font Settings")]
+    [SerializeField] private TMP_FontAsset defaultFont; // Add this to assign a font asset
+    
     private GameObject currentDialoguePopup;
     private bool isDialogueActive = false;
     
@@ -55,7 +58,16 @@ public class DialoguePopupSystem : MonoBehaviour
         if (isDialogueActive)
             HideDialogue();
             
-        StartCoroutine(DisplayDialogue(dialogueData));
+        // Ensure we're on the main thread and delay to next frame
+        StartCoroutine(ShowDialogueDelayed(dialogueData));
+    }
+    
+    private IEnumerator ShowDialogueDelayed(DialogueData dialogueData)
+    {
+        // Wait one frame to ensure we're properly on the main thread
+        yield return null;
+        
+        yield return StartCoroutine(DisplayDialogue(dialogueData));
     }
     
     private IEnumerator DisplayDialogue(DialogueData dialogueData)
@@ -71,6 +83,9 @@ public class DialoguePopupSystem : MonoBehaviour
         {
             currentDialoguePopup = CreateDialoguePopupDynamic();
         }
+        
+        // Wait one frame after creation before configuration
+        yield return null;
         
         // Configure the popup
         ConfigureDialoguePopup(currentDialoguePopup, dialogueData);
@@ -111,13 +126,21 @@ public class DialoguePopupSystem : MonoBehaviour
         RectTransform spriteRect = spriteImage.GetComponent<RectTransform>();
         spriteRect.sizeDelta = new Vector2(200, 200);
         
-        // Dialogue text
+        // Dialogue text - configure more carefully
         GameObject textObj = new GameObject("DialogueText");
         textObj.transform.SetParent(popup.transform, false);
         TextMeshProUGUI dialogueText = textObj.AddComponent<TextMeshProUGUI>();
+        
+        // Set font asset if available to prevent font loading issues
+        if (defaultFont != null)
+        {
+            dialogueText.font = defaultFont;
+        }
+        
         dialogueText.fontSize = 24;
         dialogueText.color = Color.white;
         dialogueText.alignment = TextAlignmentOptions.TopLeft;
+        dialogueText.text = ""; // Initialize with empty text
         
         RectTransform textRect = dialogueText.GetComponent<RectTransform>();
         textRect.anchorMin = new Vector2(0.2f, 0.1f);
@@ -125,13 +148,21 @@ public class DialoguePopupSystem : MonoBehaviour
         textRect.offsetMin = Vector2.zero;
         textRect.offsetMax = Vector2.zero;
         
-        // Character name
+        // Character name - configure more carefully
         GameObject nameObj = new GameObject("CharacterName");
         nameObj.transform.SetParent(popup.transform, false);
         TextMeshProUGUI nameText = nameObj.AddComponent<TextMeshProUGUI>();
+        
+        // Set font asset if available
+        if (defaultFont != null)
+        {
+            nameText.font = defaultFont;
+        }
+        
         nameText.fontSize = 18;
         nameText.color = Color.yellow;
         nameText.fontStyle = FontStyles.Bold;
+        nameText.text = ""; // Initialize with empty text
         
         RectTransform nameRect = nameText.GetComponent<RectTransform>();
         nameRect.anchorMin = new Vector2(0.2f, 0.8f);
@@ -144,15 +175,36 @@ public class DialoguePopupSystem : MonoBehaviour
     
     private void ConfigureDialoguePopup(GameObject popup, DialogueData dialogueData)
     {
-        // Get components
-        Image characterSprite = popup.transform.Find("CharacterSprite").GetComponent<Image>();
-        TextMeshProUGUI dialogueText = popup.transform.Find("DialogueText").GetComponent<TextMeshProUGUI>();
-        TextMeshProUGUI nameText = popup.transform.Find("CharacterName").GetComponent<TextMeshProUGUI>();
+        // Get components with null checks
+        Transform characterSpriteTransform = popup.transform.Find("CharacterSprite");
+        Transform dialogueTextTransform = popup.transform.Find("DialogueText");
+        Transform nameTextTransform = popup.transform.Find("CharacterName");
         
-        // Set content
+        if (characterSpriteTransform == null || dialogueTextTransform == null || nameTextTransform == null)
+        {
+            Debug.LogError("DialoguePopupSystem: Missing required child components in popup");
+            return;
+        }
+        
+        Image characterSprite = characterSpriteTransform.GetComponent<Image>();
+        TextMeshProUGUI dialogueText = dialogueTextTransform.GetComponent<TextMeshProUGUI>();
+        TextMeshProUGUI nameText = nameTextTransform.GetComponent<TextMeshProUGUI>();
+        
+        if (characterSprite == null || dialogueText == null || nameText == null)
+        {
+            Debug.LogError("DialoguePopupSystem: Missing required components");
+            return;
+        }
+        
+        // Set content safely
         characterSprite.sprite = dialogueData.characterSprite;
-        dialogueText.text = dialogueData.dialogueText;
-        nameText.text = dialogueData.characterName;
+        
+        // Set text content with null checks
+        if (!string.IsNullOrEmpty(dialogueData.dialogueText))
+            dialogueText.text = dialogueData.dialogueText;
+        
+        if (!string.IsNullOrEmpty(dialogueData.characterName))
+            nameText.text = dialogueData.characterName;
         
         // Position based on player vs NPC
         RectTransform spriteRect = characterSprite.GetComponent<RectTransform>();

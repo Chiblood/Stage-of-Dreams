@@ -14,7 +14,7 @@ public class Spotlight : MonoBehaviour
     {
         // Find player if not assigned
         if (_player == null)
-            _player = FindObjectOfType<PlayerScript>();
+            _player = FindFirstObjectByType<PlayerScript>();
             
         // Set center position to this object's position
         transform.position = new Vector3(transform.position.x, transform.position.y, 0);

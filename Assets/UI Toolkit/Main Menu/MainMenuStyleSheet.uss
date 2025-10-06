@@ -1,0 +1,37 @@
+:root {
+    -unity-font-definition: initial;
+    font-size: 16px;
+    -unity-font-style: bold;
+}
+
+.Header {
+    font-size: 60px;
+    -unity-font-definition: url("project://database/Assets/TextMesh%20Pro/Examples%20&%20Extras/Fonts/Electronic%20Highway%20Sign.TTF?fileID=12800000&guid=8a2b9e2a607dd2143b58c44bc32410b4&type=3#Electronic Highway Sign");
+    -unity-font-style: bold;
+    align-items: auto;
+    color: rgb(255, 255, 255);
+    top: 75px;
+}
+
+.button {
+    font-size: 30px;
+    align-self: center;
+    background-image: url("project://database/Assets/_Stage%20of%20Dreams_/World/Dream%201/Sprites/Tileset/Dungeon%20Tale/Assets/Sprites/Atlas.png?fileID=-892691430&guid=b631ed305dfd43c488e0f8edf5c829bc&type=3#Decal_Spot");
+    -unity-font-style: bold;
+    transition-duration: 0.35s;
+    color: rgb(255, 255, 255);
+    -unity-slice-type: sliced;
+    -unity-background-image-tint-color: rgb(128, 8, 8);
+    background-color: rgba(255, 255, 255, 0);
+    background-size: 30% 22%;
+    width: 250px;
+    height: 100px;
+    -unity-background-scale-mode: scale-to-fit;
+    -unity-text-align: middle-center;
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=2230732570650464555&guid=7c86354e8ad6808418ac1384866d36ca&type=3#NotInter-Regular");
+}
+
+.button:hover {
+    scale: 1.1 1.1;
+    -unity-background-image-tint-color: rgb(250, 6, 6);
+}

@@ -1,0 +1,10 @@
+:root {
+}
+
+.DialogOptionsForBtns {
+    -unity-text-align: upper-left;
+    font-size: 80%;
+    left: 5%;
+    background-color: rgba(0, 0, 0, 0.36);
+    right: 5%;
+}

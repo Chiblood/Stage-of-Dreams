@@ -30,7 +30,7 @@ public class PlayerScript : MonoBehaviour
         
         // Find spotlight if not assigned
         if (_spotlight == null)
-            _spotlight = FindObjectOfType<Spotlight>();
+            _spotlight = FindAnyObjectByType<Spotlight>();
     }
 
     #region Input System

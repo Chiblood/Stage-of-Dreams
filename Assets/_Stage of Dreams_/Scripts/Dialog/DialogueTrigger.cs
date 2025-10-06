@@ -14,15 +14,17 @@ public class DialogueTrigger : MonoBehaviour
     
     private void Start()
     {
-        dialogueSystem = FindObjectOfType<DialoguePopupSystem>();
+        dialogueSystem = FindFirstObjectByType<DialoguePopupSystem>();
         if (dialogueSystem == null)
         {
             // Create one if it doesn't exist
+#pragma warning disable IDE0090 // Use 'new(...)'
             GameObject dialogueObj = new GameObject("DialogueSystem");
+#pragma warning restore IDE0090 // Use 'new(...)'
             dialogueSystem = dialogueObj.AddComponent<DialoguePopupSystem>();
         }
         
-        player = FindObjectOfType<PlayerScript>();
+        player = FindFirstObjectByType<PlayerScript>();
     }
     
     private void Update()

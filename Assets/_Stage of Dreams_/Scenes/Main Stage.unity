@@ -396,8 +396,10 @@ GameObject:
   m_Component:
   - component: {fileID: 348884227}
   - component: {fileID: 348884226}
+  - component: {fileID: 348884229}
+  - component: {fileID: 348884228}
   m_Layer: 5
-  m_Name: UIDocument
+  m_Name: DialogManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -441,6 +443,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &348884228
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 348884225}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e6fed5241ec36648b3616eb86434b8a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIToolkitDialogSetup
+  autoSetup: 1
+  dialogVisualTree: {fileID: 9197481963319205126, guid: 1edb0bd25ebd3db409074e8df6a879c5, type: 3}
+  dialogStyleSheet: {fileID: 7433441132597879392, guid: 72afeb8a51f6354498e128c6b05a8292, type: 3}
+--- !u!114 &348884229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 348884225}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b27a20fa86dca44281fbe63ff76e16b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DialogManager
+  uiDocument: {fileID: 348884226}
+  dialogVisualTree: {fileID: 9197481963319205126, guid: 1edb0bd25ebd3db409074e8df6a879c5, type: 3}
+  dialogStyleSheet: {fileID: 7433441132597879392, guid: 72afeb8a51f6354498e128c6b05a8292, type: 3}
+  animationDuration: 0.3
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -606,7 +639,7 @@ Transform:
   m_GameObject: {fileID: 547305114}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.48, y: -0.48, z: -1}
+  m_LocalPosition: {x: 5.1, y: -3.63, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -830,7 +863,7 @@ Transform:
   m_GameObject: {fileID: 656809452}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 3.23, y: -0.23, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2629,7 +2662,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1557537327}
-  - component: {fileID: 1557537328}
+  - component: {fileID: 1557537329}
   m_Layer: 3
   m_Name: Spotlight
   m_TagString: Untagged
@@ -2646,14 +2679,14 @@ Transform:
   m_GameObject: {fileID: 1557537326}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1, y: 2, z: 0}
+  m_LocalPosition: {x: -3.1, y: -2.46, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1369314995}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1557537328
+--- !u!114 &1557537329
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2666,7 +2699,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Spotlight
   radius: 1.5
-  _player: {fileID: 0}
+  _player: {fileID: 1795472657}
+  triggerDialogOnEnter: 1
+  requireInteractionToStartDialog: 1
+  dialogueSequence:
+  - characterName: 
+    dialogueText: 
+    characterSprite: {fileID: 21300000, guid: 727b6cd823631dd4c9c58e13c220f2b5, type: 3}
+    isPlayer: 0
+    displayDuration: 0
+  showChoicesAfterDialog: 1
+  choices:
+  - Continue
+  - Wait a moment. (Exit Stage)
 --- !u!1 &1720834160
 GameObject:
   m_ObjectHideFlags: 0
@@ -2710,9 +2755,10 @@ GameObject:
   m_Component:
   - component: {fileID: 1795472658}
   - component: {fileID: 1795472656}
-  - component: {fileID: 1795472657}
   - component: {fileID: 1795472659}
   - component: {fileID: 1795472660}
+  - component: {fileID: 1795472657}
+  - component: {fileID: 1795472661}
   m_Layer: 6
   m_Name: Player
   m_TagString: Player
@@ -2764,6 +2810,7 @@ MonoBehaviour:
   _animator: {fileID: 0}
   _spriteRenderer: {fileID: 0}
   _spotlight: {fileID: 0}
+  _playerInteraction: {fileID: 0}
 --- !u!4 &1795472658
 Transform:
   m_ObjectHideFlags: 0
@@ -2773,7 +2820,7 @@ Transform:
   m_GameObject: {fileID: 1795472655}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.23, y: 0.23, z: 0}
+  m_LocalPosition: {x: -7.3, y: -2.78, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2832,6 +2879,26 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1795472661
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1795472655}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 615fe63c7ff8b564496aae7e08068527, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerInteraction
+  interactKey: 101
+  interactionRange: 1.5
+  interactableLayer:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  interactionPrompt: {fileID: -2253911629886400664, guid: c9987513481982b4da5422edf0acd5c0, type: 3}
+  promptText: {fileID: 0}
+  playerController: {fileID: 1795472657}
 --- !u!1 &1837363049
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,68 +1,113 @@
+/* DialogueTrigger.cs
+ * Triggers the call to the DialogManager instance to display a sequence of dialogues based on certain conditions.
+ * Passes NPC Content to the DialogManager which handles the display and flow of dialogues.
+ * Trigger conditions can include player proximity, spotlight detection, or interaction input.
+ * 
+ * How to use in Unity:
+ * 
+ */
+
 using UnityEngine;
 
+/// <summary>
+/// Simple dialog trigger that starts conversations with NPCs.
+/// Handles player proximity and interaction input.
+/// </summary>
 public class DialogueTrigger : MonoBehaviour
 {
-    [Header("Dialogue Settings")]
-    [SerializeField] private DialogueData[] dialogueSequence;
+    [Header("Trigger Settings")]
     [SerializeField] private bool triggerOnSpotlight = true;
     [SerializeField] private bool triggerOnInteraction = false;
+    [SerializeField] private float interactionRange = 2f;
     
-    private DialoguePopupSystem dialogueSystem;
+    [Header("NPC Reference")]
+    [SerializeField] private NPCContent targetNPC;
+    
+    private DialogManager dialogManager;
     private PlayerScript player;
-    private int currentDialogueIndex = 0;
     private bool hasTriggered = false;
     
     private void Start()
     {
-        dialogueSystem = FindFirstObjectByType<DialoguePopupSystem>();
-        if (dialogueSystem == null)
-        {
-            // Create one if it doesn't exist
-#pragma warning disable IDE0090 // Use 'new(...)'
-            GameObject dialogueObj = new GameObject("DialogueSystem");
-#pragma warning restore IDE0090 // Use 'new(...)'
-            dialogueSystem = dialogueObj.AddComponent<DialoguePopupSystem>();
-        }
-        
+        dialogManager = FindFirstObjectByType<DialogManager>();
         player = FindFirstObjectByType<PlayerScript>();
+        
+        // Get NPC from this GameObject if not assigned
+        if (targetNPC == null)
+        {
+            targetNPC = GetComponent<NPCContent>();
+        }
     }
     
     private void Update()
     {
+        // Don't trigger if dialog is already active
+        if (dialogManager != null && dialogManager.IsDialogActive()) return;
+        
+        // Spotlight trigger
         if (triggerOnSpotlight && player != null && player.inSpotlight && !hasTriggered)
         {
-            TriggerDialogue();
+            TriggerDialog();
         }
         
-        if (triggerOnInteraction && Input.GetKeyDown(KeyCode.E) && IsPlayerNearby())
+        // Interaction trigger
+        if (triggerOnInteraction && IsPlayerNearby() && GetInteractInput())
         {
-            TriggerDialogue();
+            TriggerDialog();
         }
     }
     
-    private void TriggerDialogue()
+    /// <summary>
+    /// Start the dialog with the target NPC
+    /// </summary>
+    private void TriggerDialog()
     {
-        if (dialogueSequence.Length > 0 && currentDialogueIndex < dialogueSequence.Length)
+        if (dialogManager == null || targetNPC == null)
         {
-            dialogueSystem.ShowDialogue(dialogueSequence[currentDialogueIndex]);
-            currentDialogueIndex++;
-            
-            if (currentDialogueIndex >= dialogueSequence.Length)
-            {
-                hasTriggered = true; // Prevent re-triggering
-            }
+            Debug.LogWarning("Cannot trigger dialog - DialogManager or NPC is missing");
+            return;
+        }
+        
+        dialogManager.StartDialog(targetNPC);
+        
+        if (triggerOnSpotlight)
+        {
+            hasTriggered = true; // Prevent re-triggering for spotlight
         }
     }
     
+    /// <summary>
+    /// Check if player is close enough to interact
+    /// </summary>
     private bool IsPlayerNearby()
     {
         if (player == null) return false;
-        return Vector2.Distance(transform.position, player.transform.position) <= 2f;
+        float distance = Vector2.Distance(transform.position, player.transform.position);
+        return distance <= interactionRange;
     }
     
-    public void ResetDialogue()
+    /// <summary>
+    /// Check for interaction input
+    /// </summary>
+    private bool GetInteractInput()
     {
-        currentDialogueIndex = 0;
+        // Simple input check - you can expand this based on your input system
+        return Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Space);
+    }
+    
+    /// <summary>
+    /// Reset the trigger (useful for repeatable dialogs)
+    /// </summary>
+    public void ResetTrigger()
+    {
         hasTriggered = false;
+    }
+    
+    /// <summary>
+    /// Manually trigger the dialog (for external calls)
+    /// </summary>
+    public void ManualTrigger()
+    {
+        TriggerDialog();
     }
 }

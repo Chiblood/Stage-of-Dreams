@@ -1,0 +1,176 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60bb80c9727209d4db564d14f667a070, type: 3}
+  m_Name: Director First Conversation
+  m_EditorClassIdentifier: Assembly-CSharp::DialogTree
+  treeName: Director Introduction
+  description: First conversation with the Director.
+  startingNode:
+    speakerName: Director
+    dialogText: '"Hello there Hero, are you ready to begin your audition?"'
+    isPlayerSpeaking: 0
+    autoAdvanceDelay: 0
+    choices:
+    - choiceText: 
+      targetNode:
+        speakerName: 
+        dialogText: 
+        isPlayerSpeaking: 0
+        autoAdvanceDelay: 0
+        choices: []
+        onDialogStart:
+          m_PersistentCalls:
+            m_Calls: []
+        onDialogEnd:
+          m_PersistentCalls:
+            m_Calls: []
+      customActionId: 
+      onChoiceSelected:
+        m_PersistentCalls:
+          m_Calls: []
+    - choiceText: 
+      targetNode:
+        speakerName: 
+        dialogText: 
+        isPlayerSpeaking: 0
+        autoAdvanceDelay: 0
+        choices: []
+        onDialogStart:
+          m_PersistentCalls:
+            m_Calls: []
+        onDialogEnd:
+          m_PersistentCalls:
+            m_Calls: []
+      customActionId: 
+      onChoiceSelected:
+        m_PersistentCalls:
+          m_Calls: []
+    - choiceText: 
+      targetNode:
+        speakerName: 
+        dialogText: 
+        isPlayerSpeaking: 0
+        autoAdvanceDelay: 0
+        choices: []
+        onDialogStart:
+          m_PersistentCalls:
+            m_Calls: []
+        onDialogEnd:
+          m_PersistentCalls:
+            m_Calls: []
+      customActionId: 
+      onChoiceSelected:
+        m_PersistentCalls:
+          m_Calls: []
+    onDialogStart:
+      m_PersistentCalls:
+        m_Calls: []
+    onDialogEnd:
+      m_PersistentCalls:
+        m_Calls: []
+  allNodes:
+  - speakerName: Director
+    dialogText: '"Hello there Hero, are you ready to begin your audition?"'
+    isPlayerSpeaking: 0
+    autoAdvanceDelay: 0
+    choices:
+    - choiceText: 
+      targetNode:
+        speakerName: 
+        dialogText: 
+        isPlayerSpeaking: 0
+        autoAdvanceDelay: 0
+        choices: []
+        onDialogStart:
+          m_PersistentCalls:
+            m_Calls: []
+        onDialogEnd:
+          m_PersistentCalls:
+            m_Calls: []
+      customActionId: 
+      onChoiceSelected:
+        m_PersistentCalls:
+          m_Calls: []
+    - choiceText: 
+      targetNode:
+        speakerName: 
+        dialogText: 
+        isPlayerSpeaking: 0
+        autoAdvanceDelay: 0
+        choices: []
+        onDialogStart:
+          m_PersistentCalls:
+            m_Calls: []
+        onDialogEnd:
+          m_PersistentCalls:
+            m_Calls: []
+      customActionId: 
+      onChoiceSelected:
+        m_PersistentCalls:
+          m_Calls: []
+    - choiceText: 
+      targetNode:
+        speakerName: 
+        dialogText: 
+        isPlayerSpeaking: 0
+        autoAdvanceDelay: 0
+        choices: []
+        onDialogStart:
+          m_PersistentCalls:
+            m_Calls: []
+        onDialogEnd:
+          m_PersistentCalls:
+            m_Calls: []
+      customActionId: 
+      onChoiceSelected:
+        m_PersistentCalls:
+          m_Calls: []
+    onDialogStart:
+      m_PersistentCalls:
+        m_Calls: []
+    onDialogEnd:
+      m_PersistentCalls:
+        m_Calls: []
+  - speakerName: 
+    dialogText: 
+    isPlayerSpeaking: 0
+    autoAdvanceDelay: 0
+    choices: []
+    onDialogStart:
+      m_PersistentCalls:
+        m_Calls: []
+    onDialogEnd:
+      m_PersistentCalls:
+        m_Calls: []
+  - speakerName: 
+    dialogText: 
+    isPlayerSpeaking: 0
+    autoAdvanceDelay: 0
+    choices: []
+    onDialogStart:
+      m_PersistentCalls:
+        m_Calls: []
+    onDialogEnd:
+      m_PersistentCalls:
+        m_Calls: []
+  - speakerName: 
+    dialogText: 
+    isPlayerSpeaking: 0
+    autoAdvanceDelay: 0
+    choices: []
+    onDialogStart:
+      m_PersistentCalls:
+        m_Calls: []
+    onDialogEnd:
+      m_PersistentCalls:
+        m_Calls: []
+  autoUpdateNodeList: 1

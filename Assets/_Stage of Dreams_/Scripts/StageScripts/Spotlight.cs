@@ -1,286 +1,429 @@
-using UnityEngine;
+/* Spotlight.cs
+ *  Handles the movement of the spotlight and checks if the player is within its radius.
+ *  When the player or NPC enters and exits the spotlight, it updates their state accordingly.
+ *  
+ *  Movement: by Default remains static, but can be extended to move along a path or follow waypoints.
+ *  
+ *  Rotation: The spotlight can be rotated to face a specific direction or follow a target.
+ */
 
+using UnityEngine;
+using System.Collections.Generic;
+
+/// <summary>
+/// Manages spotlight movement and tracks which characters are within its radius.
+/// Focuses purely on spotlight positioning and character state management.
+/// Movement patterns: Static, Random, Target Following
+/// </summary>
 public class Spotlight : MonoBehaviour
 {
     [Header("Spotlight Settings")]
     public float radius = 1.5f;
-
-    [Header("Dependencies")]
-    [SerializeField] private PlayerScript _player;
-
-    [Header("Dialog Settings")]
-    [SerializeField] private bool triggerDialogOnEnter = true;
-    [SerializeField] private bool requireInteractionToStartDialog = true; // New setting
-    [SerializeField] private DialogueData[] dialogueSequence; // Array of dialogues to show
-    [SerializeField] private EnhancedDialogueData[] enhancedDialogueSequence; // New enhanced sequence
-    [SerializeField] private bool useEnhancedDialogue = false; // Toggle between systems
-    [SerializeField] private bool showChoicesAfterDialog = false;
-    [SerializeField] private string[] choices = { "Continue", "Wait a moment" };
-
-    private bool _wasInSpotlight = false;
-    private int currentDialogueIndex = 0;
-    private bool hasTriggeredDialog = false;
-    private bool playerInSpotlightAndWaiting = false; // New state tracking
-
+    [SerializeField] private LayerMask characterLayer = -1; // Which layers contain characters
+    
+    [Header("Movement Settings")]
+    [SerializeField] private SpotlightMovementType movementType = SpotlightMovementType.Static;
+    [SerializeField] private float moveSpeed = 2f;
+    [SerializeField] private Transform targetToFollow; // Specific target to follow
+    
+    [Header("Random Movement")]
+    [SerializeField] private Vector2 movementBounds = new Vector2(10f, 6f); // Random movement area
+    [SerializeField] private float randomMoveInterval = 3f; // How often to pick new random target
+    [SerializeField] private float arrivalThreshold = 0.5f; // How close to get to target
+    
+    [Header("Character Detection")]
+    [SerializeField] private bool trackAllCharacters = true; // Track all characters or just player
+    [SerializeField] private PlayerScript specificPlayer; // Specific player to track if not tracking all
+    
+    // Movement state
+    private Vector2 randomTarget;
+    private float lastRandomMoveTime;
+    private Vector2 originalPosition;
+    
+    // Character tracking
+    private HashSet<ISpotlightCharacter> charactersInSpotlight = new HashSet<ISpotlightCharacter>();
+    private List<ISpotlightCharacter> allTrackedCharacters = new List<ISpotlightCharacter>();
+    
+    // Events for external systems to subscribe to
+    public System.Action<ISpotlightCharacter> OnCharacterEnteredSpotlight;
+    public System.Action<ISpotlightCharacter> OnCharacterExitedSpotlight;
+    public System.Action<Vector2> OnSpotlightMoved;
+    
+    public enum SpotlightMovementType
+    {
+        Static,         // Doesn't move
+        Random,         // Moves to random positions within bounds
+        FollowTarget    // Follows a specific target
+    }
+    
     private void Awake()
     {
-        // Find player if not assigned
-        if (_player == null)
-            _player = FindFirstObjectByType<PlayerScript>();
-
-        // Set center position to this object's position
-        transform.position = new Vector3(transform.position.x, transform.position.y, 0);
-    }
-
-    private void Update()
-    {
-        if (_player != null)
-        {
-            CheckPlayerInSpotlight(_player);
-            
-            // Check for interaction input when player is in spotlight and waiting
-            if (playerInSpotlightAndWaiting && !hasTriggeredDialog)
-            {
-                CheckForInteractionInput();
-            }
-        }
-    }
-
-    private void CheckForInteractionInput()
-    {
-        // Get the PlayerInput component to check for interaction
-        var playerInput = _player.GetComponent<UnityEngine.InputSystem.PlayerInput>();
-        bool interactPressed = false;
-
-        if (playerInput != null)
-        {
-            // Try to get interact action from Input System
-            var interactAction = playerInput.actions["Interact"];
-            if (interactAction != null)
-            {
-                interactPressed = interactAction.WasPressedThisFrame();
-            }
-            else
-            {
-                // Fallback to legacy input
-                interactPressed = Input.GetKeyDown(KeyCode.E);
-            }
-        }
-        else
-        {
-            // Legacy input only
-            interactPressed = Input.GetKeyDown(KeyCode.E);
-        }
-
-        if (interactPressed)
-        {
-            Debug.Log("Player pressed E while in spotlight - triggering dialog!");
-            TriggerSpotlightDialog();
-        }
-    }
-
-    public void CheckPlayerInSpotlight(PlayerScript player)
-    {
-        if (player == null) return;
-
-        Vector2 playerPos = player.transform.position;
-        Vector2 centerPosition = transform.position;
-        bool isInSpotlight = Vector2.Distance(centerPosition, playerPos) <= radius;
-
-        // Only update if state changed
-        if (isInSpotlight != _wasInSpotlight)
-        {
-            player.inSpotlight = isInSpotlight;
-            _wasInSpotlight = isInSpotlight;
-
-            if (isInSpotlight)
-            {
-                OnPlayerEnteredSpotlight(player);
-            }
-            else
-            {
-                OnPlayerExitedSpotlight(player);
-            }
-        }
-    }
-
-    private void OnPlayerEnteredSpotlight(PlayerScript player)
-    {
-        Debug.Log("Player entered spotlight!");
-
-        // Check if we should trigger dialog immediately or wait for interaction
-        if (triggerDialogOnEnter && !hasTriggeredDialog)
-        {
-            if (requireInteractionToStartDialog)
-            {
-                // Set state to wait for player interaction
-                playerInSpotlightAndWaiting = true;
-                Debug.Log("Press E to start the scene...");
-                
-                // Optionally show a UI prompt here
-                ShowInteractionPrompt(true);
-            }
-            else
-            {
-                // Immediate trigger (old behavior)
-                TriggerSpotlightDialog();
-            }
-        }
-    }
-
-    private void OnPlayerExitedSpotlight(PlayerScript player)
-    {
-        Debug.Log("Player exited spotlight - Return to exploration mode!");
+        // Store original position for reference
+        originalPosition = transform.position;
         
-        // Reset waiting state
-        playerInSpotlightAndWaiting = false;
-        ShowInteractionPrompt(false);
-        
-        // TODO: Return to normal gameplay
-    }
-
-    private void ShowInteractionPrompt(bool show)
-    {
-        // You can implement UI prompt logic here
-        // For now, just log to console
-        if (show)
+        // Find specific player if not assigned and not tracking all characters
+        if (!trackAllCharacters && specificPlayer == null)
         {
-            Debug.Log("UI Prompt: Press E to start scene");
-        }
-        else
-        {
-            Debug.Log("UI Prompt: Hidden");
+            specificPlayer = FindFirstObjectByType<PlayerScript>();
         }
         
-        // Example: Show/hide a UI element
-        // if (interactionPromptUI != null)
-        //     interactionPromptUI.SetActive(show);
-    }
-
-    private void TriggerSpotlightDialog()
-    {
-        // Clear waiting state since dialog is starting
-        playerInSpotlightAndWaiting = false;
-        ShowInteractionPrompt(false);
-        
-        if (DialogManager.Instance == null)
+        // Set up initial random target
+        if (movementType == SpotlightMovementType.Random)
         {
-            Debug.LogError("DialogManager instance not found! Make sure there's a DialogManager in the scene.");
-            return;
-        }
-
-        // Use enhanced dialogue system if enabled
-        if (useEnhancedDialogue && enhancedDialogueSequence != null && enhancedDialogueSequence.Length > 0)
-        {
-            if (currentDialogueIndex < enhancedDialogueSequence.Length)
-            {
-                DialogManager.Instance.ShowDialogue(enhancedDialogueSequence[currentDialogueIndex]);
-                currentDialogueIndex++;
-                
-                if (currentDialogueIndex >= enhancedDialogueSequence.Length)
-                {
-                    hasTriggeredDialog = true;
-                }
-            }
-        }
-        else if (dialogueSequence != null && dialogueSequence.Length > 0)
-        {
-            // Use basic dialogue system (existing code)
-            if (currentDialogueIndex < dialogueSequence.Length)
-            {
-                // Ensure displayDuration is 0 for manual advancement
-                var dialogueData = dialogueSequence[currentDialogueIndex];
-                dialogueData.displayDuration = 0f; // Force manual advancement
-
-                DialogManager.Instance.ShowDialogue(dialogueData);
-
-                // Show choices if this is the last dialogue and choices are enabled
-                if (showChoicesAfterDialog && choices != null && choices.Length > 0 &&
-                    currentDialogueIndex == dialogueSequence.Length - 1)
-                {
-                    DialogManager.Instance.ShowChoices(choices, OnChoiceSelected);
-                }
-
-                currentDialogueIndex++;
-
-                if (currentDialogueIndex >= dialogueSequence.Length)
-                {
-                    hasTriggeredDialog = true;
-                }
-            }
-        }
-        else
-        {
-            // Fallback: Create an enhanced dialogue with action choices
-            CreateDefaultEnhancedDialogue();
+            GenerateNewRandomTarget();
         }
     }
     
-    private void CreateDefaultEnhancedDialogue()
+    private void Start()
     {
-        // Create a default enhanced dialogue with action choices
-        EnhancedDialogueData defaultDialogue = new EnhancedDialogueData
-        {
-            characterName = "Director",
-            dialogueText = "The spotlight reveals your moment. This is your cue! What would you like to do?",
-            isPlayer = false,
-            displayDuration = 0f,
-            choices = new DialogueChoice[]
-            {
-                new DialogueChoice("Start the scene", ChoiceActionType.StartTurnBasedMode),
-                new DialogueChoice("I need more time", ChoiceActionType.CloseDialog),
-                new DialogueChoice("Exit to main menu", ChoiceActionType.ExitToMainMenu)
-            }
-        };
+        // Find all characters to track
+        RefreshTrackedCharacters();
+    }
+    
+    private void Update()
+    {
+        // Handle movement
+        UpdateSpotlightMovement();
         
-        DialogManager.Instance.ShowDialogue(defaultDialogue);
-        hasTriggeredDialog = true;
+        // Check character positions
+        UpdateCharacterDetection();
     }
-
-    private void OnChoiceSelected(int choiceIndex)
+    
+    #region Movement Methods
+    
+    /// <summary>
+    /// Update spotlight movement based on current movement type
+    /// </summary>
+    private void UpdateSpotlightMovement()
     {
-        Debug.Log($"Player selected spotlight choice {choiceIndex}: {(choices != null && choiceIndex < choices.Length ? choices[choiceIndex] : "Unknown")}");
-
-        // Handle choice logic here
-        switch (choiceIndex)
+        Vector2 currentPos = transform.position;
+        Vector2 newPos = currentPos;
+        bool moved = false;
+        
+        switch (movementType)
         {
-            case 0: // Continue/Ready
-                Debug.Log("Player is ready to continue with the scene!");
-                // Add your game logic here - maybe start turn-based mode
+            case SpotlightMovementType.Static:
+                // No movement
                 break;
-            case 1: // Wait
-                Debug.Log("Player needs a moment.");
-                // Add logic to give player more time or restart dialogue
-                ResetDialogue();
+                
+            case SpotlightMovementType.Random:
+                newPos = UpdateRandomMovement(currentPos);
+                moved = Vector2.Distance(currentPos, newPos) > 0.01f;
                 break;
-            default:
-                Debug.Log($"Unhandled choice index: {choiceIndex}");
+                
+            case SpotlightMovementType.FollowTarget:
+                newPos = UpdateTargetFollowing(currentPos);
+                moved = Vector2.Distance(currentPos, newPos) > 0.01f;
                 break;
         }
-    }
-
-    // Public method to reset the dialogue trigger (useful for testing or multi-use spotlights)
-    public void ResetDialogue()
-    {
-        currentDialogueIndex = 0;
-        hasTriggeredDialog = false;
-        playerInSpotlightAndWaiting = false;
-        ShowInteractionPrompt(false);
-    }
-
-    // Public method to force trigger dialog (useful for testing)
-    public void ForceStartDialog()
-    {
-        if (_player != null && _player.inSpotlight && !hasTriggeredDialog)
+        
+        if (moved)
         {
-            TriggerSpotlightDialog();
+            transform.position = new Vector3(newPos.x, newPos.y, transform.position.z);
+            OnSpotlightMoved?.Invoke(newPos);
         }
     }
-
-    // Optional: Draw the spotlight radius in the scene view
+    
+    /// <summary>
+    /// Handle random movement pattern
+    /// </summary>
+    private Vector2 UpdateRandomMovement(Vector2 currentPos)
+    {
+        // Check if we need a new random target
+        if (Time.time - lastRandomMoveTime > randomMoveInterval || 
+            Vector2.Distance(currentPos, randomTarget) < arrivalThreshold)
+        {
+            GenerateNewRandomTarget();
+            lastRandomMoveTime = Time.time;
+        }
+        
+        // Move towards random target
+        return Vector2.MoveTowards(currentPos, randomTarget, moveSpeed * Time.deltaTime);
+    }
+    
+    /// <summary>
+    /// Handle target following movement
+    /// </summary>
+    private Vector2 UpdateTargetFollowing(Vector2 currentPos)
+    {
+        if (targetToFollow == null) return currentPos;
+        
+        Vector2 targetPos = targetToFollow.position;
+        return Vector2.MoveTowards(currentPos, targetPos, moveSpeed * Time.deltaTime);
+    }
+    
+    /// <summary>
+    /// Generate a new random target position within bounds
+    /// </summary>
+    private void GenerateNewRandomTarget()
+    {
+        float randomX = Random.Range(originalPosition.x - movementBounds.x/2, originalPosition.x + movementBounds.x/2);
+        float randomY = Random.Range(originalPosition.y - movementBounds.y/2, originalPosition.y + movementBounds.y/2);
+        randomTarget = new Vector2(randomX, randomY);
+    }
+    
+    #endregion
+    
+    #region Character Detection Methods
+    
+    /// <summary>
+    /// Update which characters are in the spotlight
+    /// </summary>
+    private void UpdateCharacterDetection()
+    {
+        Vector2 spotlightPos = transform.position;
+        
+        // Check each tracked character
+        foreach (var character in allTrackedCharacters)
+        {
+            if (character == null) continue;
+            
+            bool wasInSpotlight = charactersInSpotlight.Contains(character);
+            bool isInSpotlight = IsCharacterInSpotlight(character, spotlightPos);
+            
+            // Handle state changes
+            if (isInSpotlight && !wasInSpotlight)
+            {
+                // Character entered spotlight
+                charactersInSpotlight.Add(character);
+                character.SetInSpotlight(true);
+                OnCharacterEnteredSpotlight?.Invoke(character);
+                
+                Debug.Log($"{character.GetCharacterName()} entered spotlight: {gameObject.name}");
+            }
+            else if (!isInSpotlight && wasInSpotlight)
+            {
+                // Character exited spotlight
+                charactersInSpotlight.Remove(character);
+                character.SetInSpotlight(false);
+                OnCharacterExitedSpotlight?.Invoke(character);
+                
+                Debug.Log($"{character.GetCharacterName()} exited spotlight: {gameObject.name}");
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Check if a specific character is within spotlight radius
+    /// </summary>
+    private bool IsCharacterInSpotlight(ISpotlightCharacter character, Vector2 spotlightPos)
+    {
+        if (character == null) return false;
+        
+        Vector2 characterPos = character.GetPosition();
+        return Vector2.Distance(spotlightPos, characterPos) <= radius;
+    }
+    
+    /// <summary>
+    /// Refresh the list of characters to track
+    /// </summary>
+    public void RefreshTrackedCharacters()
+    {
+        allTrackedCharacters.Clear();
+        
+        if (trackAllCharacters)
+        {
+            // Find all characters in the scene
+            var players = FindObjectsByType<PlayerScript>(FindObjectsSortMode.None);
+            foreach (var player in players)
+            {
+                allTrackedCharacters.Add(new PlayerCharacterWrapper(player));
+            }
+            
+            // Add other character types here as needed
+            // var npcs = FindObjectsOfType<NPCCharacter>();
+            // foreach (var npc in npcs)
+            // {
+            //     allTrackedCharacters.Add(new NPCCharacterWrapper(npc));
+            // }
+        }
+        else if (specificPlayer != null)
+        {
+            // Track only the specific player
+            allTrackedCharacters.Add(new PlayerCharacterWrapper(specificPlayer));
+        }
+    }
+    
+    #endregion
+    
+    #region Public Interface
+    
+    /// <summary>
+    /// Set the movement type and target
+    /// </summary>
+    public void SetMovementType(SpotlightMovementType type, Transform target = null)
+    {
+        movementType = type;
+        if (type == SpotlightMovementType.FollowTarget)
+        {
+            targetToFollow = target;
+        }
+    }
+    
+    /// <summary>
+    /// Move spotlight to a specific position
+    /// </summary>
+    public void MoveToPosition(Vector2 position)
+    {
+        transform.position = new Vector3(position.x, position.y, transform.position.z);
+        OnSpotlightMoved?.Invoke(position);
+    }
+    
+    /// <summary>
+    /// Set a specific target to follow
+    /// </summary>
+    public void SetTarget(Transform target)
+    {
+        targetToFollow = target;
+        if (movementType != SpotlightMovementType.FollowTarget)
+        {
+            movementType = SpotlightMovementType.FollowTarget;
+        }
+    }
+    
+    /// <summary>
+    /// Start random movement within specified bounds
+    /// </summary>
+    public void StartRandomMovement(Vector2 bounds)
+    {
+        movementBounds = bounds;
+        movementType = SpotlightMovementType.Random;
+        GenerateNewRandomTarget();
+    }
+    
+    /// <summary>
+    /// Stop all movement (set to static)
+    /// </summary>
+    public void StopMovement()
+    {
+        movementType = SpotlightMovementType.Static;
+    }
+    
+    /// <summary>
+    /// Get all characters currently in spotlight
+    /// </summary>
+    public ISpotlightCharacter[] GetCharactersInSpotlight()
+    {
+        var result = new ISpotlightCharacter[charactersInSpotlight.Count];
+        charactersInSpotlight.CopyTo(result);
+        return result;
+    }
+    
+    /// <summary>
+    /// Check if any character is in the spotlight
+    /// </summary>
+    public bool HasCharacterInSpotlight()
+    {
+        return charactersInSpotlight.Count > 0;
+    }
+    
+    /// <summary>
+    /// Check if a specific character is in this spotlight
+    /// </summary>
+    public bool IsCharacterInSpotlight(ISpotlightCharacter character)
+    {
+        return charactersInSpotlight.Contains(character);
+    }
+    
+    /// <summary>
+    /// Force update character detection (useful after moving spotlight manually)
+    /// </summary>
+    public void ForceUpdateCharacterDetection()
+    {
+        UpdateCharacterDetection();
+    }
+    
+    #endregion
+    
+    #region Gizmos and Debugging
+    
     private void OnDrawGizmosSelected()
     {
+        // Draw spotlight radius
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, radius);
+        
+        // Draw movement bounds for random movement
+        if (movementType == SpotlightMovementType.Random)
+        {
+            Gizmos.color = Color.cyan;
+            Vector2 center = Application.isPlaying ? originalPosition : (Vector2)transform.position;
+            Vector3 boundsSize = new Vector3(movementBounds.x, movementBounds.y, 0);
+            Gizmos.DrawWireCube(center, boundsSize);
+            
+            // Draw current random target
+            if (Application.isPlaying)
+            {
+                Gizmos.color = Color.red;
+                Gizmos.DrawWireSphere(randomTarget, 0.2f);
+                Gizmos.DrawLine(transform.position, randomTarget);
+            }
+        }
+        
+        // Draw connection to follow target
+        if (movementType == SpotlightMovementType.FollowTarget && targetToFollow != null)
+        {
+            Gizmos.color = Color.green;
+            Gizmos.DrawLine(transform.position, targetToFollow.position);
+        }
+        
+        // Draw characters in spotlight
+        if (Application.isPlaying)
+        {
+            Gizmos.color = Color.magenta;
+            foreach (var character in charactersInSpotlight)
+            {
+                if (character != null)
+                {
+                    Gizmos.DrawWireSphere(character.GetPosition(), 0.3f);
+                }
+            }
+        }
+    }
+    
+    #endregion
+}
+
+/// <summary>
+/// Interface for characters that can be tracked by spotlights
+/// </summary>
+public interface ISpotlightCharacter
+{
+    Vector2 GetPosition();
+    string GetCharacterName();
+    void SetInSpotlight(bool inSpotlight);
+    bool IsInSpotlight();
+}
+
+/// <summary>
+/// Wrapper to make PlayerScript compatible with ISpotlightCharacter
+/// </summary>
+public class PlayerCharacterWrapper : ISpotlightCharacter
+{
+    private PlayerScript player;
+    
+    public PlayerCharacterWrapper(PlayerScript player)
+    {
+        this.player = player;
+    }
+    
+    public Vector2 GetPosition()
+    {
+        return player.transform.position;
+    }
+    
+    public string GetCharacterName()
+    {
+        return player.gameObject.name;
+    }
+    
+    public void SetInSpotlight(bool inSpotlight)
+    {
+        player.inSpotlight = inSpotlight;
+    }
+    
+    public bool IsInSpotlight()
+    {
+        return player.inSpotlight;
     }
 }

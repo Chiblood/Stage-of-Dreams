@@ -397,7 +397,6 @@ GameObject:
   - component: {fileID: 348884227}
   - component: {fileID: 348884226}
   - component: {fileID: 348884229}
-  - component: {fileID: 348884228}
   m_Layer: 5
   m_Name: DialogManager
   m_TagString: Untagged
@@ -443,21 +442,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &348884228
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 348884225}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8e6fed5241ec36648b3616eb86434b8a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UIToolkitDialogSetup
-  autoSetup: 1
-  dialogVisualTree: {fileID: 9197481963319205126, guid: 1edb0bd25ebd3db409074e8df6a879c5, type: 3}
-  dialogStyleSheet: {fileID: 7433441132597879392, guid: 72afeb8a51f6354498e128c6b05a8292, type: 3}
 --- !u!114 &348884229
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -472,8 +456,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DialogManager
   uiDocument: {fileID: 348884226}
   dialogVisualTree: {fileID: 9197481963319205126, guid: 1edb0bd25ebd3db409074e8df6a879c5, type: 3}
-  dialogStyleSheet: {fileID: 7433441132597879392, guid: 72afeb8a51f6354498e128c6b05a8292, type: 3}
-  animationDuration: 0.3
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -605,11 +587,11 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.76592, y: 0.08287, z: -10}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1720834161}
+  m_Father: {fileID: 1795472658}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &547305114
 GameObject:
@@ -623,6 +605,8 @@ GameObject:
   - component: {fileID: 547305118}
   - component: {fileID: 547305117}
   - component: {fileID: 547305116}
+  - component: {fileID: 547305120}
+  - component: {fileID: 547305121}
   m_Layer: 6
   m_Name: Char_Eye
   m_TagString: Untagged
@@ -752,6 +736,44 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 0
+--- !u!114 &547305120
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 547305114}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2f377ce473268f47b634be11d3838b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueTrigger
+  triggerOnSpotlight: 0
+  triggerOnInteraction: 1
+  triggerOnProximity: 0
+  interactionRange: 2
+  proximityRange: 1.5
+  requireInteractionInput: 1
+  interactionKey: 101
+  targetNPC: {fileID: 547305121}
+  specificDialogTree: 
+  canRetrigger: 1
+  retriggerDelay: 2
+--- !u!114 &547305121
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 547305114}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a16479915bdbc34e9548a642152c586, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NPCContent
+  npcName: Watchful Eye NPC
+  mainDialogTree: {fileID: 11400000, guid: 7bb2c4e25de828d48af8384cfe41e041, type: 2}
+  additionalDialogTrees: []
 --- !u!1 &619394800
 GameObject:
   m_ObjectHideFlags: 0
@@ -776,7 +798,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 619394800}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 073797afb82c5a1438f328866b10b3f0, type: 3}
   m_Name: 
@@ -2662,7 +2684,11 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1557537327}
+  - component: {fileID: 1557537332}
+  - component: {fileID: 1557537331}
+  - component: {fileID: 1557537330}
   - component: {fileID: 1557537329}
+  - component: {fileID: 1557537328}
   m_Layer: 3
   m_Name: Spotlight
   m_TagString: Untagged
@@ -2686,6 +2712,21 @@ Transform:
   - {fileID: 1369314995}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1557537328
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1557537326}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a16479915bdbc34e9548a642152c586, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NPCContent
+  npcName: Director
+  mainDialogTree: {fileID: 0}
+  additionalDialogTrees: []
 --- !u!114 &1557537329
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2699,19 +2740,112 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Spotlight
   radius: 1.5
-  _player: {fileID: 1795472657}
-  triggerDialogOnEnter: 1
-  requireInteractionToStartDialog: 1
-  dialogueSequence:
-  - characterName: 
-    dialogueText: 
-    characterSprite: {fileID: 21300000, guid: 727b6cd823631dd4c9c58e13c220f2b5, type: 3}
-    isPlayer: 0
-    displayDuration: 0
-  showChoicesAfterDialog: 1
-  choices:
-  - Continue
-  - Wait a moment. (Exit Stage)
+  characterLayer:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  movementType: 0
+  moveSpeed: 0
+  targetToFollow: {fileID: 1795472658}
+  movementBounds: {x: 10, y: 6}
+  randomMoveInterval: 3
+  arrivalThreshold: 0.5
+  trackAllCharacters: 1
+  specificPlayer: {fileID: 0}
+--- !u!114 &1557537330
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1557537326}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2f377ce473268f47b634be11d3838b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueTrigger
+  triggerOnSpotlight: 1
+  triggerOnInteraction: 0
+  triggerOnProximity: 0
+  interactionRange: 2
+  proximityRange: 1.5
+  requireInteractionInput: 1
+  interactionKey: 101
+  targetNPC: {fileID: 0}
+  specificDialogTree: 
+  canRetrigger: 1
+  retriggerDelay: 1
+--- !u!66 &1557537331
+CompositeCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1557537326}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_GeometryType: 0
+  m_GenerationType: 0
+  m_EdgeRadius: 0
+  m_ColliderPaths: []
+  m_CompositePaths:
+    m_Paths: []
+  m_VertexDistance: 0.0005
+  m_OffsetDistance: 0.00005
+  m_UseDelaunayMesh: 0
+  m_CompositeGameObject: {fileID: 1557537326}
+--- !u!50 &1557537332
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1557537326}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
 --- !u!1 &1720834160
 GameObject:
   m_ObjectHideFlags: 0
@@ -2741,7 +2875,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 519420032}
   - {fileID: 619394802}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2758,7 +2891,6 @@ GameObject:
   - component: {fileID: 1795472659}
   - component: {fileID: 1795472660}
   - component: {fileID: 1795472657}
-  - component: {fileID: 1795472661}
   m_Layer: 6
   m_Name: Player
   m_TagString: Player
@@ -2806,10 +2938,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerScript
   _moveSpeed: 5
-  _rb: {fileID: 0}
-  _animator: {fileID: 0}
+  _rb: {fileID: 1795472656}
+  _animator: {fileID: 1795472660}
   _spriteRenderer: {fileID: 0}
-  _spotlight: {fileID: 0}
   _playerInteraction: {fileID: 0}
 --- !u!4 &1795472658
 Transform:
@@ -2825,6 +2956,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1880928949}
+  - {fileID: 519420032}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1795472659
@@ -2879,26 +3011,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &1795472661
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1795472655}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 615fe63c7ff8b564496aae7e08068527, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerInteraction
-  interactKey: 101
-  interactionRange: 1.5
-  interactableLayer:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  interactionPrompt: {fileID: -2253911629886400664, guid: c9987513481982b4da5422edf0acd5c0, type: 3}
-  promptText: {fileID: 0}
-  playerController: {fileID: 1795472657}
 --- !u!1 &1837363049
 GameObject:
   m_ObjectHideFlags: 0

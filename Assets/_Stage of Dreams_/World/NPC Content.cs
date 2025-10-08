@@ -15,7 +15,7 @@ using UnityEngine;
 /// Base class for NPC content that contains dialog trees and handles custom actions.
 /// Inherit from this class to create specific NPCs with their own dialog and behaviors.
 /// </summary>
-public abstract class NPCContent : MonoBehaviour
+public class NPCContent : MonoBehaviour
 {
     [Header("NPC Info")]
     public string npcName;

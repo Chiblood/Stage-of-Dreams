@@ -1,5 +1,5 @@
 /* DialogNavigator.cs
- * Handles navigation through dialog trees independently from UI display.
+ * Handles navigation through dialog trees independently from UI display. Is automatically used and called by DialogManager and does not need to be attached to any GameObject.
  * 
  * How to use in Unity:
  * 1. Create an instance of DialogNavigator in your dialog system or manager class.
@@ -44,7 +44,7 @@ public class DialogNavigator
     public NPCContent CurrentNPC => currentNPC;
     
     /// <summary>
-    /// Start navigating a dialog tree from an NPC
+    /// Start navigating a dialog tree from an NPC.
     /// </summary>
     public bool StartDialog(NPCContent npc, string treeNameOverride = null)
     {

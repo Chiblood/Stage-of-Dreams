@@ -1,7 +1,7 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/_Stage%20of%20Dreams_/Scripts/Dialog/DialogStyleSheet.uss?fileID=7433441132597879392&amp;guid=72afeb8a51f6354498e128c6b05a8292&amp;type=3#DialogStyleSheet" />
-    <ui:VisualElement name="VisualElement" style="flex-basis: 50%; align-content: auto;" />
-    <ui:GroupBox name="DialogBox" style="font-size: 90%; background-color: rgba(0, 0, 0, 0.88); color: rgb(130, 51, 51); align-items: flex-start; flex-basis: auto; align-content: auto; display: none;">
+    <ui:VisualElement name="VisualElement" style="flex-basis: 50%; align-content: auto; height: 75%;" />
+    <ui:GroupBox name="DialogBox" style="font-size: 90%; background-color: rgba(0, 0, 0, 0.88); color: rgb(130, 51, 51); align-items: flex-start; flex-basis: auto; align-content: auto; display: none; height: 30%;">
         <ui:Label text="Given Dialog" name="GivenDialog" style="font-size: 81%;" />
         <ui:Button text="DialogOption1&#10;" name="DialogOption1" class="DialogOptionsForBtns" style="display: none;" />
         <ui:Button text="DialogOption2" name="DialogOption2" class="DialogOptionsForBtns" style="display: none;" />

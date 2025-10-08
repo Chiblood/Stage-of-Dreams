@@ -1,3 +1,11 @@
+/* Player_Controller.cs
+ * Controls the player's movement, interactions, and state within the game world using Unity's physics system.
+ * 
+ * Processes methods for input for movement, and manages interactions with other game systems such as the Interactable and dialogue manager
+ * It provides methods to enable or disable movement and to check if the player is currently moving.  
+ * The player's movement is restricted under certain conditions such as when in dialog or in a minigame/combat.
+ */
+
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -21,7 +29,6 @@ public class PlayerScript : MonoBehaviour
     [SerializeField] Rigidbody2D _rb;
     [SerializeField] Animator _animator;
     [SerializeField] SpriteRenderer _spriteRenderer;
-    [SerializeField] Spotlight _spotlight; // Reference to spotlight
     [SerializeField] PlayerInteraction _playerInteraction; // Reference to interaction system
     #endregion
 
@@ -38,14 +45,6 @@ public class PlayerScript : MonoBehaviour
         _rb = GetComponent<Rigidbody2D>();
         _rb.freezeRotation = true;
         _playerInput = GetComponent<PlayerInput>();
-        
-        // Get PlayerInteraction if not assigned
-        if (_playerInteraction == null)
-            _playerInteraction = GetComponent<PlayerInteraction>();
-        
-        // Find spotlight if not assigned
-        if (_spotlight == null)
-            _spotlight = FindAnyObjectByType<Spotlight>();
     }
 
     #region Input System
@@ -72,30 +71,8 @@ public class PlayerScript : MonoBehaviour
     {
         GatherInput();
         
-        // Check spotlight status each frame
-        if (_spotlight != null)
-        {
-            _spotlight.CheckPlayerInSpotlight(this);
-            
-            // React to spotlight state change
-            if (inSpotlight)
-            {
-                // TODO: Start turn-based gameplay
-                
-                // Disable movement during dialogue/turn-based mode
-                if (DialogManager.Instance != null && DialogManager.Instance.IsDialogueActive())
-                {
-                    canMove = false;
-                }
-            }
-            else
-            {
-                canMove = true; // Re-enable movement when not in spotlight
-            }
-        }
-        
         // Disable movement during dialogue
-        if (DialogManager.Instance != null && DialogManager.Instance.IsDialogueActive())
+        if (DialogManager.Instance != null && DialogManager.Instance.IsDialogActive())
         {
             canMove = false;
         }
@@ -126,7 +103,7 @@ public class PlayerScript : MonoBehaviour
     public void EnableMovement()
     {
         // Only enable if not in dialogue
-        if (DialogManager.Instance == null || !DialogManager.Instance.IsDialogueActive())
+        if (DialogManager.Instance == null || !DialogManager.Instance.IsDialogActive())
         {
             canMove = true;
         }

@@ -5,7 +5,7 @@
  * 
  * How to use in Unity:
  * 1. Attach this script to a GameObject in your scene (e.g., an empty GameObject).
- * 2. Assign a UIDocument component with a VisualTreeAsset for the dialog UI.
+ * 2. Assign a UIDocument component with a VisualTreeAsset for the dialog UI. Which can be created and edited in the UI Builder in Unity.
  * 3. Call StartDialog(NPCContent npc) to initiate a dialog sequence.
  * 4. Ensure NPCContent and DialogNode classes are properly set up for dialog data.
  * 
@@ -13,31 +13,63 @@
 
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEngine.InputSystem;
 using System.Collections;
 
 /// <summary>
 /// Simple Dialog Manager that displays dialog UI and handles user input.
 /// Uses DialogNavigator for tree navigation logic - focused only on UI display.
+/// Singleton pattern for easy global access.
 /// </summary>
 public class DialogManager : MonoBehaviour
 {
+    #region Editor Fields
     [Header("UI References")]
-    [SerializeField] private UIDocument uiDocument;
-    [SerializeField] private VisualTreeAsset dialogVisualTree;
-    
-    // UI Elements
-    private VisualElement rootElement;
-    private GroupBox dialogBox;
-    private Label dialogLabel;
-    private Button choiceButton1;
-    private Button choiceButton2;
+    [SerializeField] private UIDocument uiDocument; // The UI Document component
+    [SerializeField] private VisualTreeAsset dialogVisualTree; // The Visual Tree Asset for dialog UI
+    #endregion
+
+    #region UI Elements
+    private VisualElement rootElement; // The root of the UI document
+    private GroupBox dialogBox; // The main dialog box container
+    private Label dialogLabel; // The label for displaying dialog text
+
+    // Choice buttons
+    private Button choiceButton1; 
+    private Button choiceButton2; 
     private Button choiceButton3;
-    
-    // Navigation
+    private Button choiceButton4;
+    private Button choiceButton5;
+
+    // Player input handling
+    public PlayerInput playerInput; // Reference to PlayerInput component for input actions
+    private InputAction interactAction; // Action for interacting with the dialog
+    #endregion
+
+    // Navigation logic (handled by a DialogNavigator.cs)
     private DialogNavigator navigator;
     
     // UI State
     private bool isUIActive = false;
+    
+    // Singleton pattern
+    public static DialogManager Instance { get; private set; }
+    
+    private void Awake()
+    {
+        // Singleton pattern
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else if (Instance != this)
+        {
+            Debug.LogWarning("Multiple DialogManager instances detected. Destroying duplicate.");
+            Destroy(gameObject);
+            return;
+        }
+    }
     
     private void Start()
     {
@@ -45,8 +77,10 @@ public class DialogManager : MonoBehaviour
         InitializeUI();
         HideDialog();
     }
-    
-    private void InitializeNavigator()
+    /// <summary>
+    /// Calls initialization for the dialog navigator which handles dialog tree navigation logic.
+    /// </summary>
+    private void InitializeNavigator() 
     {
         navigator = new DialogNavigator();
         
@@ -70,16 +104,16 @@ public class DialogManager : MonoBehaviour
         choiceButton1 = rootElement.Q<Button>("DialogOption1");
         choiceButton2 = rootElement.Q<Button>("DialogOption2");
         choiceButton3 = rootElement.Q<Button>("DialogOption3");
-        
+        choiceButton4 = rootElement.Q<Button>("DialogOption4");
+        choiceButton5 = rootElement.Q<Button>("DialogOption5");
+
         // Setup button events
         choiceButton1.clicked += () => OnChoiceClicked(0);
         choiceButton2.clicked += () => OnChoiceClicked(1);
         choiceButton3.clicked += () => OnChoiceClicked(2);
     }
     
-    /// <summary>
-    /// Start a dialog with an NPC (public interface)
-    /// </summary>
+    /// <summary> Start a dialog with an NPC (public interface) </summary>
     public void StartDialog(NPCContent npc)
     {
         if (navigator.StartDialog(npc))
@@ -159,16 +193,16 @@ public class DialogManager : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// Show choice buttons for the current node
-    /// </summary>
+    /// <summary> Show choice buttons for the current node. </summary>
     private void ShowChoices(DialogChoice[] choices)
     {
         // Hide all buttons first
         choiceButton1.style.display = DisplayStyle.None;
         choiceButton2.style.display = DisplayStyle.None;
         choiceButton3.style.display = DisplayStyle.None;
-        
+        choiceButton4.style.display = DisplayStyle.None;
+        choiceButton5.style.display = DisplayStyle.None;
+
         // Show buttons for available choices
         for (int i = 0; i < choices.Length && i < 3; i++)
         {
@@ -181,9 +215,7 @@ public class DialogManager : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// Hide all choice buttons
-    /// </summary>
+    /// <summary> Hide all choice buttons </summary>
     private void HideChoices()
     {
         choiceButton1.style.display = DisplayStyle.None;
@@ -191,17 +223,13 @@ public class DialogManager : MonoBehaviour
         choiceButton3.style.display = DisplayStyle.None;
     }
     
-    /// <summary>
-    /// Handle when a choice button is clicked
-    /// </summary>
+    /// <summary> Handle when a choice button is clicked </summary>
     private void OnChoiceClicked(int choiceIndex)
     {
         navigator.SelectChoice(choiceIndex);
     }
     
-    /// <summary>
-    /// Advance dialog (for nodes with no choices)
-    /// </summary>
+    /// <summary> call to DialogNavigator to Advance dialog, use with nodes with no choices. </summary>
     public void AdvanceDialog()
     {
         navigator.AdvanceDialog();
@@ -252,6 +280,8 @@ public class DialogManager : MonoBehaviour
             0 => choiceButton1,
             1 => choiceButton2,
             2 => choiceButton3,
+            3 => choiceButton4,
+            4 => choiceButton5,
             _ => null
         };
     }
@@ -276,9 +306,10 @@ public class DialogManager : MonoBehaviour
     {
         // Handle input for advancing dialog (when no choices)
         var state = navigator.GetCurrentState();
+
         if (state.isActive && !state.hasChoices && !state.shouldAutoAdvance)
         {
-            if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return))
+            if (interactAction.triggered)
             {
                 AdvanceDialog();
             }
@@ -287,6 +318,12 @@ public class DialogManager : MonoBehaviour
     
     private void OnDestroy()
     {
+        // Clear singleton reference
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+        
         // Unsubscribe from navigation events
         if (navigator != null)
         {
@@ -295,4 +332,5 @@ public class DialogManager : MonoBehaviour
             navigator.OnDialogEnded -= HandleDialogEnded;
         }
     }
+    public bool IsUIActive => isUIActive;
 }

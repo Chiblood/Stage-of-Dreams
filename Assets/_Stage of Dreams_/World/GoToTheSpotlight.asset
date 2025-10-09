@@ -1,0 +1,156 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60bb80c9727209d4db564d14f667a070, type: 3}
+  m_Name: GoToTheSpotlight
+  m_EditorClassIdentifier: Assembly-CSharp::DialogTree
+  treeName: Go to the Main Spotlight
+  description: A script for my first NPC to tell the player to go to the main spotlight
+    to speak to the director.
+  startingNode:
+    rid: 4154293786523205903
+  allNodes:
+  - rid: 4154293786523205903
+  - rid: 4154293786523206122
+  - rid: 4154293786523206132
+  - rid: 4154293786523206135
+  autoUpdateNodeList: 1
+  validateOnSave: 1
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 4154293786523205903
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        nodeName: First Node
+        speakerName: NPC
+        dialogText: Hi my name is Jason! Director John wants to see you! Go to the
+          Main Spotlight!
+        isPlayerSpeaking: 0
+        autoAdvanceDelay: 0
+        choices: []
+        nextNode:
+          rid: 4154293786523206122
+        parentDialog:
+          rid: -2
+        incomingReferences: []
+        onDialogStart:
+          rid: 4154293786523205907
+        onDialogEnd:
+          rid: 4154293786523205908
+    - rid: 4154293786523205907
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293786523205908
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293786523206122
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        nodeName: Second Node
+        speakerName: Hero
+        dialogText: Ok thanks!
+        isPlayerSpeaking: 1
+        autoAdvanceDelay: 0
+        choices: []
+        nextNode:
+          rid: 4154293786523206132
+        parentDialog:
+          rid: 4154293786523205903
+        incomingReferences: []
+        onDialogStart:
+          rid: 4154293786523206123
+        onDialogEnd:
+          rid: 4154293786523206124
+    - rid: 4154293786523206123
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293786523206124
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293786523206132
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        nodeName: Third Node
+        speakerName: Jason
+        dialogText: Good Luck!
+        isPlayerSpeaking: 0
+        autoAdvanceDelay: 0
+        choices: []
+        nextNode:
+          rid: 4154293786523206135
+        parentDialog:
+          rid: 4154293786523206122
+        incomingReferences: []
+        onDialogStart:
+          rid: 4154293786523206133
+        onDialogEnd:
+          rid: 4154293786523206134
+    - rid: 4154293786523206133
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293786523206134
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls:
+          - m_Target: {fileID: 11500000, guid: fd545ee0460b6ac46b7b55dbbc8ab0c4, type: 3}
+            m_TargetAssemblyTypeName: UnityEditor.MonoScript, UnityEditor.CoreModule
+            m_MethodName: 
+            m_Mode: 1
+            m_Arguments:
+              m_ObjectArgument: {fileID: 0}
+              m_ObjectArgumentAssemblyTypeName: 
+              m_IntArgument: 0
+              m_FloatArgument: 0
+              m_StringArgument: 
+              m_BoolArgument: 0
+            m_CallState: 1
+    - rid: 4154293786523206135
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        nodeName: 
+        speakerName: Speaker
+        dialogText: Enter dialog text here
+        isPlayerSpeaking: 0
+        autoAdvanceDelay: 0
+        choices: []
+        nextNode:
+          rid: -2
+        parentDialog:
+          rid: 4154293786523206132
+        incomingReferences: []
+        onDialogStart:
+          rid: 4154293786523206136
+        onDialogEnd:
+          rid: 4154293786523206137
+    - rid: 4154293786523206136
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293786523206137
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []

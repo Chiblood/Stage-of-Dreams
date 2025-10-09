@@ -1,13 +1,13 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <Style src="project://database/Assets/UI%20Toolkit/MainMenuStyleSheet.uss?fileID=7433441132597879392&amp;guid=a0e62b0e30ccd7b478412967d4d0ea1a&amp;type=3#MainMenuStyleSheet" />
-    <ui:VisualElement name="Container" style="flex-grow: 1; background-image: url(&quot;project://database/Assets/_Stage%20of%20Dreams_/World/Dream%201/Sprites/Tileset/Tiles/A%20wide%20pixel%20art%20bac.png?fileID=2800000&amp;guid=02a7052ce2b86ad44923e38ecf21fcf9&amp;type=3#A wide pixel art bac&quot;); align-items: center; align-content: auto; justify-content: space-evenly; font-size: 12px; color: rgb(0, 0, 0); -unity-background-image-tint-color: rgb(255, 255, 255); align-self: auto; -unity-font-definition: url(&quot;project://database/Assets/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=2230732570650464555&amp;guid=7c86354e8ad6808418ac1384866d36ca&amp;type=3#NotInter-Regular&quot;);">
+    <Style src="project://database/Assets/UI%20Toolkit/Main%20Menu/MainMenuStyleSheet.uss?fileID=7433441132597879392&amp;guid=a0e62b0e30ccd7b478412967d4d0ea1a&amp;type=3#MainMenuStyleSheet" />
+    <ui:VisualElement name="Container" style="flex-grow: 1; background-image: url(&quot;project://database/Assets/_Stage%20of%20Dreams_/World/Dream%201/Sprites/Tileset/Tiles/A%20wide%20pixel%20art%20bac.png?fileID=2800000&amp;guid=02a7052ce2b86ad44923e38ecf21fcf9&amp;type=3#A wide pixel art bac&quot;); align-items: center; align-content: auto; justify-content: space-evenly; font-size: 12px; color: rgb(0, 0, 0); -unity-background-image-tint-color: rgb(255, 255, 255); align-self: auto; -unity-font-definition: url(&quot;project://database/Assets/UI%20Toolkit/Main%20Menu/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=2230732570650464555&amp;guid=7c86354e8ad6808418ac1384866d36ca&amp;type=3#NotInter-Regular&quot;);">
         <ui:VisualElement name="TitleBox" style="flex-grow: 1; -unity-text-align: middle-center; align-items: stretch; justify-content: space-evenly; align-content: auto; height: auto;">
             <ui:Label text="The Stage Of Dreams" name="Title" focusable="false" class="Header" style="align-items: center; align-self: center; -unity-font-definition: url(&quot;project://database/Assets/TextMesh%20Pro/Examples%20&amp;%20Extras/Fonts/Electronic%20Highway%20Sign.TTF?fileID=12800000&amp;guid=8a2b9e2a607dd2143b58c44bc32410b4&amp;type=3#Electronic Highway Sign&quot;); top: auto;" />
             <ui:Label text="By Jack Taylor" name="SubTitle" style="color: rgb(255, 255, 255); font-size: 20px; white-space: pre; text-overflow: clip;" />
         </ui:VisualElement>
-        <ui:GroupBox name="MMenuButtonBox" style="top: auto; align-items: center; align-self: center; align-content: auto; justify-content: flex-start;">
-            <ui:Button text="Start" name="StartBtn" class="button" />
-            <ui:Button text="Settings" name="SettingsBtn" class="button" />
+        <ui:GroupBox name="MMenuButtonBox" enabled="true" style="top: auto; align-items: center; align-self: center; align-content: auto; justify-content: flex-start;">
+            <ui:Button text="Start" name="StartBtn" enable-rich-text="true" enabled="true" class="button" />
+            <ui:Button text="Settings (TBD)" name="SettingsBtn" class="button" />
             <ui:Button text="Exit Stage Left" name="ExitBtn" class="button" />
         </ui:GroupBox>
     </ui:VisualElement>

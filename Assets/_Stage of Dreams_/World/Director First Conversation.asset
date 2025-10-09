@@ -15,162 +15,294 @@ MonoBehaviour:
   treeName: Director Introduction
   description: First conversation with the Director.
   startingNode:
-    speakerName: Director
-    dialogText: '"Hello there Hero, are you ready to begin your audition?"'
-    isPlayerSpeaking: 0
-    autoAdvanceDelay: 0
-    choices:
-    - choiceText: 
-      targetNode:
-        speakerName: 
-        dialogText: 
-        isPlayerSpeaking: 0
-        autoAdvanceDelay: 0
-        choices: []
-        onDialogStart:
-          m_PersistentCalls:
-            m_Calls: []
-        onDialogEnd:
-          m_PersistentCalls:
-            m_Calls: []
-      customActionId: 
-      onChoiceSelected:
-        m_PersistentCalls:
-          m_Calls: []
-    - choiceText: 
-      targetNode:
-        speakerName: 
-        dialogText: 
-        isPlayerSpeaking: 0
-        autoAdvanceDelay: 0
-        choices: []
-        onDialogStart:
-          m_PersistentCalls:
-            m_Calls: []
-        onDialogEnd:
-          m_PersistentCalls:
-            m_Calls: []
-      customActionId: 
-      onChoiceSelected:
-        m_PersistentCalls:
-          m_Calls: []
-    - choiceText: 
-      targetNode:
-        speakerName: 
-        dialogText: 
-        isPlayerSpeaking: 0
-        autoAdvanceDelay: 0
-        choices: []
-        onDialogStart:
-          m_PersistentCalls:
-            m_Calls: []
-        onDialogEnd:
-          m_PersistentCalls:
-            m_Calls: []
-      customActionId: 
-      onChoiceSelected:
-        m_PersistentCalls:
-          m_Calls: []
-    onDialogStart:
-      m_PersistentCalls:
-        m_Calls: []
-    onDialogEnd:
-      m_PersistentCalls:
-        m_Calls: []
+    rid: 4154293777632330398
   allNodes:
-  - speakerName: Director
-    dialogText: '"Hello there Hero, are you ready to begin your audition?"'
-    isPlayerSpeaking: 0
-    autoAdvanceDelay: 0
-    choices:
-    - choiceText: 
-      targetNode:
-        speakerName: 
-        dialogText: 
-        isPlayerSpeaking: 0
-        autoAdvanceDelay: 0
-        choices: []
-        onDialogStart:
-          m_PersistentCalls:
-            m_Calls: []
-        onDialogEnd:
-          m_PersistentCalls:
-            m_Calls: []
-      customActionId: 
-      onChoiceSelected:
-        m_PersistentCalls:
-          m_Calls: []
-    - choiceText: 
-      targetNode:
-        speakerName: 
-        dialogText: 
-        isPlayerSpeaking: 0
-        autoAdvanceDelay: 0
-        choices: []
-        onDialogStart:
-          m_PersistentCalls:
-            m_Calls: []
-        onDialogEnd:
-          m_PersistentCalls:
-            m_Calls: []
-      customActionId: 
-      onChoiceSelected:
-        m_PersistentCalls:
-          m_Calls: []
-    - choiceText: 
-      targetNode:
-        speakerName: 
-        dialogText: 
-        isPlayerSpeaking: 0
-        autoAdvanceDelay: 0
-        choices: []
-        onDialogStart:
-          m_PersistentCalls:
-            m_Calls: []
-        onDialogEnd:
-          m_PersistentCalls:
-            m_Calls: []
-      customActionId: 
-      onChoiceSelected:
-        m_PersistentCalls:
-          m_Calls: []
-    onDialogStart:
-      m_PersistentCalls:
-        m_Calls: []
-    onDialogEnd:
-      m_PersistentCalls:
-        m_Calls: []
-  - speakerName: 
-    dialogText: 
-    isPlayerSpeaking: 0
-    autoAdvanceDelay: 0
-    choices: []
-    onDialogStart:
-      m_PersistentCalls:
-        m_Calls: []
-    onDialogEnd:
-      m_PersistentCalls:
-        m_Calls: []
-  - speakerName: 
-    dialogText: 
-    isPlayerSpeaking: 0
-    autoAdvanceDelay: 0
-    choices: []
-    onDialogStart:
-      m_PersistentCalls:
-        m_Calls: []
-    onDialogEnd:
-      m_PersistentCalls:
-        m_Calls: []
-  - speakerName: 
-    dialogText: 
-    isPlayerSpeaking: 0
-    autoAdvanceDelay: 0
-    choices: []
-    onDialogStart:
-      m_PersistentCalls:
-        m_Calls: []
-    onDialogEnd:
-      m_PersistentCalls:
-        m_Calls: []
+  - rid: 4154293777632330398
+  - rid: 4154293777632330399
+  - rid: 4154293777632330400
+  - rid: 4154293777632330401
+  - rid: 4154293777632330402
+  - rid: 4154293777632330403
+  - rid: 4154293777632330404
   autoUpdateNodeList: 1
+  validateOnSave: 1
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 4154293777632330398
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        nodeName: 
+        speakerName: Stage Manager
+        dialogText: How are you feeling about tonight's performance?
+        isPlayerSpeaking: 0
+        autoAdvanceDelay: 0
+        choices:
+        - rid: 4154293777632330405
+        - rid: 4154293777632330406
+        - rid: 4154293777632330407
+        nextNode:
+          rid: -2
+        parentDialog:
+          rid: -2
+        incomingReferences: []
+        onDialogStart:
+          rid: 4154293786523205878
+        onDialogEnd:
+          rid: 4154293786523205879
+    - rid: 4154293777632330399
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        nodeName: 
+        speakerName: Stage Manager
+        dialogText: That's completely normal! Even the best actors get nervous. Let's
+          do some breathing exercises.
+        isPlayerSpeaking: 0
+        autoAdvanceDelay: 0
+        choices: []
+        nextNode:
+          rid: 4154293777632330400
+        parentDialog:
+          rid: -2
+        incomingReferences: []
+        onDialogStart:
+          rid: 4154293786523205880
+        onDialogEnd:
+          rid: 4154293786523205881
+    - rid: 4154293777632330400
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        nodeName: 
+        speakerName: Player
+        dialogText: Thanks, that really helps!
+        isPlayerSpeaking: 1
+        autoAdvanceDelay: 0
+        choices: []
+        nextNode:
+          rid: -2
+        parentDialog:
+          rid: -2
+        incomingReferences: []
+        onDialogStart:
+          rid: 4154293786523205882
+        onDialogEnd:
+          rid: 4154293786523205883
+    - rid: 4154293777632330401
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        nodeName: 
+        speakerName: Stage Manager
+        dialogText: Wonderful! That energy will really show on stage. Channel that
+          excitement into your performance.
+        isPlayerSpeaking: 0
+        autoAdvanceDelay: 0
+        choices: []
+        nextNode:
+          rid: 4154293777632330402
+        parentDialog:
+          rid: -2
+        incomingReferences: []
+        onDialogStart:
+          rid: 4154293786523205884
+        onDialogEnd:
+          rid: 4154293786523205885
+    - rid: 4154293777632330402
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        nodeName: 
+        speakerName: Player
+        dialogText: I can't wait to get on stage!
+        isPlayerSpeaking: 1
+        autoAdvanceDelay: 0
+        choices: []
+        nextNode:
+          rid: -2
+        parentDialog:
+          rid: -2
+        incomingReferences: []
+        onDialogStart:
+          rid: 4154293786523205886
+        onDialogEnd:
+          rid: 4154293786523205887
+    - rid: 4154293777632330403
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        nodeName: 
+        speakerName: Stage Manager
+        dialogText: Perfect! I can see the confidence in your eyes. The audience
+          is going to love you.
+        isPlayerSpeaking: 0
+        autoAdvanceDelay: 0
+        choices:
+        - rid: 4154293777632330408
+        nextNode:
+          rid: -2
+        parentDialog:
+          rid: -2
+        incomingReferences: []
+        onDialogStart:
+          rid: 4154293786523205888
+        onDialogEnd:
+          rid: 4154293786523205889
+    - rid: 4154293777632330404
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        nodeName: 
+        speakerName: Stage Manager
+        dialogText: Break a leg!
+        isPlayerSpeaking: 0
+        autoAdvanceDelay: 0
+        choices: []
+        nextNode:
+          rid: -2
+        parentDialog:
+          rid: -2
+        incomingReferences: []
+        onDialogStart:
+          rid: 4154293786523205890
+        onDialogEnd:
+          rid: 4154293786523205891
+    - rid: 4154293777632330405
+      type: {class: DialogChoice, ns: , asm: Assembly-CSharp}
+      data:
+        choiceText: I'm really nervous...
+        targetNode:
+          rid: 4154293777632330399
+        targetNodeName: 
+        customActionId: 
+        onChoiceSelected:
+          rid: 4154293786523205892
+    - rid: 4154293777632330406
+      type: {class: DialogChoice, ns: , asm: Assembly-CSharp}
+      data:
+        choiceText: I'm excited!
+        targetNode:
+          rid: 4154293777632330401
+        targetNodeName: 
+        customActionId: 
+        onChoiceSelected:
+          rid: 4154293786523205893
+    - rid: 4154293777632330407
+      type: {class: DialogChoice, ns: , asm: Assembly-CSharp}
+      data:
+        choiceText: I'm ready!
+        targetNode:
+          rid: 4154293777632330403
+        targetNodeName: 
+        customActionId: 
+        onChoiceSelected:
+          rid: 4154293786523205894
+    - rid: 4154293777632330408
+      type: {class: DialogChoice, ns: , asm: Assembly-CSharp}
+      data:
+        choiceText: Start the show!
+        targetNode:
+          rid: 4154293777632330404
+        targetNodeName: 
+        customActionId: start_performance
+        onChoiceSelected:
+          rid: 4154293786523205895
+    - rid: 4154293786523205878
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293786523205879
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293786523205880
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293786523205881
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293786523205882
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293786523205883
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293786523205884
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293786523205885
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293786523205886
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293786523205887
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293786523205888
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293786523205889
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293786523205890
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293786523205891
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293786523205892
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls:
+          - m_Target: {fileID: 11500000, guid: 53f78550147ded0429d872ba15324df5, type: 3}
+            m_TargetAssemblyTypeName: 
+            m_MethodName: 
+            m_Mode: 1
+            m_Arguments:
+              m_ObjectArgument: {fileID: 0}
+              m_ObjectArgumentAssemblyTypeName: 
+              m_IntArgument: 0
+              m_FloatArgument: 0
+              m_StringArgument: 
+              m_BoolArgument: 0
+            m_CallState: 1
+    - rid: 4154293786523205893
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293786523205894
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293786523205895
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []

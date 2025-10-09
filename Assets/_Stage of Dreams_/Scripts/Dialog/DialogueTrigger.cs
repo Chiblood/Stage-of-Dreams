@@ -39,9 +39,13 @@ public class DialogueTrigger : MonoBehaviour
     
     [Header("Trigger Behavior")]
     [SerializeField] private bool canRetrigger = false; // Can trigger multiple times
-    [SerializeField] private float retriggerDelay = 1f; // Delay between retriggering
+    [SerializeField] private float retriggerDelay = 10f; // Delay between retriggering
+    
+    [Header("Debug Settings")]
+    [SerializeField] private bool enableDebugLogs = true;
     #endregion
 
+    #region Internal Fields
     // Internal state
     private DialogManager dialogManager;
     private PlayerScript player;
@@ -49,11 +53,28 @@ public class DialogueTrigger : MonoBehaviour
     private bool isWaitingForInput = false;
     private float lastTriggerTime = 0f;
     
+    // Validation cache
+    private bool isSetupValid = false;
+    private string lastValidationError = "";
+    
     // Events for external systems
     public System.Action OnDialogTriggered;
     public System.Action OnDialogEnded;
-    
+    #endregion
+
+    #region Initialization
+
+    /// <summary> Initialize references and validate setup </summary>
     private void Start()
+    {
+        InitializeReferences();
+        ValidateSetup();
+    }
+    
+    /// <summary>
+    /// Initialize references to DialogManager and PlayerScript
+    /// </summary>
+    private void InitializeReferences()
     {
         dialogManager = DialogManager.Instance;
         player = FindFirstObjectByType<PlayerScript>();
@@ -63,29 +84,135 @@ public class DialogueTrigger : MonoBehaviour
         {
             targetNPC = GetComponent<NPCContent>();
         }
+    }
+    #endregion
+
+    #region Validation Methods
+    /// <summary> Validate the complete setup for dialog triggering </summary>
+    private void ValidateSetup()
+    {
+        isSetupValid = true;
+        lastValidationError = "";
         
-        // Validate setup
-        if (targetNPC == null)
-        {
-            Debug.LogWarning($"DialogueTrigger on {gameObject.name} has no NPC content assigned!");
-        }
-        
+        // Check DialogManager
         if (dialogManager == null)
         {
-            Debug.LogWarning($"DialogueTrigger on {gameObject.name} cannot find DialogManager instance!");
+            isSetupValid = false;
+            lastValidationError = "DialogManager instance not found in scene";
+            LogError($"DialogueTrigger on {gameObject.name}: {lastValidationError}");
+            return;
+        }
+        
+        // Check NPCContent
+        if (targetNPC == null)
+        {
+            isSetupValid = false;
+            lastValidationError = "No NPCContent assigned or found on GameObject";
+            LogError($"DialogueTrigger on {gameObject.name}: {lastValidationError}");
+            return;
+        }
+        
+        // Validate NPC has dialog content
+        if (!ValidateNPCContent())
+        {
+            isSetupValid = false;
+            return; // Error message already set in ValidateNPCContent
+        }
+        
+        // Check trigger conditions
+        if (!triggerOnSpotlight && !triggerOnInteraction && !triggerOnProximity)
+        {
+            isSetupValid = false;
+            lastValidationError = "No trigger conditions enabled";
+            LogError($"DialogueTrigger on {gameObject.name}: {lastValidationError}");
+            return;
+        }
+        
+        // Check player reference for proximity/interaction triggers
+        if ((triggerOnProximity || triggerOnInteraction) && player == null)
+        {
+            LogWarning($"DialogueTrigger on {gameObject.name}: PlayerScript not found - proximity/interaction triggers will not work");
+        }
+        
+        if (enableDebugLogs)
+        {
+            LogDebug($"DialogueTrigger on {gameObject.name}: Setup validation passed");
         }
     }
     
+    /// <summary> Validate that the NPC has the required dialog content </summary>
+    private bool ValidateNPCContent()
+    {
+        if (targetNPC == null) return false;
+        
+        // Check if specific dialog tree is requested
+        if (!string.IsNullOrEmpty(specificDialogTree))
+        {
+            var requestedTree = targetNPC.GetDialogTree(specificDialogTree);
+            if (requestedTree == null)
+            {
+                lastValidationError = $"Specific dialog tree '{specificDialogTree}' not found on NPC '{targetNPC.npcName}'";
+                LogError($"DialogueTrigger on {gameObject.name}: {lastValidationError}");
+                return false;
+            }
+            
+            if (!requestedTree.IsValid())
+            {
+                lastValidationError = $"Specific dialog tree '{specificDialogTree}' is not valid (no starting node)";
+                LogError($"DialogueTrigger on {gameObject.name}: {lastValidationError}");
+                return false;
+            }
+        }
+        else
+        {
+            // Check main dialog tree
+            var mainTree = targetNPC.GetMainDialogTree();
+            if (mainTree == null)
+            {
+                lastValidationError = $"NPC '{targetNPC.npcName}' has no main dialog tree assigned";
+                LogError($"DialogueTrigger on {gameObject.name}: {lastValidationError}");
+                return false;
+            }
+            
+            if (!mainTree.IsValid())
+            {
+                lastValidationError = $"NPC '{targetNPC.npcName}' main dialog tree is not valid (no starting node)";
+                LogError($"DialogueTrigger on {gameObject.name}: {lastValidationError}");
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    /// <summary> Get the dialog tree that will be used for this trigger </summary>
+    public DialogTree GetTargetDialogTree()
+    {
+        if (targetNPC == null) return null;
+        
+        return !string.IsNullOrEmpty(specificDialogTree) 
+            ? targetNPC.GetDialogTree(specificDialogTree) 
+            : targetNPC.GetMainDialogTree();
+    }
+
+    #endregion
+
+    #region Main update loop to check trigger conditions and Passing DialogTree to DialogManager
+
+    /// <summary> Check if the trigger is ready to fire </summary>
+    public bool IsReadyToTrigger()
+    {
+        return isSetupValid && 
+               dialogManager != null && 
+               targetNPC != null && 
+               !dialogManager.IsDialogActive() &&
+               (!hasTriggered || canRetrigger) &&
+               (!hasTriggered || Time.time - lastTriggerTime >= retriggerDelay);
+    }
     private void Update()
     {
-        // Don't trigger if dialog is already active
-        if (dialogManager != null && dialogManager.IsDialogActive()) return;
-        
-        // Check if we can trigger again
-        if (hasTriggered && !canRetrigger) return;
-        
-        // Check retrigger delay
-        if (hasTriggered && Time.time - lastTriggerTime < retriggerDelay) return;
+        // Early exit if not ready
+        if (!IsReadyToTrigger()) return;
         
         // Check different trigger conditions
         CheckSpotlightTrigger();
@@ -98,19 +225,22 @@ public class DialogueTrigger : MonoBehaviour
     {
         if (!triggerOnSpotlight || player == null) return;
         
-        if (player.inSpotlight)
+        // Check if player is specifically in THIS spotlight, not just any spotlight
+        bool playerInThisSpotlight = IsPlayerInThisSpotlight();
+        
+        if (playerInThisSpotlight)
         {
             if (requireInteractionInput && !isWaitingForInput)
             {
                 // Start waiting for input
                 isWaitingForInput = true;
                 ShowInteractionPrompt(true);
-                Debug.Log($"Press {interactionKey} to start dialog with {targetNPC?.npcName}");
+                LogDebug($"Press {interactionKey} to start dialog with {targetNPC?.npcName}");
             }
             else if (!requireInteractionInput)
             {
                 // Immediate trigger
-                TriggerDialog();
+                PassNPCContent();
             }
         }
         else
@@ -122,6 +252,22 @@ public class DialogueTrigger : MonoBehaviour
                 ShowInteractionPrompt(false);
             }
         }
+    }
+    
+    /// <summary>
+    /// Check if the player is specifically in this spotlight's radius
+    /// </summary>
+    private bool IsPlayerInThisSpotlight()
+    {
+        if (player == null) return false;
+        
+        // Get the Spotlight component on this GameObject
+        Spotlight thisSpotlight = GetComponent<Spotlight>();
+        if (thisSpotlight == null) return false;
+        
+        // Check if player is within this specific spotlight's radius
+        float distance = Vector2.Distance(transform.position, player.transform.position);
+        return distance <= thisSpotlight.radius;
     }
     
     private void CheckInteractionTrigger()
@@ -138,7 +284,7 @@ public class DialogueTrigger : MonoBehaviour
             
             if (GetInteractInput())
             {
-                TriggerDialog();
+                PassNPCContent();
             }
         }
         else
@@ -157,7 +303,7 @@ public class DialogueTrigger : MonoBehaviour
         
         if (IsPlayerInRange(proximityRange))
         {
-            TriggerDialog();
+            PassNPCContent();
         }
     }
     
@@ -167,43 +313,162 @@ public class DialogueTrigger : MonoBehaviour
         
         if (GetInteractInput())
         {
-            TriggerDialog();
+            PassNPCContent();
         }
     }
-    
-    /// <summary>
-    /// Start the dialog with the target NPC
+
+    #endregion
+
+    /// <summary> 
+    /// Pass the NPC Content from the target NPC to the DialogManager to start the dialog
+    /// This is the core method that connects DialogueTrigger to DialogManager
     /// </summary>
-    private void TriggerDialog()
+    private void PassNPCContent()
     {
+        // Pre-validation of setup
+        if (!isSetupValid)
+        {
+            LogError($"Cannot trigger dialog on {gameObject.name} - Setup validation failed: {lastValidationError}");
+            return;
+        }
+        
+        // Runtime validation
         if (dialogManager == null || targetNPC == null)
         {
-            Debug.LogWarning($"Cannot trigger dialog on {gameObject.name} - DialogManager or NPC is missing");
+            LogError($"Cannot trigger dialog on {gameObject.name} - DialogManager or NPC is missing");
+            return;
+        }
+        
+        // Final validation of dialog content
+        if (!ValidateNPCContent())
+        {
+            LogError($"Cannot trigger dialog on {gameObject.name} - NPC content validation failed: {lastValidationError}");
             return;
         }
         
         // Clear waiting state
         isWaitingForInput = false;
         ShowInteractionPrompt(false);
-        
-        // Start the dialog
+
+        // Prepare NPCContent for dialog
+        PrepareNPCForDialog();
+
+        // Pass to the dialog manager with appropriate tree selection
+        bool dialogStarted = false;
         if (!string.IsNullOrEmpty(specificDialogTree))
         {
-            dialogManager.StartDialog(targetNPC, specificDialogTree);
+            dialogStarted = TryStartDialog(targetNPC, specificDialogTree);
         }
         else
         {
-            dialogManager.StartDialog(targetNPC);
+            dialogStarted = TryStartDialog(targetNPC);
         }
         
-        // Update trigger state
-        hasTriggered = true;
-        lastTriggerTime = Time.time;
-        
-        // Fire events
-        OnDialogTriggered?.Invoke();
-        
-        Debug.Log($"Dialog triggered with {targetNPC.npcName}");
+        if (dialogStarted)
+        {
+            // Update trigger state
+            hasTriggered = true;
+            lastTriggerTime = Time.time;
+            
+            // Subscribe to dialog end event to handle cleanup
+            SubscribeToDialogEvents();
+            
+            // Fire events
+            OnDialogTriggered?.Invoke();
+            
+            LogDebug($"Dialog successfully triggered with {targetNPC.npcName}");
+        }
+        else
+        {
+            LogError($"Failed to start dialog with {targetNPC.npcName}");
+        }
+    }
+    
+    /// <summary>
+    /// Subscribe to DialogManager events for proper integration
+    /// </summary>
+    private void SubscribeToDialogEvents()
+    {
+        if (dialogManager != null)
+        {
+            // Subscribe to dialog ended event to handle cleanup
+            dialogManager.OnDialogEnded += HandleDialogManagerEnded;
+        }
+    }
+    
+    /// <summary>
+    /// Unsubscribe from DialogManager events
+    /// </summary>
+    private void UnsubscribeFromDialogEvents()
+    {
+        if (dialogManager != null)
+        {
+            dialogManager.OnDialogEnded -= HandleDialogManagerEnded;
+        }
+    }
+    
+    /// <summary>
+    /// Handle when DialogManager signals that dialog has ended
+    /// </summary>
+    private void HandleDialogManagerEnded(NPCContent endedNPC)
+    {
+        // Verify this is our NPC
+        if (endedNPC == targetNPC)
+        {
+            LogDebug($"Dialog ended notification received for {endedNPC?.npcName}");
+            
+            // Call our dialog ended callback
+            OnDialogEndedCallback();
+            
+            // Unsubscribe from events
+            UnsubscribeFromDialogEvents();
+        }
+    }
+    
+    /// <summary>
+    /// Prepare the NPC for dialog by calling its OnDialogStarted method
+    /// </summary>
+    private void PrepareNPCForDialog()
+    {
+        if (targetNPC != null)
+        {
+            // This allows the NPC to prepare for dialog (save state, pause AI, etc.)
+            targetNPC.OnDialogStarted();
+        }
+    }
+    
+    /// <summary>
+    /// Safely attempt to start dialog with the DialogManager
+    /// </summary>
+    private bool TryStartDialog(NPCContent npc)
+    {
+        try
+        {
+            dialogManager.StartDialog(npc);
+            return true;
+        }
+        catch (System.Exception ex)
+        {
+            LogError($"Exception starting dialog: {ex.Message}");
+            return false;
+        }
+    }
+    
+    /// <summary>
+    /// Safely attempt to start dialog with specific tree
+    /// </summary>
+    private bool TryStartDialog(NPCContent npc, string treeName)
+    {
+        try
+        {
+            dialogManager.StartDialog(npc, treeName);
+            return true;
+        }
+        catch (System.Exception ex)
+        {
+            LogError($"Exception starting dialog with tree '{treeName}': {ex.Message}");
+            return false;
+        }
     }
     
     /// <summary>
@@ -245,11 +510,11 @@ public class DialogueTrigger : MonoBehaviour
     {
         if (show)
         {
-            Debug.Log($"[UI Prompt] Press {interactionKey} to interact with {targetNPC?.npcName}");
+            LogDebug($"[UI Prompt] Press {interactionKey} to interact with {targetNPC?.npcName}");
         }
         else
         {
-            Debug.Log("[UI Prompt] Hidden");
+            LogDebug("[UI Prompt] Hidden");
         }
         
         // You can implement actual UI prompts here
@@ -265,7 +530,7 @@ public class DialogueTrigger : MonoBehaviour
         isWaitingForInput = false;
         lastTriggerTime = 0f;
         ShowInteractionPrompt(false);
-        Debug.Log($"DialogueTrigger on {gameObject.name} reset");
+        LogDebug($"DialogueTrigger on {gameObject.name} reset");
     }
     
     /// <summary>
@@ -273,7 +538,14 @@ public class DialogueTrigger : MonoBehaviour
     /// </summary>
     public void ManualTrigger()
     {
-        TriggerDialog();
+        if (IsReadyToTrigger())
+        {
+            PassNPCContent();
+        }
+        else
+        {
+            LogWarning($"Manual trigger failed - trigger not ready: {lastValidationError}");
+        }
     }
     
     /// <summary>
@@ -291,6 +563,9 @@ public class DialogueTrigger : MonoBehaviour
             isWaitingForInput = false;
             ShowInteractionPrompt(false);
         }
+        
+        // Re-validate setup
+        ValidateSetup();
     }
     
     /// <summary>
@@ -300,7 +575,12 @@ public class DialogueTrigger : MonoBehaviour
     {
         targetNPC = newNPC;
         specificDialogTree = treeNameOverride;
-        ResetTrigger(); // Reset when changing target
+        
+        // Re-validate with new NPC
+        ValidateSetup();
+        
+        // Reset trigger state
+        ResetTrigger();
     }
     
     /// <summary>
@@ -308,8 +588,49 @@ public class DialogueTrigger : MonoBehaviour
     /// </summary>
     public void OnDialogEndedCallback()
     {
+        // Notify the NPC that dialog ended
+        if (targetNPC != null)
+        {
+            targetNPC.OnDialogEnded();
+        }
+        
         OnDialogEnded?.Invoke();
     }
+    
+    /// <summary>
+    /// Get current setup status for debugging
+    /// </summary>
+    public string GetSetupStatus()
+    {
+        if (isSetupValid)
+        {
+            return "Setup Valid";
+        }
+        else
+        {
+            return $"Setup Invalid: {lastValidationError}";
+        }
+    }
+    
+    #region Logging Methods
+    private void LogDebug(string message)
+    {
+        if (enableDebugLogs)
+        {
+            Debug.Log($"[DialogueTrigger] {message}");
+        }
+    }
+    
+    private void LogWarning(string message)
+    {
+        Debug.LogWarning($"[DialogueTrigger] {message}");
+    }
+    
+    private void LogError(string message)
+    {
+        Debug.LogError($"[DialogueTrigger] {message}");
+    }
+    #endregion
     
     private void OnDrawGizmosSelected()
     {
@@ -326,5 +647,32 @@ public class DialogueTrigger : MonoBehaviour
             Gizmos.color = Color.green;
             Gizmos.DrawWireSphere(transform.position, proximityRange);
         }
+        
+        // Draw validation status
+        if (Application.isPlaying)
+        {
+            Gizmos.color = isSetupValid ? Color.green : Color.red;
+            Gizmos.DrawWireCube(transform.position + Vector3.up * 0.5f, Vector3.one * 0.2f);
+        }
     }
+    
+    #region Lifecycle Management
+    private void OnDestroy()
+    {
+        // Clean up event subscriptions
+        UnsubscribeFromDialogEvents();
+        
+        LogDebug($"DialogueTrigger on {gameObject.name} destroyed");
+    }
+    
+    private void OnDisable()
+    {
+        // Clean up state when disabled
+        isWaitingForInput = false;
+        ShowInteractionPrompt(false);
+        
+        // Clean up event subscriptions
+        UnsubscribeFromDialogEvents();
+    }
+    #endregion
 }

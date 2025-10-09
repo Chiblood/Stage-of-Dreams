@@ -85,6 +85,15 @@ public class DialogNavigator
         if (node == null)
         {
             Debug.LogWarning("Cannot navigate to null node");
+            EndDialog();
+            return;
+        }
+        
+        // Validate that this is not a placeholder or invalid node
+        if (!IsValidDialogNode(node))
+        {
+            Debug.LogWarning($"Attempted to navigate to invalid node: {node.speakerName}: {node.dialogText}");
+            EndDialog();
             return;
         }
         
@@ -155,11 +164,52 @@ public class DialogNavigator
             return;
         }
         
-        // Only advance if there are no choices
-        if (!currentNode.HasChoices)
+        // Check if there are choices - if so, cannot advance manually
+        if (currentNode.HasChoices)
         {
+            Debug.LogWarning("Cannot advance dialog - node has choices, must select a choice instead");
+            return;
+        }
+        
+        // Check if node has a next node to advance to
+        if (currentNode.nextNode != null)
+        {
+            // Check if the next node is a valid, non-placeholder node
+            if (IsValidDialogNode(currentNode.nextNode))
+            {
+                NavigateToNode(currentNode.nextNode);
+            }
+            else
+            {
+                Debug.Log("Next node is invalid or placeholder - ending dialog");
+                EndDialog();
+            }
+        }
+        else
+        {
+            // No next node, end dialog
+            Debug.Log("No next node - ending dialog");
             EndDialog();
         }
+    }
+    
+    /// <summary>
+    /// Check if a dialog node is valid and not a placeholder
+    /// </summary>
+    private bool IsValidDialogNode(DialogNode node)
+    {
+        if (node == null) return false;
+        
+        // Check for placeholder content that indicates an incomplete node
+        if (string.IsNullOrEmpty(node.dialogText) || 
+            node.dialogText.Trim() == "Enter dialog text here" ||
+            string.IsNullOrEmpty(node.speakerName) || 
+            node.speakerName.Trim() == "Speaker")
+        {
+            return false;
+        }
+        
+        return true;
     }
     
     /// <summary>

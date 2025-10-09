@@ -9,6 +9,7 @@
 
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.Rendering.Universal;
 
 /// <summary>
 /// Manages spotlight movement and tracks which characters are within its radius.
@@ -35,6 +36,14 @@ public class Spotlight : MonoBehaviour
     [SerializeField] private bool trackAllCharacters = true; // Track all characters or just player
     [SerializeField] private PlayerScript specificPlayer; // Specific player to track if not tracking all
     
+    [Header("Visibility Control")]
+    [SerializeField] private bool startVisible = true; // Whether spotlight starts visible
+    [SerializeField] private float fadeSpeed = 2f; // Speed of fade in/out animation
+    
+    [Header("Light2D Settings")]
+    [SerializeField] private float baseIntensity = 20f; // Base intensity when fully visible
+    [SerializeField] private bool useOuterRadius = true; // Whether to use Light2D outer radius for detection
+    
     // Movement state
     private Vector2 randomTarget;
     private float lastRandomMoveTime;
@@ -44,10 +53,24 @@ public class Spotlight : MonoBehaviour
     private HashSet<ISpotlightCharacter> charactersInSpotlight = new HashSet<ISpotlightCharacter>();
     private List<ISpotlightCharacter> allTrackedCharacters = new List<ISpotlightCharacter>();
     
+    // Visibility state
+    private bool isVisible = true;
+    private bool isAppearing = false;
+    private bool isDisappearing = false;
+    private float currentAlpha = 1f;
+    private float targetAlpha = 1f;
+    
+    // Component references for visibility control
+    private SpriteRenderer spotlightRenderer; // Optional visual representation
+    private Light2D spotlightLight; // Main Light2D component
+    private Collider2D spotlightCollider;
+    
     // Events for external systems to subscribe to
     public System.Action<ISpotlightCharacter> OnCharacterEnteredSpotlight;
     public System.Action<ISpotlightCharacter> OnCharacterExitedSpotlight;
     public System.Action<Vector2> OnSpotlightMoved;
+    public System.Action OnSpotlightAppeared;
+    public System.Action OnSpotlightDisappeared;
     
     public enum SpotlightMovementType
     {
@@ -72,6 +95,37 @@ public class Spotlight : MonoBehaviour
         {
             GenerateNewRandomTarget();
         }
+        
+        // Get component references for visibility control
+        spotlightRenderer = GetComponentInChildren<SpriteRenderer>(); // Optional
+        spotlightLight = GetComponentInChildren<Light2D>(); // Primary component
+        spotlightCollider = GetComponent<Collider2D>();
+        
+        // Validate Light2D component
+        if (spotlightLight == null)
+        {
+            Debug.LogError($"Spotlight '{gameObject.name}' requires a Light2D component in its hierarchy!");
+            enabled = false;
+            return;
+        }
+        
+        // Store base intensity from Light2D component
+        if (baseIntensity <= 0)
+        {
+            baseIntensity = spotlightLight.intensity;
+        }
+        
+        // Sync radius with Light2D if using outer radius
+        if (useOuterRadius && spotlightLight.lightType == Light2D.LightType.Point)
+        {
+            radius = spotlightLight.pointLightOuterRadius;
+        }
+        
+        // Set initial visibility state
+        isVisible = startVisible;
+        currentAlpha = startVisible ? 1f : 0f;
+        targetAlpha = currentAlpha;
+        UpdateVisualComponents();
     }
     
     private void Start()
@@ -82,12 +136,217 @@ public class Spotlight : MonoBehaviour
     
     private void Update()
     {
-        // Handle movement
-        UpdateSpotlightMovement();
+        // Handle visibility transitions
+        UpdateVisibilityTransition();
         
-        // Check character positions
-        UpdateCharacterDetection();
+        // Only update movement and detection if visible or becoming visible
+        if (isVisible || isAppearing)
+        {
+            // Handle movement
+            UpdateSpotlightMovement();
+            
+            // Check character positions
+            UpdateCharacterDetection();
+        }
     }
+    
+    #region Visibility Methods
+    
+    /// <summary>
+    /// Make the spotlight appear with a fade-in effect
+    /// Can be called by Dialog Nodes and Choices
+    /// </summary>
+    public void AppearSpotlight()
+    {
+        if (isVisible && !isDisappearing) return; // Already visible
+        
+        Debug.Log($"Spotlight {gameObject.name} is appearing");
+        
+        isVisible = true;
+        isAppearing = true;
+        isDisappearing = false;
+        targetAlpha = 1f;
+        
+        // Enable collider for character detection
+        if (spotlightCollider != null)
+            spotlightCollider.enabled = true;
+        
+        // Enable Light2D component
+        if (spotlightLight != null)
+            spotlightLight.enabled = true;
+        
+        // Refresh tracked characters when appearing
+        RefreshTrackedCharacters();
+    }
+    
+    /// <summary>
+    /// Make the spotlight disappear with a fade-out effect
+    /// Can be called by Dialog Nodes and Choices
+    /// </summary>
+    public void DisappearSpotlight()
+    {
+        if (!isVisible && !isAppearing) return; // Already hidden
+        
+        Debug.Log($"Spotlight {gameObject.name} is disappearing");
+        
+        isDisappearing = true;
+        isAppearing = false;
+        targetAlpha = 0f;
+        
+        // Remove all characters from spotlight when disappearing
+        ClearCharactersFromSpotlight();
+    }
+    
+    /// <summary>
+    /// Instantly show the spotlight without fade animation
+    /// </summary>
+    public void ShowSpotlightInstant()
+    {
+        Debug.Log($"Spotlight {gameObject.name} shown instantly");
+        
+        isVisible = true;
+        isAppearing = false;
+        isDisappearing = false;
+        currentAlpha = 1f;
+        targetAlpha = 1f;
+        
+        UpdateVisualComponents();
+        
+        if (spotlightCollider != null)
+            spotlightCollider.enabled = true;
+        
+        if (spotlightLight != null)
+            spotlightLight.enabled = true;
+        
+        RefreshTrackedCharacters();
+        OnSpotlightAppeared?.Invoke();
+    }
+    
+    /// <summary>
+    /// Instantly hide the spotlight without fade animation
+    /// </summary>
+    public void HideSpotlightInstant()
+    {
+        Debug.Log($"Spotlight {gameObject.name} hidden instantly");
+        
+        isVisible = false;
+        isAppearing = false;
+        isDisappearing = false;
+        currentAlpha = 0f;
+        targetAlpha = 0f;
+        
+        UpdateVisualComponents();
+        ClearCharactersFromSpotlight();
+        
+        if (spotlightCollider != null)
+            spotlightCollider.enabled = false;
+        
+        if (spotlightLight != null)
+            spotlightLight.enabled = false;
+        
+        OnSpotlightDisappeared?.Invoke();
+    }
+    
+    /// <summary>
+    /// Toggle spotlight visibility
+    /// </summary>
+    public void ToggleSpotlight()
+    {
+        if (isVisible || isAppearing)
+            DisappearSpotlight();
+        else
+            AppearSpotlight();
+    }
+    
+    /// <summary>
+    /// Check if spotlight is currently visible (including during transitions)
+    /// </summary>
+    public bool IsVisible()
+    {
+        return isVisible || isAppearing;
+    }
+    
+    /// <summary>
+    /// Check if spotlight is fully visible (not transitioning)
+    /// </summary>
+    public bool IsFullyVisible()
+    {
+        return isVisible && !isAppearing && !isDisappearing && currentAlpha >= 1f;
+    }
+    
+    /// <summary>
+    /// Update visibility transition animation
+    /// </summary>
+    private void UpdateVisibilityTransition()
+    {
+        if (Mathf.Approximately(currentAlpha, targetAlpha))
+        {
+            // Transition complete
+            if (isAppearing && currentAlpha >= 1f)
+            {
+                isAppearing = false;
+                OnSpotlightAppeared?.Invoke();
+                Debug.Log($"Spotlight {gameObject.name} fully appeared");
+            }
+            else if (isDisappearing && currentAlpha <= 0f)
+            {
+                isVisible = false;
+                isDisappearing = false;
+                
+                if (spotlightCollider != null)
+                    spotlightCollider.enabled = false;
+                
+                if (spotlightLight != null)
+                    spotlightLight.enabled = false;
+                
+                OnSpotlightDisappeared?.Invoke();
+                Debug.Log($"Spotlight {gameObject.name} fully disappeared");
+            }
+            return;
+        }
+        
+        // Animate towards target alpha
+        currentAlpha = Mathf.MoveTowards(currentAlpha, targetAlpha, fadeSpeed * Time.deltaTime);
+        UpdateVisualComponents();
+    }
+    
+    /// <summary>
+    /// Update visual components based on current alpha
+    /// </summary>
+    private void UpdateVisualComponents()
+    {
+        // Update sprite renderer alpha (if present)
+        if (spotlightRenderer != null)
+        {
+            Color color = spotlightRenderer.color;
+            color.a = currentAlpha;
+            spotlightRenderer.color = color;
+        }
+        
+        // Update Light2D intensity
+        if (spotlightLight != null)
+        {
+            spotlightLight.intensity = baseIntensity * currentAlpha;
+        }
+    }
+    
+    /// <summary>
+    /// Remove all characters from spotlight state
+    /// </summary>
+    private void ClearCharactersFromSpotlight()
+    {
+        foreach (var character in charactersInSpotlight)
+        {
+            if (character != null)
+            {
+                character.SetInSpotlight(false);
+                OnCharacterExitedSpotlight?.Invoke(character);
+            }
+        }
+        charactersInSpotlight.Clear();
+    }
+    
+    #endregion
     
     #region Movement Methods
     
@@ -211,7 +470,15 @@ public class Spotlight : MonoBehaviour
         if (character == null) return false;
         
         Vector2 characterPos = character.GetPosition();
-        return Vector2.Distance(spotlightPos, characterPos) <= radius;
+        float effectiveRadius = radius;
+        
+        // Use Light2D outer radius if configured and available
+        if (useOuterRadius && spotlightLight != null && spotlightLight.lightType == Light2D.LightType.Point)
+        {
+            effectiveRadius = spotlightLight.pointLightOuterRadius;
+        }
+        
+        return Vector2.Distance(spotlightPos, characterPos) <= effectiveRadius;
     }
     
     /// <summary>
@@ -247,6 +514,49 @@ public class Spotlight : MonoBehaviour
     #endregion
     
     #region Public Interface
+    
+    /// <summary>
+    /// Get the Light2D component (if any)
+    /// </summary>
+    public Light2D GetLight2D()
+    {
+        return spotlightLight;
+    }
+    
+    /// <summary>
+    /// Set the Light2D intensity directly
+    /// </summary>
+    public void SetIntensity(float intensity)
+    {
+        baseIntensity = intensity;
+        if (spotlightLight != null)
+        {
+            spotlightLight.intensity = baseIntensity * currentAlpha;
+        }
+    }
+    
+    /// <summary>
+    /// Set the Light2D color
+    /// </summary>
+    public void SetColor(Color color)
+    {
+        if (spotlightLight != null)
+        {
+            spotlightLight.color = color;
+        }
+    }
+    
+    /// <summary>
+    /// Set the Light2D outer radius (for point lights)
+    /// </summary>
+    public void SetRadius(float newRadius)
+    {
+        radius = newRadius;
+        if (spotlightLight != null && spotlightLight.lightType == Light2D.LightType.Point)
+        {
+            spotlightLight.pointLightOuterRadius = newRadius;
+        }
+    }
     
     /// <summary>
     /// Set the movement type and target
@@ -340,8 +650,16 @@ public class Spotlight : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         // Draw spotlight radius
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, radius);
+        Gizmos.color = isVisible ? Color.yellow : Color.gray;
+        
+        float effectiveRadius = radius;
+        // Use Light2D radius if available and configured
+        if (useOuterRadius && spotlightLight != null && spotlightLight.lightType == Light2D.LightType.Point)
+        {
+            effectiveRadius = spotlightLight.pointLightOuterRadius;
+        }
+        
+        Gizmos.DrawWireSphere(transform.position, effectiveRadius);
         
         // Draw movement bounds for random movement
         if (movementType == SpotlightMovementType.Random)

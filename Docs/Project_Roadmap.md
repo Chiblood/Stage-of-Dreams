@@ -3,14 +3,22 @@
 ## Phase 1: Foundation & Setup
 - [x] Create Unity 2D project
 - [x] Organize folders: Scripts, Art, Audio, UI, Scenes
-- [x] Download free assets (Kenney tiles, character sprites, UI)
+- [x] Download assets like Character sprites, UI
 
 ## Phase 2: Core Movement & Interaction
-- [2/2] Implement player movement and spotlight logic
-- [ ] Add NPC with dialogue system
+- [x] Implement player movement
+- [ ] Implement spotlight logic
+- [ ] Create Dialogue system with nodes-based structure
+		- [ ] DialogManager Class to display UI and manage flow
+		- [ ] DialogNavigator Class to handle Dialog node transitions and pass what to display to the DialogManager
+		- [ ] DialogNode.cs with DialogChoice class to provide the structure for dialog text, choices, and method calls
+		- [ ] DialogTree.cs to hold a collection of DialogNodes and provide methods to navigate between them, will act as my basis for specific NPC Dialog
+		- [ ] DialogTrigger.cs to attach to NPCs, Spotlight, or other conditions to trigger dialog trees from NPC Content
+	- [ ] Implement Dialogue UI
 - [ ] Create basic interaction framework
 
 ## Phase 3: Stage Construction
+- [ ] Create NPCContent to contain Dialog Trees, Inventories, Abilities, Quests, and other NPC-specific data
 - [ ] Build first dream stage
 - [ ] Implement stage transition mechanics
 - [ ] Create stage lighting and atmosphere system

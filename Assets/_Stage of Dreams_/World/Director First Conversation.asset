@@ -35,8 +35,9 @@ MonoBehaviour:
       type: {class: DialogNode, ns: , asm: Assembly-CSharp}
       data:
         nodeName: 
-        speakerName: Stage Manager
-        dialogText: How are you feeling about tonight's performance?
+        speakerName: Director John
+        dialogText: Hello Hero, how are you feeling about tonight's performance?
+          Are you ready to go?
         isPlayerSpeaking: 0
         autoAdvanceDelay: 0
         choices:
@@ -57,8 +58,8 @@ MonoBehaviour:
       data:
         nodeName: 
         speakerName: Stage Manager
-        dialogText: That's completely normal! Even the best actors get nervous. Let's
-          do some breathing exercises.
+        dialogText: That's completely normal! Even the best actors get nervous. Come
+          back when you are ready.
         isPlayerSpeaking: 0
         autoAdvanceDelay: 0
         choices: []
@@ -167,7 +168,7 @@ MonoBehaviour:
     - rid: 4154293777632330405
       type: {class: DialogChoice, ns: , asm: Assembly-CSharp}
       data:
-        choiceText: I'm really nervous...
+        choiceText: No, I'm really nervous... Can we do this later?
         targetNode:
           rid: 4154293777632330399
         targetNodeName: 
@@ -223,7 +224,19 @@ MonoBehaviour:
       type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
       data:
         m_PersistentCalls:
-          m_Calls: []
+          m_Calls:
+          - m_Target: {fileID: 11500000, guid: 53f78550147ded0429d872ba15324df5, type: 3}
+            m_TargetAssemblyTypeName: UnityEditor.MonoScript, UnityEditor.CoreModule
+            m_MethodName: set_name
+            m_Mode: 5
+            m_Arguments:
+              m_ObjectArgument: {fileID: 0}
+              m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+              m_IntArgument: 0
+              m_FloatArgument: 0
+              m_StringArgument: 
+              m_BoolArgument: 0
+            m_CallState: 1
     - rid: 4154293786523205882
       type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
       data:
@@ -278,19 +291,7 @@ MonoBehaviour:
       type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
       data:
         m_PersistentCalls:
-          m_Calls:
-          - m_Target: {fileID: 11500000, guid: 53f78550147ded0429d872ba15324df5, type: 3}
-            m_TargetAssemblyTypeName: 
-            m_MethodName: 
-            m_Mode: 1
-            m_Arguments:
-              m_ObjectArgument: {fileID: 0}
-              m_ObjectArgumentAssemblyTypeName: 
-              m_IntArgument: 0
-              m_FloatArgument: 0
-              m_StringArgument: 
-              m_BoolArgument: 0
-            m_CallState: 1
+          m_Calls: []
     - rid: 4154293786523205893
       type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
       data:

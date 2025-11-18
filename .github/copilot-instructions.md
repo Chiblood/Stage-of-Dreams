@@ -53,12 +53,13 @@ Please assist me in learning by:
 ## Stage of Dreams – Project Overview
 
 ### Game Concept
-**Genre**: Top-down 2D RPG with theatrical elements
+**Genre**: Linear Top-down 2D RPG with theatrical elements
 **Core Mechanic**: An actor performing on stage, interacting with audience and other performers
 **Progression**: Each "Dream" is a unique level/story with its own narrative and objectives
 
 ### Target Features
 - **Turn-Based Gameplay**: Strategic actions between player, audience, and NPCs
+- **Linear Storytelling**: Narrative-driven gameplay with character interactions
 - **Dialog System**: Complex branching conversations with choices and consequences
 - **Audience Interaction**: Dynamic mood states affecting gameplay
 - **Stage Abilities**: Unique performer abilities (improvise, interact, perform)
@@ -290,76 +291,6 @@ private void TestFunctionality()
     // Test code here
 }
 ```
-
----
-
-## Common Development Tasks
-
-### Creating a New Dialog Tree
-1. Right-click in Project ? Create ? Dialog System ? Dialog Tree
-2. Use `CreateStartingNode()` to set first node
-3. Use `AddChoiceNode()` or `AddSequentialNode()` to build tree
-4. Use `ValidateTree()` context menu to check structure
-5. Assign to NPC's character content
-
-### Adding Dialog Events
-```csharp
-// Create event
-var myEvent = new MethodCallEvent();
-myEvent.SetMethod(() => Debug.Log("Event fired!"), "Test Event");
-myEvent.EventName = "My Custom Event";
-
-// Add to node
-node.AddStartEvent(myEvent);  // or AddEndEvent()
-
-// Add to choice
-choice.AddChoiceEvent(myEvent);
-```
-
-### Creating Convergent Dialog Paths
-```csharp
-// Name important nodes
-DialogNode convergencePoint = tree.AddSequentialNode(
-    parentNode, "Speaker", "This is where paths converge", 
-    false, 0f, "ConvergencePoint"
-);
-
-// Reference from multiple choices
-choice1.SetTargetByName("ConvergencePoint");
-choice2.SetTargetByName("ConvergencePoint");
-
-// Resolve references
-tree.ResolveNamedReferences();
-```
-
----
-
-## Testing & Debugging Guidelines
-
-### Dialog System Testing
-1. Use context menu "Validate Tree" on DialogTree assets
-2. Use context menu "Print Tree Structure" to visualize tree
-3. Enable debug logs in DialogManager inspector
-4. Use "Test Show Dialog" context menu in Play mode
-
-### Common Issues & Solutions
-
-**Issue**: Dialog doesn't start
-- Check: NPC has valid DialogTree assigned
-- Check: DialogTree has valid starting node
-- Check: DialogManager and DialogNavigator are initialized
-
-**Issue**: Choices not appearing
-- Check: Node has choices added
-- Check: Choice has valid target node
-- Check: UI elements exist and are named correctly
-
-**Issue**: Events not firing
-- Check: Event is enabled
-- Check: Event has valid configuration
-- Check: Delegates are properly assigned
-
----
 
 ## Future Implementation Plans
 

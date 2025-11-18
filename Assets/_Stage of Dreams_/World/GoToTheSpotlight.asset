@@ -22,6 +22,8 @@ MonoBehaviour:
   - rid: 4154293786523206122
   - rid: 4154293786523206132
   - rid: 4154293786523206135
+  - rid: 4154293801876717793
+  - rid: 4154293801876717796
   autoUpdateNodeList: 1
   validateOnSave: 1
   references:
@@ -136,7 +138,7 @@ MonoBehaviour:
         autoAdvanceDelay: 0
         choices: []
         nextNode:
-          rid: -2
+          rid: 4154293801876717793
         parentDialog:
           rid: 4154293786523206132
         incomingReferences: []
@@ -150,6 +152,62 @@ MonoBehaviour:
         m_PersistentCalls:
           m_Calls: []
     - rid: 4154293786523206137
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293801876717793
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        nodeName: 
+        speakerName: Speaker
+        dialogText: Enter dialog text here
+        isPlayerSpeaking: 0
+        autoAdvanceDelay: 0
+        choices: []
+        nextNode:
+          rid: 4154293801876717796
+        parentDialog:
+          rid: 4154293786523206135
+        incomingReferences: []
+        onDialogStart:
+          rid: 4154293801876717794
+        onDialogEnd:
+          rid: 4154293801876717795
+    - rid: 4154293801876717794
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293801876717795
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293801876717796
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        nodeName: 
+        speakerName: Speaker
+        dialogText: Enter dialog text here
+        isPlayerSpeaking: 0
+        autoAdvanceDelay: 0
+        choices: []
+        nextNode:
+          rid: -2
+        parentDialog:
+          rid: 4154293801876717793
+        incomingReferences: []
+        onDialogStart:
+          rid: 4154293801876717797
+        onDialogEnd:
+          rid: 4154293801876717798
+    - rid: 4154293801876717797
+      type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
+      data:
+        m_PersistentCalls:
+          m_Calls: []
+    - rid: 4154293801876717798
       type: {class: UnityEvent, ns: UnityEngine.Events, asm: UnityEngine.CoreModule}
       data:
         m_PersistentCalls:

@@ -50,7 +50,7 @@ public class DialogNavigator
     {
         if (npc == null)
         {
-            Debug.LogWarning("Cannot start dialog - NPC is null");
+            Debug.LogWarning("[DialogNavigator] Cannot start dialog - NPC is null");
             return false;
         }
         
@@ -61,7 +61,7 @@ public class DialogNavigator
             
         if (tree == null || !tree.IsValid())
         {
-            Debug.LogWarning($"Cannot start dialog - No valid dialog tree found for {npc.npcName}");
+            Debug.LogWarning($"[DialogNavigator] Cannot start dialog - No valid dialog tree found for {npc.npcName}");
             return false;
         }
         
@@ -74,6 +74,8 @@ public class DialogNavigator
         // Navigate to starting node
         NavigateToNode(tree.GetStartingNode());
         
+        Debug.Log($"[DialogNavigator] Started dialog with {npc.npcName} using tree '{tree.treeName}'");
+        
         return true;
     }
     
@@ -84,72 +86,232 @@ public class DialogNavigator
     {
         if (node == null)
         {
-            Debug.LogWarning("Cannot navigate to null node");
+            Debug.LogWarning("[DialogNavigator] Cannot navigate to null node - ending dialog");
             EndDialog();
             return;
         }
         
-        // Validate that this is not a placeholder or invalid node
-        if (!IsValidDialogNode(node))
-        {
-            Debug.LogWarning($"Attempted to navigate to invalid node: {node.speakerName}: {node.dialogText}");
-            EndDialog();
-            return;
-        }
-        
-        // End previous node if exists
+        // Execute end events for previous node
         if (currentNode != null)
         {
-            currentNode.onDialogEnd?.Invoke();
+            ExecuteNodeEndEvents(currentNode);
         }
         
-        // Set new current node
+        // Update current node
         currentNode = node;
         
-        // Trigger node start event
-        currentNode.onDialogStart?.Invoke();
+        // Execute start events for new node
+        ExecuteNodeStartEvents(currentNode);
         
-        // Notify UI about node change
+        // Notify UI that node changed
         OnNodeChanged?.Invoke(currentNode);
+        
+        Debug.Log($"[DialogNavigator] Navigated to node: {node.CharacterName}: '{node.DialogText.Substring(0, Mathf.Min(30, node.DialogText.Length))}...?'");
     }
     
     /// <summary>
-    /// Handle a player choice selection
+    /// Execute start events for a node
+    /// </summary>
+    private void ExecuteNodeStartEvents(DialogNode node)
+    {
+        if (node == null) return;
+        
+        // Execute new DialogEvent system
+        if (node.StartEvents != null && node.StartEvents.Count > 0)
+        {
+            Debug.Log($"[DialogNavigator] Executing {node.StartEvents.Count} start events for node");
+            foreach (var evt in node.StartEvents)
+            {
+                if (evt != null && evt.IsValid())
+                {
+                    try
+                    {
+                        evt.Execute();
+                    }
+                    catch (System.Exception ex)
+                    {
+                        Debug.LogError($"[DialogNavigator] Error executing start event: {ex.Message}");
+                    }
+                }
+            }
+        }
+        
+        // Execute legacy UnityEvents for backwards compatibility
+        if (node.OnDialogStart != null)
+        {
+            try
+            {
+                node.OnDialogStart.Invoke();
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[DialogNavigator] Error executing OnDialogStart UnityEvent: {ex.Message}");
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Execute end events for a node
+    /// </summary>
+    private void ExecuteNodeEndEvents(DialogNode node)
+    {
+        if (node == null) return;
+        
+        // Execute new DialogEvent system
+        if (node.EndEvents != null && node.EndEvents.Count > 0)
+        {
+            Debug.Log($"[DialogNavigator] Executing {node.EndEvents.Count} end events for node");
+            foreach (var evt in node.EndEvents)
+            {
+                if (evt != null && evt.IsValid())
+                {
+                    try
+                    {
+                        evt.Execute();
+                    }
+                    catch (System.Exception ex)
+                    {
+                        Debug.LogError($"[DialogNavigator] Error executing end event: {ex.Message}");
+                    }
+                }
+            }
+        }
+        
+        // Execute legacy UnityEvents for backwards compatibility
+        if (node.OnDialogEnd != null)
+        {
+            try
+            {
+                node.OnDialogEnd.Invoke();
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[DialogNavigator] Error executing OnDialogEnd UnityEvent: {ex.Message}");
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Select a choice by index
     /// </summary>
     public void SelectChoice(int choiceIndex)
     {
-        if (currentNode == null || !currentNode.HasChoices)
+        if (currentNode == null)
         {
-            Debug.LogWarning("Cannot select choice - no current node or no choices available");
+            Debug.LogWarning("[DialogNavigator] No active node - cannot select choice");
             return;
         }
         
-        if (choiceIndex < 0 || choiceIndex >= currentNode.choices.Length)
+        if (!currentNode.HasChoices)
         {
-            Debug.LogWarning($"Choice index {choiceIndex} is out of range");
+            Debug.LogWarning("[DialogNavigator] Current node has no choices");
             return;
         }
         
-        DialogChoice selectedChoice = currentNode.choices[choiceIndex];
-        
-        // Trigger choice event
-        selectedChoice.onChoiceSelected?.Invoke();
-        
-        // Handle custom action if present
-        if (selectedChoice.HasCustomAction && currentNPC != null)
+        if (choiceIndex < 0 || choiceIndex >= currentNode.Choices.Count)
         {
+            Debug.LogError($"[DialogNavigator] Choice index {choiceIndex} out of range (0-{currentNode.Choices.Count - 1})");
+            return;
+        }
+        
+        var selectedChoice = currentNode.Choices[choiceIndex];
+        if (selectedChoice == null)
+        {
+            Debug.LogError($"[DialogNavigator] Choice at index {choiceIndex} is null");
+            return;
+        }
+        
+        Debug.Log($"[DialogNavigator] Selected choice: '{selectedChoice.ChoiceText}'");
+        
+        // Execute choice events
+        ExecuteChoiceEvents(selectedChoice);
+        
+        // Check for custom action ID (for backwards compatibility)
+        if (!string.IsNullOrEmpty(selectedChoice.ChoiceId))
+        {
+            Debug.Log($"[DialogNavigator] Triggering custom action: {selectedChoice.ChoiceId}");
             OnCustomActionTriggered?.Invoke(selectedChoice, currentNPC);
-            currentNPC.HandleCustomAction(selectedChoice.customActionId);
+            
+            // Also notify NPC
+            if (currentNPC != null)
+            {
+                currentNPC.HandleCustomAction(selectedChoice.ChoiceId);
+            }
         }
         
-        // Navigate to target node or end dialog
-        if (selectedChoice.targetNode != null)
+        // Navigate to target node
+        if (selectedChoice.TargetNode != null)
         {
-            NavigateToNode(selectedChoice.targetNode);
+            NavigateToNode(selectedChoice.TargetNode);
+        }
+        else if (selectedChoice.HasNamedTarget)
+        {
+            // Try to resolve named target
+            if (currentTree != null)
+            {
+                var targetNode = currentTree.FindNodeByName(selectedChoice.TargetNodeName);
+                if (targetNode != null)
+                {
+                    NavigateToNode(targetNode);
+                }
+                else
+                {
+                    Debug.LogError($"[DialogNavigator] Could not find named node '{selectedChoice.TargetNodeName}' - ending dialog");
+                    EndDialog();
+                }
+            }
         }
         else
         {
+            Debug.LogWarning("[DialogNavigator] Choice has no valid target - ending dialog");
             EndDialog();
+        }
+    }
+    
+    /// <summary>
+    /// Execute choice events
+    /// </summary>
+    private void ExecuteChoiceEvents(DialogChoice choice)
+    {
+        if (choice == null) return;
+        
+        // Execute choice events
+        if (choice.ChoiceEvents != null && choice.ChoiceEvents.Count > 0)
+        {
+            Debug.Log($"[DialogNavigator] Executing {choice.ChoiceEvents.Count} choice events");
+            foreach (var evt in choice.ChoiceEvents)
+            {
+                if (evt != null && evt.IsValid())
+                {
+                    try
+                    {
+                        evt.Execute();
+                    }
+                    catch (System.Exception ex)
+                    {
+                        Debug.LogError($"[DialogNavigator] Error executing choice event: {ex.Message}");
+                    }
+                }
+            }
+        }
+        
+        // Execute legacy UnityEvents for backwards compatibility
+        if (choice.OnChoiceSelected != null)
+        {
+            foreach (var unityEvent in choice.OnChoiceSelected)
+            {
+                if (unityEvent != null)
+                {
+                    try
+                    {
+                        unityEvent.Invoke();
+                    }
+                    catch (System.Exception ex)
+                    {
+                        Debug.LogError($"[DialogNavigator] Error executing choice UnityEvent: {ex.Message}");
+                    }
+                }
+            }
         }
     }
     
@@ -160,56 +322,27 @@ public class DialogNavigator
     {
         if (currentNode == null)
         {
-            Debug.LogWarning("Cannot advance - no current node");
+            Debug.LogWarning("[DialogNavigator] No active node - cannot advance");
             return;
         }
         
-        // Check if there are choices - if so, cannot advance manually
         if (currentNode.HasChoices)
         {
-            Debug.LogWarning("Cannot advance dialog - node has choices, must select a choice instead");
+            Debug.LogWarning("[DialogNavigator] Current node has choices - use SelectChoice instead");
             return;
         }
         
-        // Check if node has a next node to advance to
-        if (currentNode.nextNode != null)
+        // Check if there's a child node to advance to
+        if (currentNode.ChildNode != null)
         {
-            // Check if the next node is a valid, non-placeholder node
-            if (IsValidDialogNode(currentNode.nextNode))
-            {
-                NavigateToNode(currentNode.nextNode);
-            }
-            else
-            {
-                Debug.Log("Next node is invalid or placeholder - ending dialog");
-                EndDialog();
-            }
+            Debug.Log("[DialogNavigator] Advancing to child node");
+            NavigateToNode(currentNode.ChildNode);
         }
         else
         {
-            // No next node, end dialog
-            Debug.Log("No next node - ending dialog");
+            Debug.Log("[DialogNavigator] No more nodes - ending dialog");
             EndDialog();
         }
-    }
-    
-    /// <summary>
-    /// Check if a dialog node is valid and not a placeholder
-    /// </summary>
-    private bool IsValidDialogNode(DialogNode node)
-    {
-        if (node == null) return false;
-        
-        // Check for placeholder content that indicates an incomplete node
-        if (string.IsNullOrEmpty(node.dialogText) || 
-            node.dialogText.Trim() == "Enter dialog text here" ||
-            string.IsNullOrEmpty(node.speakerName) || 
-            node.speakerName.Trim() == "Speaker")
-        {
-            return false;
-        }
-        
-        return true;
     }
     
     /// <summary>
@@ -219,19 +352,28 @@ public class DialogNavigator
     {
         if (currentNPC == null)
         {
-            Debug.LogWarning("Cannot switch trees - no current NPC");
+            Debug.LogWarning("[DialogNavigator] No current NPC - cannot switch trees");
             return false;
         }
         
-        DialogTree newTree = currentNPC.GetDialogTree(treeName);
+        var newTree = currentNPC.GetDialogTree(treeName);
         if (newTree == null || !newTree.IsValid())
         {
-            Debug.LogWarning($"Cannot switch to tree '{treeName}' - tree not found or invalid");
+            Debug.LogWarning($"[DialogNavigator] Cannot switch to tree '{treeName}' - tree not found or invalid");
             return false;
+        }
+        
+        Debug.Log($"[DialogNavigator] Switching to tree '{treeName}'");
+        
+        // Execute end events for current node before switching
+        if (currentNode != null)
+        {
+            ExecuteNodeEndEvents(currentNode);
         }
         
         currentTree = newTree;
         NavigateToNode(newTree.GetStartingNode());
+        
         return true;
     }
     
@@ -240,6 +382,13 @@ public class DialogNavigator
     /// </summary>
     public void ForceNavigateToNode(DialogNode node)
     {
+        if (node == null)
+        {
+            Debug.LogWarning("[DialogNavigator] Cannot force navigate to null node");
+            return;
+        }
+        
+        Debug.Log($"[DialogNavigator] Force navigating to node: {node.GetDisplayName()}");
         NavigateToNode(node);
     }
     
@@ -248,10 +397,18 @@ public class DialogNavigator
     /// </summary>
     public void EndDialog()
     {
-        // Trigger current node end event
+        if (currentNode == null && currentNPC == null)
+        {
+            Debug.LogWarning("[DialogNavigator] No active dialog to end");
+            return;
+        }
+        
+        Debug.Log($"[DialogNavigator] Ending dialog with {currentNPC?.npcName ?? "unknown NPC"}");
+        
+        // Execute end events for current node
         if (currentNode != null)
         {
-            currentNode.onDialogEnd?.Invoke();
+            ExecuteNodeEndEvents(currentNode);
         }
         
         // Notify NPC that dialog ended
@@ -260,13 +417,13 @@ public class DialogNavigator
             currentNPC.OnDialogEnded();
         }
         
+        // Fire event for UI and external systems
+        OnDialogEnded?.Invoke();
+        
         // Clear state
         currentNode = null;
         currentNPC = null;
         currentTree = null;
-        
-        // Notify UI that dialog ended
-        OnDialogEnded?.Invoke();
     }
     
     /// <summary>
@@ -278,11 +435,12 @@ public class DialogNavigator
         {
             isActive = IsActive,
             currentNode = currentNode,
-            currentNPC = currentNPC,
             currentTree = currentTree,
+            currentNPC = currentNPC,
             hasChoices = currentNode?.HasChoices ?? false,
-            shouldAutoAdvance = currentNode?.ShouldAutoAdvance ?? false,
-            autoAdvanceDelay = currentNode?.autoAdvanceDelay ?? 0f
+            shouldAutoAdvance = (currentNode?.HasAutoAdvance ?? false) && (currentNode?.AutoAdvanceDelay > 0),
+            autoAdvanceDelay = currentNode?.AutoAdvanceDelay ?? 0f,
+            choiceCount = currentNode?.Choices?.Count ?? 0
         };
     }
 }
@@ -294,9 +452,10 @@ public struct DialogNavigationState
 {
     public bool isActive;
     public DialogNode currentNode;
-    public NPCContent currentNPC;
     public DialogTree currentTree;
+    public NPCContent currentNPC;
     public bool hasChoices;
     public bool shouldAutoAdvance;
     public float autoAdvanceDelay;
+    public int choiceCount;
 }

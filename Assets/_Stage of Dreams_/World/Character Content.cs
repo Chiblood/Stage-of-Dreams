@@ -1,6 +1,6 @@
-/* NPC Content.cs
- * The virtual/abstract class for NPC Content to be inherited by whatever NPC. 
- * Includes the dialog tree with and a list of action choices to be fed to the DialogManager class.
+/* Character Content.cs
+ * The class for Character Content. 
+ * Dialog Trees, dialog choices, and custom actions are defined here.
  * 
  * How to use in Unity:
  * 1. Create a new script that inherits from NPCContent.
@@ -269,18 +269,15 @@ public class NPCContent : MonoBehaviour
     /// </summary>
     public virtual void HandleCustomAction(string actionId)
     {
-        if (string.IsNullOrEmpty(actionId))
+        switch (actionId)
         {
-            LogWarning($"NPC '{npcName}' received null/empty custom action");
-            return;
+            case "audition_hero":
+                // Start hero role audition minigame
+                break;
+            case "unlock_practice_session":
+                // Unlock practice room access
+                break;
         }
-        
-        LogDebug($"NPC '{npcName}' received custom action: {actionId}");
-        
-        // Fire event for external systems
-        OnCustomActionEvent?.Invoke(actionId);
-        
-        // Override in derived classes to implement specific NPC behaviors
     }
     
     /// <summary>

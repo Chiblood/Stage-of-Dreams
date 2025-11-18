@@ -504,8 +504,8 @@ public class DialogManager : MonoBehaviour
             return;
         }
         
-        LogDebug($"HandleNodeChanged called - Speaker: {node.speakerName}, Text: {node.dialogText}");
-        LogDebug($"Node has choices: {node.HasChoices}, Should auto-advance: {node.ShouldAutoAdvance}");
+        LogDebug($"HandleNodeChanged called - Speaker: {node.CharacterName}, Text: {node.DialogText}");
+        LogDebug($"Node has choices: {node.HasChoices}, Should auto-advance: {node.HasAutoAdvance}");
         
         DisplayNode(node);
         
@@ -513,10 +513,10 @@ public class DialogManager : MonoBehaviour
         OnNodeDisplayed?.Invoke(node);
         
         // Handle auto-advance
-        if (node.ShouldAutoAdvance)
+        if (node.HasAutoAdvance && node.AutoAdvanceDelay > 0)
         {
-            LogDebug($"Node has auto-advance with delay: {node.autoAdvanceDelay}s");
-            StartCoroutine(AutoAdvanceAfterDelay(node.autoAdvanceDelay));
+            LogDebug($"Node has auto-advance with delay: {node.AutoAdvanceDelay}s");
+            StartCoroutine(AutoAdvanceAfterDelay(node.AutoAdvanceDelay));
         }
     }
     
@@ -526,7 +526,7 @@ public class DialogManager : MonoBehaviour
     /// </summary>
     private void HandleCustomAction(DialogChoice choice, NPCContent npc)
     {
-        LogDebug($"Custom action triggered: {choice.customActionId} from {npc.npcName}");
+        LogDebug($"Custom action triggered: {choice.ChoiceId} from {npc.npcName}");
         
         // Fire event for external systems
         OnCustomActionHandled?.Invoke(choice, npc);
@@ -583,7 +583,7 @@ public class DialogManager : MonoBehaviour
             return;
         }
         
-        LogDebug($"DisplayNode called with text: '{node.dialogText}'");
+        LogDebug($"DisplayNode called with text: '{node.DialogText}'");
         LogDebug($"DialogBox current display style: {dialogBox.style.display.value}");
         LogDebug($"DialogBox current opacity: {dialogBox.style.opacity.value}");
         
@@ -598,10 +598,10 @@ public class DialogManager : MonoBehaviour
         
         LogDebug($"After setting styles - Display: {dialogBox.style.display.value}, Opacity: {dialogBox.style.opacity.value}");
         
-        // Set dialog text with advancement hint
-        string fullText = string.IsNullOrEmpty(node.speakerName) 
-            ? node.dialogText 
-            : $"{node.speakerName}: {node.dialogText}";
+        // Set dialog text with speaker name
+        string fullText = string.IsNullOrEmpty(node.CharacterName) 
+            ? node.DialogText 
+            : $"{node.CharacterName}: {node.DialogText}";
             
         // Add advancement hint if no choices
         if (!node.HasChoices)
@@ -616,8 +616,8 @@ public class DialogManager : MonoBehaviour
         // Handle choices
         if (node.HasChoices)
         {
-            ShowChoices(node.choices);
-            LogDebug($"Displayed {node.choices.Length} choices");
+            ShowChoices(node.Choices);
+            LogDebug($"Displayed {node.Choices.Count} choices");
         }
         else
         {
@@ -632,7 +632,7 @@ public class DialogManager : MonoBehaviour
     }
     
     /// <summary> Show choice buttons for the current node. </summary>
-    private void ShowChoices(DialogChoice[] choices)
+    private void ShowChoices(System.Collections.Generic.List<DialogChoice> choices)
     {
         // Hide all buttons first
         SetChoiceButtonVisibility(choiceButton1, false);
@@ -643,19 +643,19 @@ public class DialogManager : MonoBehaviour
 
         // Show buttons for available choices (up to 5 buttons max)
         int maxButtons = 5;
-        for (int i = 0; i < choices.Length && i < maxButtons; i++)
+        for (int i = 0; i < choices.Count && i < maxButtons; i++)
         {
             Button button = GetChoiceButton(i);
             if (button != null && choices[i] != null)
             {
-                button.text = choices[i].choiceText;
+                button.text = choices[i].ChoiceText;
                 SetChoiceButtonVisibility(button, true);
             }
         }
         
-        if (choices.Length > maxButtons)
+        if (choices.Count > maxButtons)
         {
-            LogWarning($"Node has {choices.Length} choices but UI only supports {maxButtons} buttons");
+            LogWarning($"Node has {choices.Count} choices but UI only supports {maxButtons} buttons");
         }
     }
     
@@ -678,6 +678,16 @@ public class DialogManager : MonoBehaviour
                 button.RemoveFromClassList("choice-visible");
             }
         }
+    }
+    
+    /// <summary> Hide all choice buttons </summary>
+    private void HideChoices()
+    {
+        SetChoiceButtonVisibility(choiceButton1, false);
+        SetChoiceButtonVisibility(choiceButton2, false);
+        SetChoiceButtonVisibility(choiceButton3, false);
+        SetChoiceButtonVisibility(choiceButton4, false);
+        SetChoiceButtonVisibility(choiceButton5, false);
     }
     
     /// <summary>
@@ -735,6 +745,71 @@ public class DialogManager : MonoBehaviour
             4 => choiceButton5,
             _ => null
         };
+    }
+    
+    /// <summary> Handle when a choice button is clicked </summary>
+    private void OnChoiceClicked(int choiceIndex)
+    {
+        LogDebug($"Choice {choiceIndex} clicked");
+        
+        if (navigator == null)
+        {
+            LogError("Navigator not available - cannot process choice");
+            return;
+        }
+        
+        try
+        {
+            navigator.SelectChoice(choiceIndex);
+        }
+        catch (System.Exception ex)
+        {
+            LogError($"Exception selecting choice {choiceIndex}: {ex.Message}");
+        }
+    }
+    
+    /// <summary> Call to DialogNavigator to advance dialog, use with nodes with no choices. </summary>
+    public void AdvanceDialog()
+    {
+        if (navigator == null)
+        {
+            LogError("Navigator not available - cannot advance dialog");
+            return;
+        }
+        
+        LogDebug("Advancing dialog");
+        
+        try
+        {
+            navigator.AdvanceDialog();
+        }
+        catch (System.Exception ex)
+        {
+            LogError($"Exception advancing dialog: {ex.Message}");
+        }
+    }
+    
+    /// <summary>
+    /// End the current dialog (public interface)
+    /// </summary>
+    public void EndDialog()
+    {
+        if (navigator == null)
+        {
+            LogError("Navigator not available - cannot end dialog");
+            return;
+        }
+        
+        LogDebug("Ending dialog manually");
+        
+        try
+        {
+            navigator.EndDialog();
+        }
+        catch (System.Exception ex)
+        {
+            LogError($"Exception ending dialog: {ex.Message}");
+        }
     }
     
     /// <summary>
@@ -864,7 +939,7 @@ public class DialogManager : MonoBehaviour
         if (navigator != null)
         {
             var state = navigator.GetCurrentState();
-            Debug.Log($"Current Node: {state.currentNode?.dialogText ?? "None"}");
+            Debug.Log($"Current Node: {state.currentNode?.DialogText ?? "None"}");
             Debug.Log($"Has Choices: {state.hasChoices}");
             Debug.Log($"Should Auto-Advance: {state.shouldAutoAdvance}");
         }
@@ -926,8 +1001,8 @@ public class DialogManager : MonoBehaviour
         
         // Create a test dialog node
         var testNode = new DialogNode("Test Speaker", "This is a test dialog message to verify UI connectivity.", false);
-        testNode.AddChoice("Test Choice 1");
-        testNode.AddChoice("Test Choice 2");
+        testNode.AddChoice("Test Choice 1", null, "choice1");
+        testNode.AddChoice("Test Choice 2", null, "choice2");
         
         DisplayNode(testNode);
         Debug.Log("Test dialog displayed");
@@ -1061,124 +1136,7 @@ public class DialogManager : MonoBehaviour
         // Check screen dimensions
         Debug.Log($"Screen width: {Screen.width}, Screen height: {Screen.height}");
     }
-    #endregion
 
-    /// <summary>
-    /// Initialize input handling
-    /// </summary>
-    private bool InitializeInput()
-    {
-        try
-        {
-            // Try to find PlayerInput if not assigned
-            if (playerInput == null)
-            {
-                playerInput = FindFirstObjectByType<PlayerInput>();
-            }
-            
-            // Try to get interact action
-            if (playerInput != null && !string.IsNullOrEmpty(interactActionName))
-            {
-                interactAction = playerInput.actions[interactActionName];
-                if (interactAction == null)
-                {
-                    LogWarning($"Interact action '{interactActionName}' not found in PlayerInput actions");
-                }
-                else
-                {
-                    LogDebug($"Interact action '{interactActionName}' found and configured");
-                }
-            }
-            else
-            {
-                LogWarning("PlayerInput not found - some input handling may not work");
-            }
-            
-            return true; // Input is optional for basic functionality
-        }
-        catch (System.Exception ex)
-        {
-            LogError($"Failed to initialize input: {ex.Message}");
-            return false;
-        }
-    }
-    
-    /// <summary> Hide all choice buttons </summary>
-    private void HideChoices()
-    {
-        SetChoiceButtonVisibility(choiceButton1, false);
-        SetChoiceButtonVisibility(choiceButton2, false);
-        SetChoiceButtonVisibility(choiceButton3, false);
-        SetChoiceButtonVisibility(choiceButton4, false);
-        SetChoiceButtonVisibility(choiceButton5, false);
-    }
-    
-    /// <summary> Handle when a choice button is clicked </summary>
-    private void OnChoiceClicked(int choiceIndex)
-    {
-        LogDebug($"Choice {choiceIndex} clicked");
-        
-        if (navigator == null)
-        {
-            LogError("Navigator not available - cannot process choice");
-            return;
-        }
-        
-        try
-        {
-            navigator.SelectChoice(choiceIndex);
-        }
-        catch (System.Exception ex)
-        {
-            LogError($"Exception selecting choice {choiceIndex}: {ex.Message}");
-        }
-    }
-    
-    /// <summary> Call to DialogNavigator to advance dialog, use with nodes with no choices. </summary>
-    public void AdvanceDialog()
-    {
-        if (navigator == null)
-        {
-            LogError("Navigator not available - cannot advance dialog");
-            return;
-        }
-        
-        LogDebug("Advancing dialog");
-        
-        try
-        {
-            navigator.AdvanceDialog();
-        }
-        catch (System.Exception ex)
-        {
-            LogError($"Exception advancing dialog: {ex.Message}");
-        }
-    }
-    
-    /// <summary>
-    /// End the current dialog (public interface)
-    /// </summary>
-    public void EndDialog()
-    {
-        if (navigator == null)
-        {
-            LogError("Navigator not available - cannot end dialog");
-            return;
-        }
-        
-        LogDebug("Ending dialog manually");
-        
-        try
-        {
-            navigator.EndDialog();
-        }
-        catch (System.Exception ex)
-        {
-            LogError($"Exception ending dialog: {ex.Message}");
-        }
-    }
-
-    #region Editor Testing Methods
     [ContextMenu("Force Show Dialog UI")]
     private void EditorForceShowDialogUI()
     {

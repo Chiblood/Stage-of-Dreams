@@ -205,7 +205,9 @@ public class DialogTree : ScriptableObject
     /// </summary>
     public DialogNode CreateStartingNode(string speakerName, string dialogText, bool isPlayerSpeaking = false, string nodeName = null)
     {
+        // DialogNode is now a regular class, just use new
         startingNode = new DialogNode(speakerName, dialogText, isPlayerSpeaking, nodeName);
+        
         RefreshNodeList();
         return startingNode;
     }
@@ -221,11 +223,12 @@ public class DialogTree : ScriptableObject
             return null;
         }
         
-        // Create the new node
+        // DialogNode is now a regular class, just use new
         DialogNode newNode = new DialogNode(speakerName, dialogText, isPlayerSpeaking, nodeName);
         
         // Add the choice to parent that leads to this new node
-        var choice = parentNode.AddChoice(choiceText, newNode);
+        // Use customActionId as choiceId parameter
+        var choice = parentNode.AddChoice(choiceText, newNode, customActionId ?? "choice_" + parentNode.Choices.Count);
         newNode.AddParentNode(parentNode);
         
         RefreshNodeList();
@@ -243,7 +246,7 @@ public class DialogTree : ScriptableObject
             return null;
         }
         
-        // Create choice with named target
+        // DialogChoice is now a regular class, just use new
         var choice = new DialogChoice(choiceText, parentNode);
         choice.TargetNodeName = targetNodeName;
 
@@ -266,8 +269,9 @@ public class DialogTree : ScriptableObject
             return null;
         }
         
-        // Create the new node
+        // DialogNode is now a regular class, just use new
         DialogNode newNode = new DialogNode(speakerName, dialogText, isPlayerSpeaking, nodeName);
+        
         if (autoAdvanceDelay > 0f)
         {
             newNode.AutoAdvanceDelay = autoAdvanceDelay;
@@ -513,58 +517,69 @@ public class DialogTree : ScriptableObject
         {
             if (kvp.Value.Count > 1)
             {
-                Debug.LogWarning($"Duplicate node name '{kvp.Key}' found in {kvp.Value.Count} nodes");
+                Debug.LogWarning($"Duplicate node names found: {kvp.Key} ( {string.Join(", ", kvp.Value.Select(n => n.GetDisplayName()))} )");
             }
         }
     }
 
     private void ValidateNamedReferences()
     {
-        foreach (var node in allNodes)
+        var nodes = GetAllNodes();
+        int unresolvedCount = 0;
+        
+        foreach (var node in nodes)
         {
             if (node.HasChoices)
             {
                 foreach (var choice in node.Choices)
                 {
-                    if (choice != null && choice.HasNamedTarget)
+                    if (choice != null && !choice.IsTargetResolved())
                     {
-                        if (FindNodeByName(choice.targetNodeName) == null)
-                        {
-                            Debug.LogWarning($"Choice '{choice.ChoiceText}' references unknown node '{choice.targetNodeName}'");
-                        }
+                        unresolvedCount++;
                     }
                 }
             }
+        }
+        
+        if (unresolvedCount > 0)
+        {
+            Debug.LogWarning($"Found {unresolvedCount} unresolved named references in choices");
         }
     }
 
     private void ValidateDialogEvents()
     {
-        foreach (var node in allNodes)
+        var nodes = GetAllNodes();
+        int missingStartEvents = 0;
+        int missingEndEvents = 0;
+        
+        foreach (var node in nodes)
         {
-            // Validate start events
-            if (node.StartEvents != null)
+            if (node.StartEvents != null && node.StartEvents.Count > 0)
             {
-                foreach (var evt in node.StartEvents)
+                foreach (var dialogEvent in node.StartEvents)
                 {
-                    if (evt != null && !evt.IsValid())
+                    if (dialogEvent == null)
                     {
-                        Debug.LogWarning($"Invalid start event '{evt.GetDisplayName()}' in node '{node.GetDisplayName()}'");
+                        missingStartEvents++;
                     }
                 }
             }
-            
-            // Validate end events
-            if (node.EndEvents != null)
+            if (node.EndEvents != null && node.EndEvents.Count > 0)
             {
-                foreach (var evt in node.EndEvents)
+                foreach (var dialogEvent in node.EndEvents)
                 {
-                    if (evt != null && !evt.IsValid())
+                    if (dialogEvent == null)
                     {
-                        Debug.LogWarning($"Invalid end event '{evt.GetDisplayName()}' in node '{node.GetDisplayName()}'");
+                        missingEndEvents++;
                     }
                 }
             }
+        }
+        
+        if (missingStartEvents > 0 || missingEndEvents > 0)
+        {
+            Debug.LogWarning($"Found {missingStartEvents} missing start events and {missingEndEvents} missing end events");
         }
     }
     
@@ -593,17 +608,8 @@ public class DialogTree : ScriptableObject
         string playerText = node.IsPlayerSpeaking ? " (Player)" : "";
         string nodeNameText = !string.IsNullOrEmpty(node.NodeName) ? $" [{node.NodeName}]" : "";
         string convergentText = (node.ParentNodes != null && node.ParentNodes.Count > 1) ? " (Convergent)" : "";
-        string eventsText = "";
         
-        // Add event information
-        int startEventCount = node.StartEvents?.Count ?? 0;
-        int endEventCount = node.EndEvents?.Count ?? 0;
-        if (startEventCount > 0 || endEventCount > 0)
-        {
-            eventsText = $" (Events: {startEventCount}S/{endEventCount}E)";
-        }
-        
-        Debug.Log($"{indent}{node.CharacterName}{playerText}{nodeNameText}{convergentText}{eventsText}: {node.DialogText}");
+        Debug.Log($"{indent}{node.CharacterName}{playerText}{nodeNameText}{convergentText}: {node.DialogText}");
         
         if (node.HasChoices)
         {
@@ -614,7 +620,7 @@ public class DialogTree : ScriptableObject
                     string targetInfo = "";
                     if (choice.HasNamedTarget)
                     {
-                        targetInfo = $" -> [{choice.targetNodeName}]";
+                        targetInfo = $" ? [{choice.TargetNodeName}]";
                     }
                     
                     Debug.Log($"{indent}  Choice: {choice.ChoiceText}{targetInfo}");

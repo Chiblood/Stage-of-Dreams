@@ -29,7 +29,6 @@ public class DialogManager : MonoBehaviour
     [SerializeField] private VisualTreeAsset dialogVisualTree; // The Visual Tree Asset for dialog UI
     
     [Header("Input Settings")]
-    [SerializeField] private string interactActionName = "Interact"; // Name of the interact action
     [SerializeField] private bool enableInputLogging = false; // Debug input handling
     
     [Header("Debug Settings")]
@@ -249,6 +248,46 @@ public class DialogManager : MonoBehaviour
         catch (System.Exception ex)
         {
             LogError($"Failed to initialize UI: {ex.Message}");
+            return false;
+        }
+    }
+    
+    /// <summary>
+    /// Initialize input handling for dialog interaction
+    /// </summary>
+    private bool InitializeInput()
+    {
+        try
+        {
+            if (playerInput == null)
+            {
+                playerInput = FindFirstObjectByType<PlayerInput>();
+            }
+            
+            if (playerInput != null)
+            {
+                interactAction = playerInput.actions["Interact"];
+                
+                if (interactAction != null)
+                {
+                    LogDebug("Interact action initialized successfully");
+                    return true;
+                }
+                else
+                {
+                    LogWarning("Interact action not found in PlayerInput - manual advance may not work");
+                    return false;
+                }
+            }
+            else
+            {
+                LogWarning("PlayerInput not found - manual advance may not work");
+                return false;
+            }
+        }
+        catch (System.Exception ex)
+        {
+            LogError($"Failed to initialize input: {ex.Message}");
             return false;
         }
     }

@@ -10,13 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 60bb80c9727209d4db564d14f667a070, type: 3}
-  m_Name: GoToTheSpotlight
+  m_Name: Lets Practice Lines!
   m_EditorClassIdentifier: Assembly-CSharp::DialogTree
-  treeName: Go to the Main Spotlight
-  description: A script for my first NPC to tell the player to go to the main spotlight
-    to speak to the director.
-  startingNode: {fileID: 0}
+  treeName: CalmDialogTutorial
+  description: Calm Dialog Minigame
+  startingNode:
+    rid: -2
   allNodes:
-  - {fileID: 0}
+  - rid: -2
   autoUpdateNodeList: 1
   validateOnSave: 1
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }

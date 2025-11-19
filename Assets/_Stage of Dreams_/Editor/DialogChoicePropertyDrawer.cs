@@ -25,8 +25,8 @@ public class DialogChoicePropertyDrawer : PropertyDrawer
         var contentRect = new Rect(position.x, position.y + EditorGUIUtility.singleLineHeight, position.width, position.height - EditorGUIUtility.singleLineHeight);
         
         // Get choice text for label
-        var choiceTextProp = property.FindPropertyRelative("choiceText");
-        var targetNodeNameProp = property.FindPropertyRelative("targetNodeName");
+        var choiceTextProp = property.FindPropertyRelative("_choiceText");
+        var targetNodeNameProp = property.FindPropertyRelative("_targetNodeName");
         
         string displayLabel = "Choice";
         if (!string.IsNullOrEmpty(choiceTextProp?.stringValue))
@@ -43,14 +43,25 @@ public class DialogChoicePropertyDrawer : PropertyDrawer
         // Foldout
         property.isExpanded = EditorGUI.Foldout(foldoutRect, property.isExpanded, displayLabel, true);
         
+        // Add "Edit in Window" button next to foldout
+        var buttonWidth = 100f;
+        var buttonRect = new Rect(foldoutRect.xMax - buttonWidth, foldoutRect.y, buttonWidth, foldoutRect.height);
+        
+        if (GUI.Button(buttonRect, "Edit in Window", EditorStyles.miniButton))
+        {
+            // Find the parent DialogTree to pass to the editor
+            DialogTree parentTree = property.serializedObject.targetObject as DialogTree;
+            DialogChoiceEditorWindow.OpenWindow(property, parentTree);
+        }
+        
         if (property.isExpanded)
         {
             EditorGUI.indentLevel++;
             
             // Draw properties
-            var targetNodeProp = property.FindPropertyRelative("targetNode");
-            var customActionIdProp = property.FindPropertyRelative("customActionId");
-            var onChoiceSelectedProp = property.FindPropertyRelative("onChoiceSelected");
+            var targetNodeProp = property.FindPropertyRelative("_targetNode");
+            var customActionIdProp = property.FindPropertyRelative("_choiceId");
+            var onChoiceSelectedProp = property.FindPropertyRelative("_onChoiceSelected");
             
             float yPos = contentRect.y;
             float lineHeight = EditorGUIUtility.singleLineHeight + 2;
@@ -107,7 +118,7 @@ public class DialogChoicePropertyDrawer : PropertyDrawer
             if (customActionIdProp != null)
             {
                 EditorGUI.PropertyField(new Rect(contentRect.x, yPos, contentRect.width, EditorGUIUtility.singleLineHeight), 
-                    customActionIdProp, new GUIContent("Custom Action ID", "ID for triggering custom game events"));
+                    customActionIdProp, new GUIContent("Choice ID", "Unique identifier for this choice"));
                 yPos += lineHeight;
             }
             
@@ -125,9 +136,9 @@ public class DialogChoicePropertyDrawer : PropertyDrawer
                 "Target Management", EditorStyles.boldLabel);
             yPos += lineHeight;
             
-            var buttonRect = new Rect(contentRect.x, yPos, contentRect.width, EditorGUIUtility.singleLineHeight);
+            var clearButtonRect = new Rect(contentRect.x, yPos, contentRect.width, EditorGUIUtility.singleLineHeight);
             
-            if (GUI.Button(buttonRect, "Clear All Targets"))
+            if (GUI.Button(clearButtonRect, "Clear All Targets"))
             {
                 if (targetNodeProp != null)
                     targetNodeProp.managedReferenceValue = null;
@@ -151,11 +162,11 @@ public class DialogChoicePropertyDrawer : PropertyDrawer
         float height = EditorGUIUtility.singleLineHeight; // Foldout line
         
         // Add heights for all properties and section headers
-        var choiceTextProp = property.FindPropertyRelative("choiceText");
-        var targetNodeProp = property.FindPropertyRelative("targetNode");
-        var targetNodeNameProp = property.FindPropertyRelative("targetNodeName");
-        var customActionIdProp = property.FindPropertyRelative("customActionId");
-        var onChoiceSelectedProp = property.FindPropertyRelative("onChoiceSelected");
+        var choiceTextProp = property.FindPropertyRelative("_choiceText");
+        var targetNodeProp = property.FindPropertyRelative("_targetNode");
+        var targetNodeNameProp = property.FindPropertyRelative("_targetNodeName");
+        var customActionIdProp = property.FindPropertyRelative("_choiceId");
+        var onChoiceSelectedProp = property.FindPropertyRelative("_onChoiceSelected");
         
         // Choice Display section
         height += EditorGUIUtility.singleLineHeight + 2; // Header

@@ -22,10 +22,8 @@ using System.Collections.Generic;
 /// Each node can link to other nodes through choices, auto-advance, or convergent references.
 /// Visual organization is handled by the PropertyDrawer to avoid Inspector conflicts.
 /// </summary>
-/// <property> Character Name</property>
-/// 
 [System.Serializable]
-public class DialogNode : ScriptableObject
+public class DialogNode
 {
     // Node Identification - no header here, PropertyDrawer handles organization and display in Inspector
     #region Backing Fields - SerializeField for Unity serialization
@@ -244,7 +242,9 @@ public class DialogNode : ScriptableObject
     /// <summary> Create and link a new node that this one will auto-advance to </summary>
     public DialogNode CreateChildNode(string speaker, string text, bool playerSpeaking = false, string nodeId = null)
     {
+        // DialogNode is now a regular class, just use new
         var newNode = new DialogNode(speaker, text, playerSpeaking, nodeId);
+        
         SetChildNode(newNode);
         return newNode;
     }
@@ -274,6 +274,7 @@ public class DialogNode : ScriptableObject
     /// <summary> Add a choice to this node and create/link to target node, set ChildNode to null </summary>
     public DialogChoice AddChoice(string choiceText, DialogNode targetNode, String choiceId)
     {
+        // DialogChoice is now a regular class, just use new
         var newChoice = new DialogChoice(choiceText, this, targetNode, choiceId);
 
         Choices.Add(newChoice);
@@ -294,6 +295,76 @@ public class DialogNode : ScriptableObject
         }
 
         _choices.RemoveAt(index);
+    }
+
+    #endregion
+
+    #region Dialog Event Management
+
+    /// <summary> Add a dialog event to be triggered when this node starts </summary>
+    public void AddStartEvent(DialogEvent dialogEvent)
+    {
+        if (dialogEvent != null)
+        {
+            StartEvents.Add(dialogEvent);
+        }
+    }
+
+    /// <summary> Add a dialog event to be triggered when this node ends </summary>
+    public void AddEndEvent(DialogEvent dialogEvent)
+    {
+        if (dialogEvent != null)
+        {
+            EndEvents.Add(dialogEvent);
+        }
+    }
+
+    /// <summary> Remove a start event by index </summary>
+    public void RemoveStartEvent(int index)
+    {
+        if (_startEvents != null && index >= 0 && index < _startEvents.Count)
+        {
+            _startEvents.RemoveAt(index);
+        }
+    }
+
+    /// <summary> Remove an end event by index </summary>
+    public void RemoveEndEvent(int index)
+    {
+        if (_endEvents != null && index >= 0 && index < _endEvents.Count)
+        {
+            _endEvents.RemoveAt(index);
+        }
+    }
+
+    /// <summary> Execute all start events for this node </summary>
+    public void ExecuteStartEvents()
+    {
+        if (_startEvents != null)
+        {
+            foreach (var dialogEvent in _startEvents)
+            {
+                dialogEvent?.Execute();
+            }
+        }
+
+        // Execute legacy UnityEvent for backwards compatibility
+        _onDialogStart?.Invoke();
+    }
+
+    /// <summary> Execute all end events for this node </summary>
+    public void ExecuteEndEvents()
+    {
+        if (_endEvents != null)
+        {
+            foreach (var dialogEvent in _endEvents)
+            {
+                dialogEvent?.Execute();
+            }
+        }
+
+        // Execute legacy UnityEvent for backwards compatibility
+        _onDialogEnd?.Invoke();
     }
 
     #endregion

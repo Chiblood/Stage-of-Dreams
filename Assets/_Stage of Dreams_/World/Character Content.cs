@@ -34,7 +34,6 @@ public class NPCContent : MonoBehaviour
     // Dialog state tracking
     private bool isInDialog = false;
     private int dialogCount = 0;
-    private DialogTree lastUsedTree = null;
 
     // Events for external systems to hook into
     public System.Action<NPCContent> OnDialogStartedEvent;
@@ -302,7 +301,6 @@ public class NPCContent : MonoBehaviour
     public virtual void OnDialogEnded()
     {
         isInDialog = false;
-        lastUsedTree = null; // Could track which tree was used if needed
         
         LogDebug($"Dialog ended with NPC '{npcName}'");
         
@@ -335,7 +333,6 @@ public class NPCContent : MonoBehaviour
     {
         isInDialog = false;
         dialogCount = 0;
-        lastUsedTree = null;
         LogDebug($"Dialog state reset for NPC '{npcName}'");
     }
     

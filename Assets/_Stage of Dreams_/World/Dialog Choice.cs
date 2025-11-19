@@ -11,7 +11,7 @@ using System.Collections.Generic;
 
 /// <summary> Represents a choice the player can make in dialog </summary>
 [System.Serializable]
-public class DialogChoice : ScriptableObject
+public class DialogChoice
 {
     // Choice Display - no headers, PropertyDrawer handles organization
     #region Backing Fields - SerializeField for Unity serialization
@@ -103,6 +103,17 @@ public class DialogChoice : ScriptableObject
 
     /// <summary> Check if this choice has a valid target (either direct reference or named) </summary>
     public bool HasValidTarget => _targetNode != null || HasNamedTarget;
+    
+    /// <summary> Check if named target has been resolved to actual node </summary>
+    public bool IsTargetResolved()
+    {
+        // If has named target, check if it's been resolved to actual node
+        if (HasNamedTarget)
+            return _targetNode != null;
+        
+        // Otherwise just check if direct target exists
+        return _targetNode != null;
+    }
 
     /// <summary> Check if this choice has events to execute </summary>
     public bool HasEvents => (_choiceEvents != null && _choiceEvents.Count > 0) || 

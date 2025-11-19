@@ -22,9 +22,9 @@ public class DialogNodePropertyDrawer : PropertyDrawer
         var contentRect = new Rect(position.x, position.y + EditorGUIUtility.singleLineHeight, position.width, position.height - EditorGUIUtility.singleLineHeight);
         
         // Get node info for better label display
-        var nodeNameProp = property.FindPropertyRelative("nodeName");
-        var speakerNameProp = property.FindPropertyRelative("speakerName");
-        var dialogTextProp = property.FindPropertyRelative("dialogText");
+        var nodeNameProp = property.FindPropertyRelative("_nodeId");
+        var speakerNameProp = property.FindPropertyRelative("_characterName");
+        var dialogTextProp = property.FindPropertyRelative("_dialogText");
         
         string displayLabel = label.text;
         
@@ -51,13 +51,13 @@ public class DialogNodePropertyDrawer : PropertyDrawer
         if (property.isExpanded)
         {
             // Draw properties
-            var isPlayerSpeakingProp = property.FindPropertyRelative("isPlayerSpeaking");
-            var autoAdvanceDelayProp = property.FindPropertyRelative("autoAdvanceDelay");
-            var choicesProp = property.FindPropertyRelative("choices");
-            var nextNodeProp = property.FindPropertyRelative("nextNode");
-            var parentDialogProp = property.FindPropertyRelative("parentDialog");
-            var onDialogStartProp = property.FindPropertyRelative("onDialogStart");
-            var onDialogEndProp = property.FindPropertyRelative("onDialogEnd");
+            var isPlayerSpeakingProp = property.FindPropertyRelative("_isPlayerSpeaking");
+            var autoAdvanceDelayProp = property.FindPropertyRelative("_autoAdvanceDelay");
+            var choicesProp = property.FindPropertyRelative("_choices");
+            var childNodeProp = property.FindPropertyRelative("_childNode");
+            var parentNodesProp = property.FindPropertyRelative("_parentNodes");
+            var onDialogStartProp = property.FindPropertyRelative("_onDialogStart");
+            var onDialogEndProp = property.FindPropertyRelative("_onDialogEnd");
             
 
             float yPos = contentRect.y; // Start drawing below the foldout, this is where y position starts within contentRect
@@ -108,12 +108,12 @@ public class DialogNodePropertyDrawer : PropertyDrawer
             yPos += lineHeight;
 
             // Parent Dialog (read-only, shows tree hierarchy)
-            if (parentDialogProp != null)
+            if (parentNodesProp != null)
             {
                 GUI.enabled = false;
-                float parentHeight = EditorGUI.GetPropertyHeight(parentDialogProp, true);
+                float parentHeight = EditorGUI.GetPropertyHeight(parentNodesProp, true);
                 EditorGUI.PropertyField(new Rect(contentRect.x, yPos, contentRect.width, parentHeight), 
-                    parentDialogProp, new GUIContent("Parent Node", "Parent node in the dialog tree (automatically set)"), true);
+                    parentNodesProp, new GUIContent("Parent Nodes", "Parent nodes in the dialog tree (automatically set)"), true);
                 GUI.enabled = true;
                 yPos += parentHeight + 2; // Add consistent spacing
             }
@@ -169,13 +169,27 @@ public class DialogNodePropertyDrawer : PropertyDrawer
             if (choicesProp != null)
             {
                 float choicesHeight = EditorGUI.GetPropertyHeight(choicesProp, true);
+                
+                // Add header with button to manage choices
+                EditorGUI.LabelField(new Rect(contentRect.x, yPos, contentRect.width * 0.7f, EditorGUIUtility.singleLineHeight), 
+                    "Choices", EditorStyles.boldLabel);
+                
+                // Add "Edit All Choices" button
+                var editAllButtonRect = new Rect(contentRect.x + contentRect.width * 0.7f, yPos, contentRect.width * 0.3f, EditorGUIUtility.singleLineHeight);
+                if (GUI.Button(editAllButtonRect, "Edit in Windows", EditorStyles.miniButton))
+                {
+                    OpenAllChoicesInWindows(property);
+                }
+                yPos += EditorGUIUtility.singleLineHeight + 2;
+                
+                // Draw the choices list
                 EditorGUI.PropertyField(new Rect(contentRect.x, yPos, contentRect.width, choicesHeight), 
-                    choicesProp, new GUIContent("Choices", "Player choice options from this node"), true);
+                    choicesProp, GUIContent.none, true);
                 yPos += choicesHeight + 2;
             }
 
             // Next Node with create/delete buttons
-            if (nextNodeProp != null)
+            if (childNodeProp != null)
             {
                 float nextNodeHeight = EditorGUIUtility.singleLineHeight;
                 var nextNodeRect = new Rect(
@@ -194,37 +208,33 @@ public class DialogNodePropertyDrawer : PropertyDrawer
                     contentRect.width * 0.13f, 
                     nextNodeHeight);
 
-                // If nextNode exists, draw it here recursively
-                if (nextNodeProp.managedReferenceValue != null)
+                // If childNode exists, draw it here recursively
+                if (childNodeProp.managedReferenceValue != null)
                 {
-                    float nestedNodeHeight = EditorGUI.GetPropertyHeight(nextNodeProp, true);
+                    float nestedNodeHeight = EditorGUI.GetPropertyHeight(childNodeProp, true);
                     EditorGUI.PropertyField(new Rect(contentRect.x, yPos, contentRect.width, nestedNodeHeight), 
-                        nextNodeProp, new GUIContent(""), true);
+                        childNodeProp, new GUIContent("Child Node (Auto-Advance)"), true);
                     yPos += nestedNodeHeight + 2;
                 }
-                // Next Node field
-                //EditorGUI.PropertyField(nextNodeRect, nextNodeProp, new GUIContent("Next Node", "Node to auto-advance to"));
                 
                 // Create button
-                if (GUI.Button(createButtonRect, "Create", EditorStyles.miniButtonLeft))
+                if (GUI.Button(createButtonRect, "Create Child", EditorStyles.miniButtonLeft))
                 {
-                    CreateNextNode(property);
+                    CreateChildNode(property);
                     yPos += nextNodeHeight + 2; // Move down to avoid overlap
                 }
                 
-                // Delete button (only if next node exists)
-                GUI.enabled = nextNodeProp.managedReferenceValue != null;
-                if (GUI.Button(deleteButtonRect, "Delete", EditorStyles.miniButtonRight))
+                // Delete button (only if child node exists)
+                GUI.enabled = childNodeProp.managedReferenceValue != null;
+                if (GUI.Button(deleteButtonRect, "Delete Child", EditorStyles.miniButtonRight))
                 {
-                    DeleteNextNode(property);
+                    DeleteChildNode(property);
                     yPos -= nextNodeHeight + 2; // Move back up to avoid overlap
                 }
                 GUI.enabled = true;
                 
                 // Move yPos down AFTER drawing all elements on this line
                 yPos += nextNodeHeight + 2;
-                
-                
             }
             #endregion
 
@@ -236,51 +246,60 @@ public class DialogNodePropertyDrawer : PropertyDrawer
         EditorGUI.EndProperty();
     }
     #region Node Creation and Deletion
-    private void CreateNextNode(SerializedProperty nodeProperty)
+    private void OpenAllChoicesInWindows(SerializedProperty nodeProperty)
     {
-        var nextNodeProp = nodeProperty.FindPropertyRelative("nextNode");
-        if (nextNodeProp != null)
+        var choicesProp = nodeProperty.FindPropertyRelative("_choices");
+        if (choicesProp == null || choicesProp.arraySize == 0)
         {
-            // Create a new DialogNode instance
-            var newNode = new DialogNode("Speaker", "Enter dialog text here", false);
-            nextNodeProp.managedReferenceValue = newNode;
-            
-            // Set parent reference
-            var newNodeSerializedProp = nextNodeProp;
-            if (newNodeSerializedProp != null)
+            EditorUtility.DisplayDialog("No Choices", "This node has no choices to edit.", "OK");
+            return;
+        }
+        
+        // Find the parent DialogTree
+        DialogTree parentTree = nodeProperty.serializedObject.targetObject as DialogTree;
+        
+        // Open a window for each choice
+        for (int i = 0; i < choicesProp.arraySize; i++)
+        {
+            var choiceProp = choicesProp.GetArrayElementAtIndex(i);
+            if (choiceProp != null)
             {
-                var parentDialogProp = newNodeSerializedProp.FindPropertyRelative("parentDialog");
-                if (parentDialogProp != null)
-                {
-                    parentDialogProp.managedReferenceValue = nodeProperty.managedReferenceValue;
-                }
+                DialogChoiceEditorWindow.OpenWindow(choiceProp, parentTree);
             }
+        }
+    }
+    
+    private void CreateChildNode(SerializedProperty nodeProperty)
+    {
+        var childNodeProp = nodeProperty.FindPropertyRelative("_childNode");
+        if (childNodeProp != null)
+        {
+            // DialogNode is now a regular class, just use new
+            var newNode = new DialogNode("Speaker", "Enter dialog text here", false);
+            
+            childNodeProp.managedReferenceValue = newNode;
             
             // Apply changes and force refresh
             nodeProperty.serializedObject.ApplyModifiedProperties();
             EditorUtility.SetDirty(nodeProperty.serializedObject.targetObject);
             
             // Force Unity to recalculate the PropertyDrawer height
-            // This is crucial for recursive PropertyDrawer layouts
             var targetObject = nodeProperty.serializedObject.targetObject;
             if (targetObject != null)
             {
-                // Force repaint of the inspector
                 EditorUtility.SetDirty(targetObject);
-                // Trigger a layout refresh
                 nodeProperty.serializedObject.UpdateIfRequiredOrScript();
-                // Request inspector repaint
                 UnityEditorInternal.InternalEditorUtility.RepaintAllViews();
             }
         }
     }
 
-    private void DeleteNextNode(SerializedProperty nodeProperty)
+    private void DeleteChildNode(SerializedProperty nodeProperty)
     {
-        var nextNodeProp = nodeProperty.FindPropertyRelative("nextNode");
-        if (nextNodeProp != null)
+        var childNodeProp = nodeProperty.FindPropertyRelative("_childNode");
+        if (childNodeProp != null)
         {
-            nextNodeProp.managedReferenceValue = null;
+            childNodeProp.managedReferenceValue = null;
             
             // Apply changes and force refresh
             nodeProperty.serializedObject.ApplyModifiedProperties();
@@ -290,11 +309,8 @@ public class DialogNodePropertyDrawer : PropertyDrawer
             var targetObject = nodeProperty.serializedObject.targetObject;
             if (targetObject != null)
             {
-                // Force repaint of the inspector
                 EditorUtility.SetDirty(targetObject);
-                // Trigger a layout refresh
                 nodeProperty.serializedObject.UpdateIfRequiredOrScript();
-                // Request inspector repaint
                 UnityEditorInternal.InternalEditorUtility.RepaintAllViews();
             }
         }
@@ -310,16 +326,16 @@ public class DialogNodePropertyDrawer : PropertyDrawer
         float height = EditorGUIUtility.singleLineHeight; // Foldout line height
 
         // Add heights for all properties plus section headers
-        var nodeNameProp = property.FindPropertyRelative("nodeName");
-        var speakerNameProp = property.FindPropertyRelative("speakerName");
-        var dialogTextProp = property.FindPropertyRelative("dialogText");
-        var isPlayerSpeakingProp = property.FindPropertyRelative("isPlayerSpeaking");
-        var autoAdvanceDelayProp = property.FindPropertyRelative("autoAdvanceDelay");
-        var choicesProp = property.FindPropertyRelative("choices");
-        var nextNodeProp = property.FindPropertyRelative("nextNode");
-        var parentDialogProp = property.FindPropertyRelative("parentDialog");
-        var onDialogStartProp = property.FindPropertyRelative("onDialogStart");
-        var onDialogEndProp = property.FindPropertyRelative("onDialogEnd");
+        var nodeNameProp = property.FindPropertyRelative("_nodeId");
+        var speakerNameProp = property.FindPropertyRelative("_characterName");
+        var dialogTextProp = property.FindPropertyRelative("_dialogText");
+        var isPlayerSpeakingProp = property.FindPropertyRelative("_isPlayerSpeaking");
+        var autoAdvanceDelayProp = property.FindPropertyRelative("_autoAdvanceDelay");
+        var choicesProp = property.FindPropertyRelative("_choices");
+        var childNodeProp = property.FindPropertyRelative("_childNode");
+        var parentNodesProp = property.FindPropertyRelative("_parentNodes");
+        var onDialogStartProp = property.FindPropertyRelative("_onDialogStart");
+        var onDialogEndProp = property.FindPropertyRelative("_onDialogEnd");
         
         // Dialog Content section
         height += EditorGUIUtility.singleLineHeight + 2; // Header
@@ -339,8 +355,8 @@ public class DialogNodePropertyDrawer : PropertyDrawer
         // Tree Structure section
         height += EditorGUIUtility.singleLineHeight + 2; // Header
 
-        if (parentDialogProp != null)
-            height += EditorGUI.GetPropertyHeight(parentDialogProp, true) + 2;
+        if (parentNodesProp != null)
+            height += EditorGUI.GetPropertyHeight(parentNodesProp, true) + 2;
         
         // Events section (collapsible)
         height += EditorGUIUtility.singleLineHeight + 2; // Header
@@ -362,19 +378,22 @@ public class DialogNodePropertyDrawer : PropertyDrawer
         if (autoAdvanceDelayProp != null)
             height += EditorGUIUtility.singleLineHeight + 2;
 
-        // Choices section  
+        // Choices section - account for header and button
         if (choicesProp != null)
-            height += EditorGUI.GetPropertyHeight(choicesProp, true) + 2;
-
-        // Next node section
-        if (nextNodeProp != null)
         {
-            height += EditorGUIUtility.singleLineHeight + 2; // The Next Node field itself
+            height += EditorGUIUtility.singleLineHeight + 2; // Header with button
+            height += EditorGUI.GetPropertyHeight(choicesProp, true) + 2;
+        }
+
+        // Child node section
+        if (childNodeProp != null)
+        {
+            height += EditorGUIUtility.singleLineHeight + 2; // The Child Node field itself
             
             // CRITICAL: Add height for the nested DialogNode if it exists
-            if (nextNodeProp.managedReferenceValue != null)
+            if (childNodeProp.managedReferenceValue != null)
             {
-                float nestedNodeHeight = EditorGUI.GetPropertyHeight(nextNodeProp, true);
+                float nestedNodeHeight = EditorGUI.GetPropertyHeight(childNodeProp, true);
                 height += nestedNodeHeight + 2; // Height of the nested node
             }
         }

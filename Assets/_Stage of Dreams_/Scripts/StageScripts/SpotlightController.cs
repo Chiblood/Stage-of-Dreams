@@ -599,11 +599,17 @@ public class SpotlightController : MonoBehaviour
     
     /// <summary>
     /// Handle test input for spotlight and lighting control
+    /// NOTE: This is for testing only - remove or disable in production
+    /// To use this, add a PlayerInput component or comment out this section
     /// </summary>
     private void HandleTestInput()
     {
         if (!Application.isPlaying) return;
         
+        // Uncomment if you want to use old input system for testing
+        // Make sure to switch Input System to "Both" in Player Settings
+        
+        /* 
         // Spotlight movement tests
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
@@ -669,6 +675,7 @@ public class SpotlightController : MonoBehaviour
                 Debug.Log("Test: Instant lighting toggle");
             }
         }
+        */
     }
     
     #endregion

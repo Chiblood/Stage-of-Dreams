@@ -519,7 +519,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DialogManager
   uiDocument: {fileID: 348884226}
   dialogVisualTree: {fileID: 9197481963319205126, guid: 1edb0bd25ebd3db409074e8df6a879c5, type: 3}
-  interactActionName: Interact
   enableInputLogging: 1
   enableDebugLogs: 1
   validateOnStart: 1
@@ -988,7 +987,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NPCContent
   npcName: Watchful Eye NPC
   npcDescription: His name is Jason.
-  mainDialogTree: {fileID: 11400000, guid: 6ac337f7da6065545b11095eac2ef070, type: 2}
+  mainDialogTree: {fileID: 0}
   additionalDialogTrees: []
   validateOnStart: 1
   enableDebugLogs: 1
@@ -4090,7 +4089,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1925696110}
   m_Layer: 0
-  m_Name: Dream1
+  m_Name: PracticeRoom
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -116,7 +116,8 @@ public class DialogTreeEditor : Editor
         // Check if starting node exists and allow creation if not
         if (startingNodeProp != null) 
         {
-            if (startingNodeProp.managedReferenceValue == null)
+            // Check if the tree has a starting node using the actual property
+            if (dialogTree.GetStartingNode() == null)
             {
                 EditorGUILayout.HelpBox("No starting node found. Use 'Create Starting Node' in Quick Tree Builder below to create one.", MessageType.Info);
                 
@@ -186,8 +187,8 @@ public class DialogTreeEditor : Editor
             
             foreach (var node in allNodes)
             {
-                if (node.HasChoices) choiceCount += node.choices.Length;
-                if (node.IsEndNode) endNodes++;
+                if (node.HasChoices) choiceCount += node.Choices.Count;
+                if (!node.HasChoices && node.ChildNode == null) endNodes++;
             }
             
             EditorGUILayout.LabelField($"Total Nodes: {allNodes.Count}");
@@ -344,7 +345,7 @@ public class DialogTreeEditor : Editor
         var allNodes = dialogTree.GetAllNodes();
         foreach (var node in allNodes)
         {
-            if (node.IsEndNode)
+            if (!node.HasChoices && node.ChildNode == null)
             {
                 return node;
             }
@@ -353,14 +354,14 @@ public class DialogTreeEditor : Editor
     }
     private void ClearAllNodes()
     {
-        SerializedProperty startingNodeProp = serializedObject.FindProperty("startingNode");
-        if (startingNodeProp != null)
-        {
-            startingNodeProp.managedReferenceValue = null;
-        }
-        
-        serializedObject.ApplyModifiedProperties();
+        // Clear the starting node directly through the tree
+        Undo.RecordObject(dialogTree, "Clear All Nodes");
+        dialogTree.startingNode = null;
         dialogTree.RefreshNodeList();
+        EditorUtility.SetDirty(dialogTree);
+        
+        serializedObject.Update();
+        serializedObject.ApplyModifiedProperties();
     }
     #region Example Creations
     private void CreateLinearExample()

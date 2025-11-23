@@ -1,4 +1,4 @@
-# Dialog System Inspector Editing Guide - HEADER CONFLICTS RESOLVED
+﻿# Dialog System Inspector Editing Guide - HEADER CONFLICTS RESOLVED
 
 ## ? **CRITICAL ISSUE FIXED: Header Attribute Conflicts**
 

@@ -29,30 +29,19 @@ public class DialogChoicePropertyDrawer : PropertyDrawer
         var targetNodeNameProp = property.FindPropertyRelative("_targetNodeName");
         
         string displayLabel = "Choice";
-        if (!string.IsNullOrEmpty(choiceTextProp?.stringValue))
+        if (choiceTextProp != null && !string.IsNullOrEmpty(choiceTextProp.stringValue))
         {
             displayLabel = choiceTextProp.stringValue;
             
             // Add target info to label for clarity
-            if (!string.IsNullOrEmpty(targetNodeNameProp?.stringValue))
+            if (targetNodeNameProp != null && !string.IsNullOrEmpty(targetNodeNameProp.stringValue))
             {
-                displayLabel += $" ? [{targetNodeNameProp.stringValue}]";
+                displayLabel += $" → [{targetNodeNameProp.stringValue}]";
             }
         }
         
-        // Foldout
+        // Foldout (full width - no button)
         property.isExpanded = EditorGUI.Foldout(foldoutRect, property.isExpanded, displayLabel, true);
-        
-        // Add "Edit in Window" button next to foldout
-        var buttonWidth = 100f;
-        var buttonRect = new Rect(foldoutRect.xMax - buttonWidth, foldoutRect.y, buttonWidth, foldoutRect.height);
-        
-        if (GUI.Button(buttonRect, "Edit in Window", EditorStyles.miniButton))
-        {
-            // Find the parent DialogTree to pass to the editor
-            DialogTree parentTree = property.serializedObject.targetObject as DialogTree;
-            DialogChoiceEditorWindow.OpenWindow(property, parentTree);
-        }
         
         if (property.isExpanded)
         {
@@ -122,12 +111,44 @@ public class DialogChoicePropertyDrawer : PropertyDrawer
                 yPos += lineHeight;
             }
             
-            // Events
+            // Dialog Events Section (for future game systems)
+            var choiceEventsProp = property.FindPropertyRelative("_choiceEvents");
+            if (choiceEventsProp != null)
+            {
+                EditorGUI.LabelField(new Rect(contentRect.x, yPos, contentRect.width, EditorGUIUtility.singleLineHeight), 
+                    "Dialog Events (Future: Crowd reactions, applause, etc.)", EditorStyles.miniBoldLabel);
+                yPos += lineHeight;
+                
+                float dialogEventsHeight = EditorGUI.GetPropertyHeight(choiceEventsProp, true);
+                EditorGUI.PropertyField(new Rect(contentRect.x, yPos, contentRect.width, dialogEventsHeight), 
+                    choiceEventsProp, new GUIContent("Choice Events", "DialogEvents for game systems (crowd, applause, etc.)"), true);
+                yPos += dialogEventsHeight + 2;
+            }
+            
+            // Unity Events Section (legacy/simple cases)
             if (onChoiceSelectedProp != null)
             {
-                float eventHeight = EditorGUI.GetPropertyHeight(onChoiceSelectedProp, true);
-                EditorGUI.PropertyField(new Rect(contentRect.x, yPos, contentRect.width, eventHeight), 
-                    onChoiceSelectedProp, new GUIContent("On Choice Selected", "Unity event triggered when this choice is selected"), true);
+                EditorGUI.LabelField(new Rect(contentRect.x, yPos, contentRect.width, EditorGUIUtility.singleLineHeight), 
+                    "Unity Events (Legacy)", EditorStyles.miniBoldLabel);
+                yPos += lineHeight;
+                
+                // Fixed: Don't check objectReferenceValue for UnityEvent - it's not an object reference
+                float eventHeight = EditorGUIUtility.singleLineHeight * 3; // Safe default height
+                
+                try
+                {
+                    eventHeight = EditorGUI.GetPropertyHeight(onChoiceSelectedProp, true);
+                    EditorGUI.PropertyField(new Rect(contentRect.x, yPos, contentRect.width, eventHeight), 
+                        onChoiceSelectedProp, new GUIContent("On Choice Selected", "Unity event triggered when this choice is selected"), true);
+                }
+                catch
+                {
+                    // If drawing fails, show a helpful message
+                    EditorGUI.HelpBox(new Rect(contentRect.x, yPos, contentRect.width, EditorGUIUtility.singleLineHeight * 2), 
+                        "UnityEvent not initialized. This is normal for new choices.\nSave the asset to initialize.", MessageType.Info);
+                    eventHeight = EditorGUIUtility.singleLineHeight * 2;
+                }
+                
                 yPos += eventHeight + 2;
             }
             
@@ -197,8 +218,29 @@ public class DialogChoicePropertyDrawer : PropertyDrawer
         if (customActionIdProp != null)
             height += EditorGUIUtility.singleLineHeight + 2;
         
+        // Dialog Events section
+        var choiceEventsProp = property.FindPropertyRelative("_choiceEvents");
+        if (choiceEventsProp != null)
+        {
+            height += EditorGUIUtility.singleLineHeight + 2; // Header
+            height += EditorGUI.GetPropertyHeight(choiceEventsProp, true) + 2;
+        }
+        
+        // Unity Events section
         if (onChoiceSelectedProp != null)
-            height += EditorGUI.GetPropertyHeight(onChoiceSelectedProp, true) + 2;
+        {
+            height += EditorGUIUtility.singleLineHeight + 2; // Header
+            
+            try
+            {
+                height += EditorGUI.GetPropertyHeight(onChoiceSelectedProp, true) + 2;
+            }
+            catch
+            {
+                // If getting height fails (uninitialized UnityEvent), use safe default
+                height += EditorGUIUtility.singleLineHeight * 3 + 2;
+            }
+        }
         
         // Target Management section
         height += EditorGUIUtility.singleLineHeight + 2; // Header

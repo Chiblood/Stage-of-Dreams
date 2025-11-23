@@ -1,4 +1,4 @@
-# Unity Events Integration Guide for Dialog System
+﻿# Unity Events Integration Guide for Dialog System
 
 ## ? **Unity Events CAN Call Methods with Parameters!**
 

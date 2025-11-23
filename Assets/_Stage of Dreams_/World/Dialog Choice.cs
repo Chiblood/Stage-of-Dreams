@@ -29,7 +29,7 @@ public class DialogChoice
     [SerializeReference] private List<DialogEvent> _choiceEvents;
     
     // Legacy Unity Events for backwards compatibility (optional)
-    [SerializeReference] private List<UnityEngine.Events.UnityEvent> _onChoiceSelected;
+    [SerializeField] private UnityEvent _onChoiceSelected; // Single UnityEvent for simple cases
 
     #endregion
 
@@ -70,7 +70,7 @@ public class DialogChoice
         set => _targetNodeName = value;
     }
 
-    /// <summary> Events triggered when this choice is selected </summary>
+    /// <summary> Events triggered when this choice is selected (DialogEvent system) </summary>
     public List<DialogEvent> ChoiceEvents 
     {
         get 
@@ -83,12 +83,12 @@ public class DialogChoice
     }
 
     /// <summary> Legacy Unity Events for choice selection (for backwards compatibility) </summary>
-    public List<UnityEngine.Events.UnityEvent> OnChoiceSelected 
+    public UnityEvent OnChoiceSelected 
     {
         get 
         { 
             if (_onChoiceSelected == null)
-                _onChoiceSelected = new List<UnityEngine.Events.UnityEvent>();
+                _onChoiceSelected = new UnityEvent();
             return _onChoiceSelected;
         }
         set => _onChoiceSelected = value;
@@ -117,7 +117,7 @@ public class DialogChoice
 
     /// <summary> Check if this choice has events to execute </summary>
     public bool HasEvents => (_choiceEvents != null && _choiceEvents.Count > 0) || 
-                            (_onChoiceSelected != null && _onChoiceSelected.Count > 0);
+                            (_onChoiceSelected != null && _onChoiceSelected.GetPersistentEventCount() > 0);
 
     #endregion
 
@@ -143,7 +143,7 @@ public class DialogChoice
     private void Initialize()
     {
         _choiceEvents = new List<DialogEvent>();
-        _onChoiceSelected = new List<UnityEvent>();
+        _onChoiceSelected = new UnityEvent();
     }
 
     #endregion
@@ -181,13 +181,7 @@ public class DialogChoice
         }
 
         // Execute legacy UnityEvents for backwards compatibility
-        if (_onChoiceSelected != null)
-        {
-            foreach (var unityEvent in _onChoiceSelected)
-            {
-                unityEvent?.Invoke();
-            }
-        }
+        _onChoiceSelected?.Invoke();
     }
 
     #endregion

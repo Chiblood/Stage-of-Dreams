@@ -1,4 +1,4 @@
-# ?? DialogManager UI Toolkit Connection Guide
+﻿# ?? DialogManager UI Toolkit Connection Guide
 
 ## ? **Issues Fixed**
 

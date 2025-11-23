@@ -1,4 +1,4 @@
-# Enhanced Dialog Tree Creation Guide
+﻿# Enhanced Dialog Tree Creation Guide
 
 ## Overview
 Your dialog tree system has been enhanced with automatic node creation, editor helpers, and tree management tools. You can now easily create complex dialog trees both in the Unity editor and programmatically.

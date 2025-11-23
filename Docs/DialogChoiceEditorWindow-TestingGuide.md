@@ -1,4 +1,4 @@
-# Dialog Choice Editor Window - Testing Guide
+﻿# Dialog Choice Editor Window - Testing Guide
 
 **Created**: January 2025  
 **Status**: Ready for Testing  

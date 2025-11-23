@@ -1,4 +1,4 @@
-# Stage of Dreams - Class Hierarchy
+﻿# Stage of Dreams - Class Hierarchy
 
 ## Architecture Diagrams
 
@@ -377,10 +377,10 @@ graph TD
 
 ### Integration Flow
 ```
-Player Interaction → DialogueTrigger → DialogManager → DialogNavigator
-                                            ↓
+Player Interaction â†’ DialogueTrigger â†’ DialogManager â†’ DialogNavigator
+                                            â†“
                                        NPC Content
-                                            ↓
+                                            â†“
                                        Dialog Tree
 ```
 
@@ -423,7 +423,7 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
 
 ## Scripts Folder: Core Classes
 
-### ✓ Main Menu Events.cs
+### âœ“ Main Menu Events.cs
 - **Properties:**
   - `UIDocument _document`
   - `List<Button> _menuButtons`
@@ -437,7 +437,7 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
   - `OnExitButtonClicked()`
 - **Description:** Handles main menu UI interactions using UI Toolkit, manages scene transitions and application exit
 
-### ⏳ GameManager.cs (TBD)
+### â³ GameManager.cs (TBD)
 - **Properties:**
   - `GameState currentGameState`
   - `int currentDreamIndex`
@@ -455,7 +455,7 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
 
 ## PlayerScripts Folder
 
-### ✓ Player_Controller.cs (PlayerScript.cs)
+### âœ“ Player_Controller.cs (PlayerScript.cs)
 - **Properties:**
   - `float _moveSpeed = 5f`
   - `bool inSpotlight`
@@ -477,17 +477,17 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
   - `IsMoving()`
 - **Description:** Handles player movement, input processing, and integration with dialog/spotlight systems
 
-### ✓ PlayerInteraction.cs
+### âœ“ PlayerInteraction.cs
 - **Properties:**
   - Referenced in PlayerScript but implementation details not fully examined
 - **Description:** Handles player interaction system (separate from movement)
 
-### ✓ Interactable.cs
+### âœ“ Interactable.cs
 - **Description:** Base interface/class for interactable objects
 
 ## StageScripts Folder
 
-### ✓ Spotlight.cs
+### âœ“ Spotlight.cs
 - **Properties:**
   - `float radius = 1.5f`
   - `LayerMask characterLayer`
@@ -518,7 +518,7 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
   - `OnSpotlightMoved`, `OnSpotlightAppeared`, `OnSpotlightDisappeared`
 - **Description:** Advanced spotlight system with visibility control, movement patterns, and character detection using Light2D integration
 
-### ✓ SpotlightController.cs
+### âœ“ SpotlightController.cs
 - **Properties:**
   - `Spotlight mainSpotlight`
   - `Transform[] performers`
@@ -538,7 +538,7 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
   - `StartRandomMovement()`, `FollowCharacter()`
 - **Description:** High-level controller for coordinating multiple spotlights and lighting effects, integrates with dialog system
 
-### ✓ LightingManager.cs
+### âœ“ LightingManager.cs
 - **Properties:**
   - `Light2D globalLight`
   - `Camera mainCamera`
@@ -562,7 +562,7 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
   - `OnDarkModeEnabled`, `OnDarkModeDisabled`, `OnLightingTransitionComplete`
 - **Description:** Manages global lighting states and dramatic lighting effects, integrates with dialog system
 
-### ✓ AudienceManager.cs
+### âœ“ AudienceManager.cs
 - **Properties:**
   - `AudioSource audienceAudioSource`
   - `ParticleSystem applauseParticles`
@@ -582,7 +582,7 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
 
 ## Dialog System
 
-### ✓ DialogManager.cs
+### âœ“ DialogManager.cs
 - **Properties:**
   - `UIDocument uiDocument`
   - `VisualTreeAsset dialogVisualTree`
@@ -608,7 +608,7 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
   - `OnDialogStarted`, `OnDialogEnded`, `OnNodeDisplayed`, `OnCustomActionHandled`
 - **Description:** Singleton dialog manager handling UI display and integration with DialogNavigator, supports UI Toolkit
 
-### ✓ DialogNavigator.cs
+### âœ“ DialogNavigator.cs
 - **Properties:**
   - Details not fully examined but integrated with DialogManager
 - **Methods:**
@@ -618,7 +618,7 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
   - `OnNodeChanged`, `OnCustomActionTriggered`, `OnDialogEnded`
 - **Description:** Handles dialog tree navigation logic, separate from UI concerns
 
-### ✓ DialogueTrigger.cs
+### âœ“ DialogueTrigger.cs
 - **Properties:**
   - `bool triggerOnSpotlight`, `triggerOnInteraction`, `triggerOnProximity`
   - `float interactionRange = 2f`, `proximityRange = 1.5f`
@@ -644,24 +644,24 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
 
 ## World/Dialog Data Classes
 
-### ✓ Dialog Node.cs (DialogNode)
+### âœ“ Dialog Node.cs (DialogNode)
 - **Properties:**
   - Details not fully examined but used throughout dialog system
 - **Description:** Core dialog node structure with choices and events
 
-### ✓ Dialog Tree.cs (DialogTree)
+### âœ“ Dialog Tree.cs (DialogTree)
 - **Properties:**
   - Details not fully examined but used throughout dialog system
 - **Methods:**
   - `IsValid()`, `GetMainDialogTree()`
 - **Description:** Container for dialog nodes and navigation structure
 
-### ✓ Dialog Choice.cs (DialogChoice)
+### âœ“ Dialog Choice.cs (DialogChoice)
 - **Properties:**
   - Details not fully examined but integrated with dialog system
 - **Description:** Individual choice options within dialog nodes
 
-### ✓ NPC Content.cs (NPCContent)
+### âœ“ NPC Content.cs (NPCContent)
 - **Properties:**
   - `string npcName`
   - Dialog trees and content (details not fully examined)
@@ -670,12 +670,12 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
   - `OnDialogStarted()`, `OnDialogEnded()`
 - **Description:** Container for NPC data including dialog trees, used by dialog triggers
 
-### ✓ Example NPC.cs
+### âœ“ Example NPC.cs
 - **Description:** Example implementation or template for NPCs
 
 ## Interfaces
 
-### ✓ ISpotlightCharacter
+### âœ“ ISpotlightCharacter
 - **Methods:**
   - `Vector2 GetPosition()`
   - `string GetCharacterName()`
@@ -683,12 +683,12 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
   - `bool IsInSpotlight()`
 - **Description:** Interface for characters that can be tracked by spotlights
 
-### ✓ PlayerCharacterWrapper
+### âœ“ PlayerCharacterWrapper
 - **Description:** Wrapper to make PlayerScript compatible with ISpotlightCharacter interface
 
 ## TBD Classes (Not Yet Implemented)
 
-### ⏳ ActorStats.cs (TBD)
+### â³ ActorStats.cs (TBD)
 - **Properties:**
   - `int _health = 100`
   - `float _applauseMeter = 0f`
@@ -708,7 +708,7 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
   - `GetBooPercentage()`
 - **Description:** Stores health, applause meter, boo meter, and mask state
 
-### ⏳ Ability.cs (TBD)
+### â³ Ability.cs (TBD)
 - **Properties:**
   - `string abilityName`
   - `string description`
@@ -722,7 +722,7 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
   - `ResetCooldown()`
 - **Description:** Base class for abilities like "PumpUpAudience", "ImprovedDialogue", "UseProp"
 
-### ⏳ DreamStage.cs (TBD)
+### â³ DreamStage.cs (TBD)
 - **Properties:**
   - `string stageName`
   - `Act[] acts` // Act I, II, III
@@ -737,7 +737,7 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
   - `GetCurrentAct()`
 - **Description:** Defines dream structure: Act I, II, III, ClimaxBox
 
-### ⏳ DreamStageManager.cs (TBD)
+### â³ DreamStageManager.cs (TBD)
 - **Properties:**
   - `DreamStage[] availableStages`
   - `int currentStageIndex`
@@ -751,7 +751,7 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
   - `CompleteTransition()`
 - **Description:** Manages transitions between dream stages and loading scenes
 
-### ⏳ MinigameManager.cs (TBD)
+### â³ MinigameManager.cs (TBD)
 - **Properties:**
   - `MinigameType currentMinigame`
   - `bool isMinigameActive`
@@ -772,7 +772,7 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
 
 ## TBD Data Classes
 
-### ⏳ AudienceMember.cs (TBD)
+### â³ AudienceMember.cs (TBD)
 - **Properties:**
   - `string memberName`
   - `float mood`
@@ -783,7 +783,7 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
   - `GetReactionSprite()`
 - **Description:** Individual audience member with mood and reactions
 
-### ⏳ Act.cs (TBD)
+### â³ Act.cs (TBD)
 - **Properties:**
   - `string actName`
   - `List<DialogueData> actDialogue`
@@ -794,7 +794,7 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
   - `CompleteAct()`
 - **Description:** Represents one act within a dream stage
 
-### ⏳ ClimaxBox.cs (TBD)
+### â³ ClimaxBox.cs (TBD)
 - **Properties:**
   - `MinigameType climaxMinigame`
   - `float timeLimit`
@@ -830,9 +830,9 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
 - `FollowTarget` // Follows a specific target
 
 ## Legend
-- ✓ **Implemented** - Class is fully implemented and functional
-- ⏳ **TBD (To Be Developed)** - Class is planned but not yet implemented
-- ❌ **Deprecated** - No longer in use
+- âœ“ **Implemented** - Class is fully implemented and functional
+- â³ **TBD (To Be Developed)** - Class is planned but not yet implemented
+- âŒ **Deprecated** - No longer in use
 
 ## Notes
 - The dialog system is highly developed with comprehensive validation and event systems

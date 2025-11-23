@@ -42,11 +42,11 @@ public static class DialogTreeUtilities
         {
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log($"? Fixed {fixedCount} out of {totalCount} Dialog Trees");
+            Debug.Log($"[FIXED] Fixed {fixedCount} out of {totalCount} Dialog Trees");
         }
         else
         {
-            Debug.Log($"? All {totalCount} Dialog Trees are valid!");
+            Debug.Log($"[OK] All {totalCount} Dialog Trees are valid!");
         }
     }
     
@@ -70,20 +70,20 @@ public static class DialogTreeUtilities
                 if (tree.IsValid())
                 {
                     validCount++;
-                    Debug.Log($"? VALID: {tree.treeName} ({path})");
+                    Debug.Log($"[OK] VALID: {tree.treeName} ({path})");
                 }
                 else
                 {
                     invalidCount++;
-                    Debug.LogWarning($"? INVALID: {tree.treeName} ({path}) - Missing or invalid starting node");
+                    Debug.LogWarning($"[!] INVALID: {tree.treeName} ({path}) - Missing or invalid starting node");
                 }
             }
         }
         
         Debug.Log($"=== Validation Complete ===");
-        Debug.Log($"? Valid: {validCount}");
-        Debug.Log($"? Invalid: {invalidCount}");
-        Debug.Log($"?? Total: {totalCount}");
+        Debug.Log($"[OK] Valid: {validCount}");
+        Debug.Log($"[!] Invalid: {invalidCount}");
+        Debug.Log($"[#] Total: {totalCount}");
     }
     
     [MenuItem("Tools/Dialog System/List All Dialog Trees")]
@@ -100,7 +100,7 @@ public static class DialogTreeUtilities
             
             if (tree != null)
             {
-                string status = tree.IsValid() ? "? Valid" : "? Invalid";
+                string status = tree.IsValid() ? "[OK] Valid" : "[!] Invalid";
                 int nodeCount = tree.GetAllNodes().Count;
                 Debug.Log($"{status} | {tree.treeName} | Nodes: {nodeCount} | Path: {path}");
             }
@@ -114,7 +114,7 @@ public static class DialogTreeUtilities
         // Check if tree has no starting node
         if (tree.startingNode == null)
         {
-            Debug.LogWarning($"?? Dialog Tree '{tree.treeName}' ({path}) has no starting node. Creating default starting node...");
+            Debug.LogWarning($"[WARNING] Dialog Tree '{tree.treeName}' ({path}) has no starting node. Creating default starting node...");
             
             // Create a default starting node
             tree.CreateStartingNode(
@@ -125,7 +125,7 @@ public static class DialogTreeUtilities
             );
             
             wasFixed = true;
-            Debug.Log($"? Created default starting node for '{tree.treeName}'");
+            Debug.Log($"[FIXED] Created default starting node for '{tree.treeName}'");
         }
         else
         {
@@ -192,6 +192,6 @@ public static class DialogTreeUtilities
         EditorGUIUtility.PingObject(newTree);
         Selection.activeObject = newTree;
         
-        Debug.Log($"? Created example Dialog Tree at: {path}");
+        Debug.Log($"[CREATED] Created example Dialog Tree at: {path}");
     }
 }

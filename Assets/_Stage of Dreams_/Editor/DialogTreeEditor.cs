@@ -1,56 +1,57 @@
 /* DialogTreeEditor.cs
  * Enhanced custom editor for the DialogTree asset that works with SerializeReference fields.
- * Combines custom inspector functionality with property drawer support for optimal editing experience.
+ * Provides read-only tree overview with navigation to dedicated node editor windows.
  * 
  * How to use in Unity:
  * 1. Place this script in an "Editor" folder within your Assets directory.
  * 2. Select a DialogTree asset to see the enhanced custom inspector.
- * 3. Use the property drawers for detailed node/choice editing and quick actions for tree management.
- * 4. Ensure your DialogTree and DialogNode classes use [SerializeReference] attributes.
+ * 3. Click "Edit" buttons to open nodes in dedicated editor windows.
+ * 4. Use Quick Tree Builder for rapid prototyping.
  */
 
 using UnityEngine;
 using UnityEditor;
+using System.IO;
 
-/// <summary> Enhanced custom editor for DialogTree that works with SerializeReference fields and property drawers.
-/// Provides both detailed editing through property drawers and quick tree management tools.
+/// <summary> 
+/// Enhanced custom editor for DialogTree with read-only overview and window-based editing.
+/// Provides tree navigation and management tools without inline node editing.
 /// </summary>
-[CustomEditor(typeof(DialogTree))] // Specify the data type this editor is for
+[CustomEditor(typeof(DialogTree))]
 public class DialogTreeEditor : Editor
 {
     private DialogTree dialogTree;
     private string newSpeakerName = "Speaker";
     private string newDialogText = "Enter dialog text here";
     private bool newIsPlayerSpeaking = false;
-    private string newChoiceText = "Continue";
-    private string newCustomActionId = "";
 
     // Enable foldout sections for better organization
     private bool showQuickActions = true;
     private bool showQuickBuilder = false;
     private bool showAdvancedTools = false;
+    private bool showAllNodes = false; // NEW: For all nodes list
     
     private void OnEnable()
     {
         dialogTree = (DialogTree)target;
     }
-    // Override the default OnInspectorGUI, is immediately called when selecting a 
+    
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
         
-        // Header with SerializeReference confirmation
-        EditorGUILayout.HelpBox("Enhanced DialogTree Editor with SerializeReference support!\n" +
+        // Header
+        EditorGUILayout.HelpBox("DialogTree Editor - Read-Only Overview\n" +
             "DialogTreeEditor.cs\n" +
-            "Uses the property drawers from DialogNodePropertyDrawer.cs and DialogChoicePropertyDrawer.cs for detailed editing, or the quick tools for rapid tree building.", 
+            "Click 'Edit' buttons to open nodes in dedicated windows for detailed editing.", 
             MessageType.Info);
                 
-        // Draw properties manually to avoid conflicts
+        // Draw properties manually
         DrawTreeInfoSection();
-        DrawDialogFlowSection();
+        DrawDialogFlowSection(); // Now read-only with edit buttons
 
         // Quick Actions Section
-        showQuickActions = EditorGUILayout.Foldout(showQuickActions, "Quick Actions", true);
+        showQuickActions = EditorGUILayout.Foldout(showQuickActions, "Quick Tree Actions", true);
         if (showQuickActions)
         {
             EditorGUILayout.BeginVertical("box");
@@ -87,10 +88,12 @@ public class DialogTreeEditor : Editor
             EditorUtility.SetDirty(dialogTree);
         }
     }
+    
     #region Drawing the sections for the Inspector Editor
+    
     private void DrawTreeInfoSection()
     {
-        EditorGUILayout.LabelField("Tree Information from TreeEditor.cs", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("Tree Information", EditorStyles.boldLabel);
         
         SerializedProperty treeNameProp = serializedObject.FindProperty("treeName");
         SerializedProperty descriptionProp = serializedObject.FindProperty("description");
@@ -108,45 +111,105 @@ public class DialogTreeEditor : Editor
     
     private void DrawDialogFlowSection()
     {
-        EditorGUILayout.LabelField("Dialog Flow", EditorStyles.boldLabel); // Section header
-
-        // Draw starting node with property drawer support from DialogNodePropertyDrawer.cs
-        SerializedProperty startingNodeProp = serializedObject.FindProperty("startingNode");
-
-        // Check if starting node exists and allow creation if not
-        if (startingNodeProp != null) 
+        EditorGUILayout.Space(5);
+        EditorGUILayout.LabelField("Dialog Flow (Read-Only)", EditorStyles.boldLabel);
+        
+        // Starting Node Preview
+        if (dialogTree.GetStartingNode() == null)
         {
-            // Check if the tree has a starting node using the actual property
-            if (dialogTree.GetStartingNode() == null)
-            {
-                EditorGUILayout.HelpBox("No starting node found. Use 'Create Starting Node' in Quick Tree Builder below to create one.", MessageType.Info);
-                
-                // Simple create button right here for convenience
-                if (GUILayout.Button("Create Starting Node"))
-                {
-                    Undo.RecordObject(dialogTree, "Create Starting Node");
-                    dialogTree.CreateStartingNode("Speaker", "Enter dialog text here", false);
-                    serializedObject.Update();
-
-                    // Mark as dirty to ensure changes are saved, especially for new assets
-                    EditorUtility.SetDirty(dialogTree);
-                    // Force Unity to recognize the change
-                    serializedObject.ApplyModifiedProperties();
-                }
-            }
-            else
-            {
-                EditorGUILayout.PropertyField(startingNodeProp, new GUIContent("Starting Node"), true); // Draw with property drawer support
-            }
+            EditorGUILayout.HelpBox("No starting node. Use Quick Tree Builder to create one.", MessageType.Info);
+            return;
         }
         
-        // Draw all nodes list (read-only) - only if it has content
-        SerializedProperty allNodesProp = serializedObject.FindProperty("allNodes");
-        if (allNodesProp != null && allNodesProp.arraySize > 0)
+        EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+        
+        // Starting node info
+        var startNode = dialogTree.GetStartingNode();
+        EditorGUILayout.LabelField("Starting Node:", EditorStyles.miniBoldLabel);
+        
+        EditorGUI.indentLevel++;
+        EditorGUILayout.LabelField($"Speaker: {startNode.CharacterName}");
+        
+        string preview = string.IsNullOrEmpty(startNode.DialogText) ? "<No text>" :
+            (startNode.DialogText.Length > 50 
+                ? startNode.DialogText.Substring(0, 50) + "..." 
+                : startNode.DialogText);
+        EditorGUILayout.LabelField($"Text: \"{preview}\"");
+        EditorGUI.indentLevel--;
+        
+        EditorGUILayout.Space(5);
+        
+        // Edit Starting Node button
+        GUI.backgroundColor = new Color(0.7f, 1f, 0.7f); // Light green
+        if (GUILayout.Button("✏ Edit Starting Node", GUILayout.Height(30)))
         {
-            GUI.enabled = false;
-            EditorGUILayout.PropertyField(allNodesProp, new GUIContent("All Nodes (Auto-Updated)"), true);
-            GUI.enabled = true;
+            SerializedProperty startingNodeProp = serializedObject.FindProperty("startingNode");
+            if (startingNodeProp != null)
+            {
+                DialogNodeEditorWindow.OpenWindow(startingNodeProp, dialogTree);
+            }
+        }
+        GUI.backgroundColor = Color.white;
+        
+        EditorGUILayout.EndVertical();
+        
+        EditorGUILayout.Space(10);
+        
+        // All Nodes List (Foldout)
+        DrawAllNodesList();
+    }
+    
+    /// <summary>
+    /// NEW: Draw read-only list of all nodes with edit buttons
+    /// </summary>
+    private void DrawAllNodesList()
+    {
+        var allNodes = dialogTree.GetAllNodes();
+        
+        if (allNodes.Count == 0) return;
+        
+        showAllNodes = EditorGUILayout.Foldout(showAllNodes, $"All Nodes ({allNodes.Count})", true, EditorStyles.foldoutHeader);
+        
+        if (showAllNodes)
+        {
+            EditorGUI.indentLevel++;
+            
+            EditorGUILayout.HelpBox("Read-only node list. Click 'Edit' to open in editor window.", MessageType.Info);
+            
+            for (int i = 0; i < allNodes.Count; i++)
+            {
+                DialogNode node = allNodes[i];
+                
+                EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
+                
+                // Node info
+                string nodeId = !string.IsNullOrEmpty(node.NodeName) ? node.NodeName : "<No ID>";
+                string speaker = !string.IsNullOrEmpty(node.CharacterName) ? node.CharacterName : "<No Speaker>";
+                string preview = !string.IsNullOrEmpty(node.DialogText)
+                    ? (node.DialogText.Length > 30 ? node.DialogText.Substring(0, 30) + "..." : node.DialogText)
+                    : "<No text>";
+                
+                // Display format: "1. [nodeId] Speaker: "Preview text...""
+                EditorGUILayout.LabelField($"{i + 1}. [{nodeId}] {speaker}: \"{preview}\"");
+                
+                // Edit button
+                GUI.backgroundColor = new Color(0.8f, 0.9f, 1f); // Light blue
+                if (GUILayout.Button("Edit", EditorStyles.miniButton, GUILayout.Width(50)))
+                {
+                    // Find the property for this node in allNodes list
+                    SerializedProperty allNodesProp = serializedObject.FindProperty("allNodes");
+                    if (allNodesProp != null && i < allNodesProp.arraySize)
+                    {
+                        SerializedProperty nodeProp = allNodesProp.GetArrayElementAtIndex(i);
+                        DialogNodeEditorWindow.OpenWindow(nodeProp, dialogTree);
+                    }
+                }
+                GUI.backgroundColor = Color.white;
+                
+                EditorGUILayout.EndHorizontal();
+            }
+            
+            EditorGUI.indentLevel--;
         }
     }
     
@@ -209,7 +272,7 @@ public class DialogTreeEditor : Editor
     private void DrawQuickBuilderSection()
     {
         EditorGUILayout.LabelField("Rapid Node Creation", EditorStyles.miniBoldLabel);
-        EditorGUILayout.HelpBox("Use this for quick prototyping. For detailed editing, use the Starting Node property drawer above.", MessageType.Info);
+        EditorGUILayout.HelpBox("Quick prototyping tools. For detailed editing, use the node editor windows.", MessageType.Info);
         
         // Input fields for quick creation
         newSpeakerName = EditorGUILayout.TextField("Speaker Name", newSpeakerName);
@@ -253,68 +316,36 @@ public class DialogTreeEditor : Editor
         }
         
         EditorGUILayout.EndHorizontal();
-        
-        // Choice creation
-        EditorGUILayout.Space(5);
-        EditorGUILayout.LabelField("Add Choice", EditorStyles.miniBoldLabel);
-        newChoiceText = EditorGUILayout.TextField("Choice Text", newChoiceText);
-        newCustomActionId = EditorGUILayout.TextField("Custom Action ID (Optional)", newCustomActionId);
-        
-        if (GUILayout.Button("Add Choice Node"))
-        {
-            if (dialogTree.GetStartingNode() == null)
-            {
-                EditorUtility.DisplayDialog("Error", "Create a starting node first!", "OK");
-            }
-            else
-            {
-                Undo.RecordObject(dialogTree, "Add Choice Node");
-                var lastNode = FindLastNode();
-                string actionId = string.IsNullOrEmpty(newCustomActionId) ? null : newCustomActionId;
-                dialogTree.AddChoiceNode(lastNode, newChoiceText, newSpeakerName, newDialogText, newIsPlayerSpeaking, actionId);
-                serializedObject.Update();
-                EditorUtility.SetDirty(dialogTree);
-            }
-        }
     }
     
     private void DrawAdvancedToolsSection()
     {
-        EditorGUILayout.LabelField("Example & Template Creation", EditorStyles.miniBoldLabel);
+        EditorGUILayout.LabelField("Advanced Operations", EditorStyles.miniBoldLabel);
         
-        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.BeginVertical(EditorStyles.helpBox);
         
-        if (GUILayout.Button("Create Linear Example"))
+        // Save As New Tree
+        EditorGUILayout.LabelField("Duplication", EditorStyles.miniBoldLabel);
+        EditorGUILayout.HelpBox("Create a copy of this dialog tree as a new asset.", MessageType.Info);
+        
+        GUI.backgroundColor = new Color(0.7f, 0.9f, 1f); // Light blue
+        if (GUILayout.Button("Save As New Tree", GUILayout.Height(30)))
         {
-            if (ShouldProceedWithCreation())
-            {
-                Undo.RecordObject(dialogTree, "Create Linear Example");
-                CreateLinearExample();
-                serializedObject.Update();
-                EditorUtility.SetDirty(dialogTree);
-            }
+            SaveAsNewTree();
         }
+        GUI.backgroundColor = Color.white;
         
-        if (GUILayout.Button("Create Branching Example"))
-        {
-            if (ShouldProceedWithCreation())
-            {
-                Undo.RecordObject(dialogTree, "Create Branching Example");
-                CreateBranchingExample();
-                serializedObject.Update();
-                EditorUtility.SetDirty(dialogTree);
-            }
-        }
-        
-        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.EndVertical();
         
         EditorGUILayout.Space(5);
         
         // Dangerous operations
+        EditorGUILayout.BeginVertical(EditorStyles.helpBox);
         EditorGUILayout.LabelField("Dangerous Operations", EditorStyles.miniBoldLabel);
+        EditorGUILayout.HelpBox("⚠ These operations cannot be undone!", MessageType.Warning);
         
         GUI.backgroundColor = Color.red;
-        if (GUILayout.Button("Clear All Nodes"))
+        if (GUILayout.Button("Clear All Nodes", GUILayout.Height(30)))
         {
             if (EditorUtility.DisplayDialog("Clear Dialog Tree", 
                 "Are you sure you want to clear all nodes? This cannot be undone.", "Clear", "Cancel"))
@@ -326,21 +357,67 @@ public class DialogTreeEditor : Editor
             }
         }
         GUI.backgroundColor = Color.white;
+        
+        EditorGUILayout.EndVertical();
     }
 
     #endregion
 
-    private bool ShouldProceedWithCreation()
+    #region Helper Methods
+    
+    /// <summary>
+    /// NEW: Save the current tree as a new asset
+    /// </summary>
+    private void SaveAsNewTree()
     {
-        if (dialogTree.GetStartingNode() != null)
+        string currentPath = AssetDatabase.GetAssetPath(dialogTree);
+        string directory = Path.GetDirectoryName(currentPath);
+        string fileName = Path.GetFileNameWithoutExtension(currentPath);
+        
+        // Prompt for new name
+        string newName = EditorUtility.SaveFilePanel(
+            "Save Dialog Tree As",
+            directory,
+            fileName + "_Copy",
+            "asset"
+        );
+        
+        if (string.IsNullOrEmpty(newName)) return; // User cancelled
+        
+        // Make path relative to project
+        if (newName.StartsWith(Application.dataPath))
         {
-            return EditorUtility.DisplayDialog("Replace Existing Tree?", 
-                "This will replace the existing dialog tree. Continue?", "Replace", "Cancel");
+            newName = "Assets" + newName.Substring(Application.dataPath.Length);
         }
-        return true;
+        
+        // Create copy
+        if (AssetDatabase.CopyAsset(currentPath, newName))
+        {
+            AssetDatabase.Refresh();
+            
+            // Load and select the new asset
+            DialogTree newTree = AssetDatabase.LoadAssetAtPath<DialogTree>(newName);
+            if (newTree != null)
+            {
+                // Update the name in the new tree
+                newTree.treeName = Path.GetFileNameWithoutExtension(newName);
+                EditorUtility.SetDirty(newTree);
+                AssetDatabase.SaveAssets();
+                
+                // Select the new tree
+                Selection.activeObject = newTree;
+                EditorGUIUtility.PingObject(newTree);
+                
+                Debug.Log($"DialogTree copied to: {newName}");
+            }
+        }
+        else
+        {
+            EditorUtility.DisplayDialog("Error", "Failed to copy dialog tree asset.", "OK");
+        }
     }
     
-    private DialogNode FindLastNode() // Finds the last node in the current dialog tree for appending new nodes, only works for linear trees
+    private DialogNode FindLastNode()
     {
         var allNodes = dialogTree.GetAllNodes();
         foreach (var node in allNodes)
@@ -352,9 +429,9 @@ public class DialogTreeEditor : Editor
         }
         return dialogTree.GetStartingNode();
     }
+    
     private void ClearAllNodes()
     {
-        // Clear the starting node directly through the tree
         Undo.RecordObject(dialogTree, "Clear All Nodes");
         dialogTree.startingNode = null;
         dialogTree.RefreshNodeList();
@@ -363,37 +440,6 @@ public class DialogTreeEditor : Editor
         serializedObject.Update();
         serializedObject.ApplyModifiedProperties();
     }
-    #region Example Creations
-    private void CreateLinearExample()
-    {
-        string[] speakers = { "Director", "Player", "Director", "Player" };
-        string[] texts = {
-            "Welcome to the stage! Are you ready for your performance?",
-            "I'm a bit nervous, but I think I'm ready.",
-            "Nervous is good! It means you care. Break a leg out there!",
-            "Thank you! I'll do my best!"
-        };
-        bool[] playerSpeaking = { false, true, false, true };
-        
-        dialogTree.CreateLinearConversation(speakers, texts, playerSpeaking);
-    }
     
-    private void CreateBranchingExample()
-    {
-        DialogNode start = dialogTree.CreateStartingNode("Stage Manager", "How are you feeling about tonight's performance?");
-
-        DialogNode nervousNode = dialogTree.AddChoiceNode(start, "I'm really nervous...", "Stage Manager", 
-            "That's completely normal! Even the best actors get nervous. Let's do some breathing exercises.");
-
-        DialogNode excitedNode = dialogTree.AddChoiceNode(start, "I'm excited!", "Stage Manager", 
-            "Wonderful! That energy will really show on stage. Channel that excitement into your performance.");
-
-        DialogNode readyNode = dialogTree.AddChoiceNode(start, "I'm ready!", "Stage Manager", 
-            "Perfect! I can see the confidence in your eyes. The audience is going to love you.");
-        
-        dialogTree.AddSequentialNode(nervousNode, "Player", "Thanks, that really helps!", true);
-        dialogTree.AddSequentialNode(excitedNode, "Player", "I can't wait to get on stage!", true);
-        dialogTree.AddChoiceNode(readyNode, "Start the show!", "Stage Manager", "Break a leg!", false, "start_performance");
-    }
-    #endregion  
+    #endregion
 }

@@ -38,8 +38,18 @@ public class CreateLinearDialog
             false  // Assistant Director
         };
 
-        // Create the entire conversation at once
-        tree.CreateLinearConversation(speakers, dialogTexts, isPlayerSpeaking);
+        // Node IDs following linear sequence pattern: npc_speaker_action_sequence
+        string[] nodeNames = new string[]
+        {
+            "npc_asst_challenge_01",  // Assistant questions player
+            "npc_player_identify_01", // Player identifies self
+            "npc_asst_apologize_01",  // Assistant apologizes
+            "npc_player_explain_01",  // Player explains purpose
+            "npc_asst_welcome_01"     // Assistant welcomes player
+        };
+
+        // Create the entire conversation at once with proper Node IDs
+        tree.CreateLinearConversation(speakers, dialogTexts, isPlayerSpeaking, nodeNames);
 
         // Save to disk
         string path = "Assets/_Stage of Dreams_/World/Dream 1/Assistant Director Conversation.asset";
@@ -47,5 +57,6 @@ public class CreateLinearDialog
         AssetDatabase.SaveAssets();
 
         Debug.Log($"Created linear conversation with {speakers.Length} nodes: {tree.treeName}");
+        Debug.Log("✓ All nodes use proper Node ID naming convention (npc_speaker_action_sequence)");
     }
 }

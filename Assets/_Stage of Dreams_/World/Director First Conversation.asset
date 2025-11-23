@@ -15,10 +15,10 @@ MonoBehaviour:
   treeName: Director Introduction
   description: First conversation with the Director.
   startingNode:
-    rid: 1825779063141957877
+    rid: 1825779085072925052
   allNodes:
-  - rid: 1825779063141957877
-  - rid: 1825779063141957878
+  - rid: 1825779085072925052
+  - rid: 1825779085072925054
   autoUpdateNodeList: 1
   validateOnSave: 1
   references:
@@ -26,40 +26,17 @@ MonoBehaviour:
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
-    - rid: 1825779063141957877
+    - rid: 1825779085072925052
       type: {class: DialogNode, ns: , asm: Assembly-CSharp}
       data:
-        _nodeId: 1-1 Director
-        _characterName: Director
-        _dialogText: Ah! There you are! Ready to practice the play?
-        _isPlayerSpeaking: 0
-        _autoAdvanceDelay: 0
-        _parentNodes: []
-        _childNode:
-          rid: 1825779063141957878
-        _choices:
-        - rid: -2
-        - rid: -2
-        - rid: -2
-        _startEvents: []
-        _endEvents: []
-        _onDialogStart:
-          m_PersistentCalls:
-            m_Calls: []
-        _onDialogEnd:
-          m_PersistentCalls:
-            m_Calls: []
-    - rid: 1825779063141957878
-      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
-      data:
-        _nodeId: 1.-2 Player
+        _nodeId: tutorial_player_intro_01
         _characterName: Player
-        _dialogText: Ready!
+        _dialogText: Hey Director, I was told you wanted to see me?
         _isPlayerSpeaking: 1
         _autoAdvanceDelay: 0
         _parentNodes: []
         _childNode:
-          rid: -2
+          rid: 1825779085072925054
         _choices: []
         _startEvents: []
         _endEvents: []
@@ -67,5 +44,90 @@ MonoBehaviour:
           m_PersistentCalls:
             m_Calls: []
         _onDialogEnd:
+          m_PersistentCalls:
+            m_Calls: []
+    - rid: 1825779085072925054
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        _nodeId: tutorial_director_intro_01
+        _characterName: Speaker
+        _dialogText: Ah new hire! Yes I want to explain to you how to get ready to
+          perform. Listen closely. Are you ready?
+        _isPlayerSpeaking: 0
+        _autoAdvanceDelay: 0
+        _parentNodes: []
+        _childNode:
+          rid: -2
+        _choices:
+        - rid: 1825779085072925055
+        - rid: 1825779085072925056
+        _startEvents: []
+        _endEvents: []
+        _onDialogStart:
+          m_PersistentCalls:
+            m_Calls: []
+        _onDialogEnd:
+          m_PersistentCalls:
+            m_Calls: []
+    - rid: 1825779085072925055
+      type: {class: DialogChoice, ns: , asm: Assembly-CSharp}
+      data:
+        _choiceText: Yes, please explain! (Tutorial)
+        _choiceId: choice_9562729d
+        _conditions: 
+        _parentNode:
+          _nodeId: 
+          _characterName: 
+          _dialogText: 
+          _isPlayerSpeaking: 0
+          _autoAdvanceDelay: 0
+          _parentNodes: []
+          _childNode:
+            rid: -2
+          _choices: []
+          _startEvents: []
+          _endEvents: []
+          _onDialogStart:
+            m_PersistentCalls:
+              m_Calls: []
+          _onDialogEnd:
+            m_PersistentCalls:
+              m_Calls: []
+        _targetNode:
+          rid: -2
+        _targetNodeName: tutorial_director_explain_01
+        _choiceEvents: []
+        _onChoiceSelected:
+          m_PersistentCalls:
+            m_Calls: []
+    - rid: 1825779085072925056
+      type: {class: DialogChoice, ns: , asm: Assembly-CSharp}
+      data:
+        _choiceText: No I got this. (Skip Tutorial)
+        _choiceId: choice_eeb9a425
+        _conditions: 
+        _parentNode:
+          _nodeId: 
+          _characterName: 
+          _dialogText: 
+          _isPlayerSpeaking: 0
+          _autoAdvanceDelay: 0
+          _parentNodes: []
+          _childNode:
+            rid: -2
+          _choices: []
+          _startEvents: []
+          _endEvents: []
+          _onDialogStart:
+            m_PersistentCalls:
+              m_Calls: []
+          _onDialogEnd:
+            m_PersistentCalls:
+              m_Calls: []
+        _targetNode:
+          rid: -2
+        _targetNodeName: tutorial_director_outro_01
+        _choiceEvents: []
+        _onChoiceSelected:
           m_PersistentCalls:
             m_Calls: []

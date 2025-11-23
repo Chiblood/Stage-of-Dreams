@@ -1,0 +1,47 @@
+# EditorConfig for Stage of Dreams Unity Project
+# https://editorconfig.org
+
+# Top-most EditorConfig file
+root = true
+
+# All files - UTF-8 encoding by default
+[*]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Markdown files - UTF-8 with emojis support
+[*.md]
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# C# files - UTF-8 encoding
+[*.cs]
+charset = utf-8
+indent_style = space
+indent_size = 4
+end_of_line = crlf
+
+# Unity-specific files
+[*.{asset,prefab,unity,meta}]
+charset = utf-8
+
+# UXML and USS files - UTF-8
+[*.{uxml,uss}]
+charset = utf-8
+indent_style = space
+indent_size = 4
+
+# JSON files - UTF-8
+[*.json]
+charset = utf-8
+indent_style = space
+indent_size = 2
+
+# XML files - UTF-8
+[*.{xml,csproj,props}]
+charset = utf-8
+indent_style = space
+indent_size = 2

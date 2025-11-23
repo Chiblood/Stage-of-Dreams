@@ -298,19 +298,13 @@ public class DialogNavigator
         // Execute legacy UnityEvents for backwards compatibility
         if (choice.OnChoiceSelected != null)
         {
-            foreach (var unityEvent in choice.OnChoiceSelected)
+            try
             {
-                if (unityEvent != null)
-                {
-                    try
-                    {
-                        unityEvent.Invoke();
-                    }
-                    catch (System.Exception ex)
-                    {
-                        Debug.LogError($"[DialogNavigator] Error executing choice UnityEvent: {ex.Message}");
-                    }
-                }
+                choice.OnChoiceSelected.Invoke();
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[DialogNavigator] Error executing choice UnityEvent: {ex.Message}");
             }
         }
     }

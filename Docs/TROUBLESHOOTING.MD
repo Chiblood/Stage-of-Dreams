@@ -236,7 +236,7 @@ LogDebug($"Event subscribers: OnDialogStarted={OnDialogStarted?.GetInvocationLis
 
 ---
 
-### Issue: Text Not Displaying / Shows as "???"
+### Issue: Text Not Displaying / Shows as "�" or garbled characters
 
 **Symptoms**:
 - Dialog text appears as placeholder or garbled
@@ -505,7 +505,7 @@ The issue has been resolved. DialogNode and DialogChoice are now regular `[Syste
 
 A dedicated **DialogChoiceEditorWindow** has been created for better editing experience.
 
-**Status**: ? **WORKING** - Window opens and fields are editable via SerializedProperty
+**Status**: ✅ **WORKING** - Window opens and fields are editable via SerializedProperty
 
 **How to Access**:
 
@@ -526,289 +526,132 @@ A dedicated **DialogChoiceEditorWindow** has been created for better editing exp
 - Named node selector with dropdown
 - Target node preview (collapsible)
 - Choice ID with auto-generate button
-- Validation tools with status indicators (?/?)
+- Validation tools with status indicators (✅/❌)
 - Quick actions (Clear Targets, Validate)
 - Unity Events section
 
 **Recent Fix (January 2025)**:
 Window now properly handles DialogChoice objects in lists by working directly with SerializedProperty instead of trying to access managedReferenceValue on array elements.
 
-**If you experience issues:**
+---
 
-1. **Window opens but shows warning about "Failed to get DialogChoice":**
-   - This is expected and harmless
-   - The window works via SerializedProperty, not direct object access
-   - If fields are editable, it's working correctly
+### NEW WORKFLOW: DialogTree Editing with Window-Based System (January 2025)
 
-2. **Verify property references are valid:**
-   - Check that `choiceProperty` is not null
-   - Ensure all `FindPropertyRelative()` calls use correct field names
-   - Field names should be underscore-prefixed: `_choiceText`, `_choiceId`, etc.
+**Status**: ✅ **IMPLEMENTED**
 
-3. **Force window refresh:**
-   - Close all choice editor windows
-   - Reopen from DialogNode inspector
-   - Check Console for any errors
+#### Overview
+The DialogTree editing system has been refactored to use dedicated windows for node editing with a read-only inspector for tree navigation.
 
-**Debug Steps**:
-```csharp
-// In DialogChoiceEditorWindow.OnGUI():
-Debug.Log($"SerializedObject null? {serializedObject == null}");
-Debug.Log($"ChoiceProperty null? {choiceProperty == null}");
-Debug.Log($"ChoiceTextProp null? {choiceTextProp == null}");
-```
+#### New Workflow
 
-**Related Files**:
-- `DialogChoiceEditorWindow.cs` - Dedicated editor window
-- `DialogChoicePropertyDrawer.cs` - Inline drawer with "Edit in Window" button
-- `DialogNodePropertyDrawer.cs` - Has "Edit in Windows" button for all choices
+**Step 1: Select DialogTree Asset**
+1. In Project window, select your DialogTree asset
+2. Inspector shows read-only tree overview
 
-**Known Limitations**:
-- Window must remain open to save changes (changes saved on window close)
-- Multiple windows can be resource-intensive
-- Named node dropdown only shows nodes with `NodeName` set
+**Step 2: View Tree Overview (Read-Only)**
+- **Tree Information**: Edit tree name and description
+- **Starting Node Preview**: Shows speaker + first line of text
+- **All Nodes List**: Shows all nodes with [NodeID] and preview
+- **Quick Tree Actions**: Validate, Print Structure, Refresh
+
+**Step 3: Edit Nodes in Dedicated Windows**
+1. Click **"Edit Starting Node"** button (or "Edit" next to any node)
+2. DialogNodeEditorWindow opens
+3. Edit all properties:
+   - Node ID (with link to Node ID Generator)
+   - Speaker Name
+   - Dialog Text (large text area)
+   - Is Player Speaking
+   - Auto Advance Delay
+   - Unity Events
+
+**Step 4: Navigate Between Nodes**
+- Use **Tree Navigation** section in node editor:
+  - **Parent Nodes**: Click to edit any parent (convergent nodes show all parents)
+  - **Child Node**: Click to edit auto-advance child
+  - **Choice Targets**: Click to edit nodes reached via choices
+- Each navigation button opens a NEW window
+- Can have 5+ windows open simultaneously
+
+**Step 5: Manage Choices**
+- Add new choices with "+ Add New Choice" button
+- View all choices in Choices Management section
+- Click choice targets in Tree Navigation to edit target nodes
+
+#### Benefits of New Workflow
+✅ Cleaner inspector with less scrolling  
+✅ Focused editing environment  
+✅ Easier navigation of complex trees  
+✅ Multiple nodes can be edited simultaneously  
+✅ Better for large dialog trees  
+
+#### Known Limitations
+⚠ **Temporary**: NodeIdGenerator and DialogChoiceEditor integration buttons disabled  
+  - **Workaround**: Use menu `Tools > Dialog System > Generate Node ID`  
+  - **Workaround**: Edit choices via inspector for now  
+  - **Fix**: Will be re-enabled after resolving circular assembly references
 
 ---
 
-### Issue: Dialog Trees Missing Starting Nodes
+### Issue: Emojis Displaying as `?` in Unity Console
 
 **Symptoms**:
-- Console error: "Main dialog tree 'X' is invalid (no starting node)"
-- Can't edit Dialog Trees in Inspector
+- Debug logs show `?` instead of emojis
+- Console output: `? Invalid | TreeName | Nodes: 0`
+- Unicode characters not displaying correctly
 
-**Solution**: Run `Tools ? Dialog System ? Fix All Dialog Trees` to automatically create missing starting nodes
+**Cause**:
+Unity's Console window uses a basic font that doesn't support Unicode emoji glyphs or extended characters.
 
-**Related Tools**:
-- `Tools ? Dialog System ? Validate All Dialog Trees` - Check all trees
-- `Tools ? Dialog System ? List All Dialog Trees` - Show tree status
+**Solution**: Use ASCII-safe alternatives
 
----
+#### Emoji Replacement Guide
 
-### Issue: SpotlightController Input Errors
+Replace emojis with ASCII text equivalents:
 
-**Symptoms**:
-- Error: "You are trying to read Input using UnityEngine.Input class..."
+| Emoji | ASCII | Example Usage |
+|-------|-------|---------------|
+| ✅ | `[OK]` | `Debug.Log("[OK] Valid");` |
+| ❌ | `[!]` or `[ERROR]` | `Debug.LogError("[ERROR] Failed");` |
+| ⚠️ | `[WARNING]` | `Debug.LogWarning("[WARNING] Issue");` |
+| 🔧 | `[FIXED]` | `Debug.Log("[FIXED] Repaired");` |
+| 📊 | `[#]` or `[STATS]` | `Debug.Log("[#] Count: 5");` |
+| ✨ | `[CREATED]` | `Debug.Log("[CREATED] New item");` |
+| 🎭 | `[DIALOG]` | `Debug.Log("[DIALOG] Started");` |
+| 💡 | `[INFO]` | `Debug.Log("[INFO] Tip");` |
+| 🚀 | `[START]` | `Debug.Log("[START] Loading");` |
+| 🎉 | `[COMPLETE]` | `Debug.Log("[COMPLETE] Done");` |
 
-**Solution**: Already fixed - test input is commented out. Use Context Menu commands instead.
+#### Before & After Example
 
----
-
-## Input System Issues
-
-### Issue: Input Actions Not Found
-
-**Symptoms**:
-- Console warning: "Interact action is null"
-- Input doesn't work even though PlayerInput assigned
-
-**Solution**:
+**Before (with emojis)**:
 ```csharp
-// In DialogManager.InitializeInput():
-// Make sure Input Action Asset has action named "Interact"
-// Check Input System package version (should be 1.7.0+)
+Debug.Log($"✅ DialogTree validated: {nodeCount} nodes");
+Debug.LogWarning($"⚠️ Missing speaker name");
+Debug.LogError($"❌ Failed to load tree");
 ```
 
----
-
-### Issue: Multiple Input Actions Triggering
-
-**Symptoms**:
-- Dialog advances twice per key press
-- Choice selected multiple times
-
-**Solution**:
-- Use `WasPressedThisFrame()` not `IsPressed()`
-- Check for duplicate PlayerInput components in scene
-
----
-
-## Common Error Messages
-
-### "DialogNavigator not available - cannot start dialog"
-
-**Cause**: DialogManager.navigator is null
-
-**Fix**:
+**After (ASCII-safe)**:
 ```csharp
-// Check: DialogManager.InitializeNavigator() succeeded
-// Verify: No exceptions in Console during initialization
+Debug.Log($"[OK] DialogTree validated: {nodeCount} nodes");
+Debug.LogWarning($"[WARNING] Missing speaker name");
+Debug.LogError($"[ERROR] Failed to load tree");
 ```
 
----
+#### Files to Check
 
-### "NPC has no valid dialog content"
+Common files that may contain emojis:
+- `Assets\_Stage of Dreams_\Editor\DialogTreeUtilities.cs` ✅ Fixed
+- `Assets\_Stage of Dreams_\Editor\DialogNodeEditorWindow.cs`
+- `Assets\_Stage of Dreams_\Scripts\Dialog\DialogNavigator.cs`
+- Any custom editor scripts
 
-**Cause**: NPCContent.HasValidDialogContent() returns false
+#### Prevention
 
-**Fix**:
-1. Check NPC has at least one DialogTree assigned
-2. Verify tree has valid StartingNode
-3. Run: NPCContent ? Context Menu ? "Validate Content"
-
----
-
-### "Dialog tree 'X' not found on NPC 'Y'"
-
-**Cause**: Requesting specific tree that doesn't exist
-
-**Fix**:
-```csharp
-// Check NPC has tree with exact name match
-// Tree names are case-sensitive
-```
-
----
-
-### "Failed to get root visual element"
-
-**Cause**: UIDocument not properly initialized
-
-**Fix**:
-1. Check UIDocument enabled in hierarchy
-2. Verify GameObject with DialogManager is active
-3. Check Visual Tree Asset is assigned
-
----
-
-## Quick Diagnostics
-
-### Dialog System Health Check
-```csharp
-// Run in Play Mode:
-// DialogManager ? Context Menu ? "Validate Setup"
-// Should show all ? checks passing
-```
-
-### UI Connection Test
-```csharp
-// Run in Play Mode:
-// DialogManager ? Context Menu ? "Test Show Dialog"
-// Should display test dialog with 2 choices
-```
-
-### Git Repository Health Check
-```bash
-# Check .gitignore is working:
-git status --ignored | grep Library  # Should show "ignored"
-
-# Check file count (should be < 1000 tracked files):
-git ls-files | wc -l
-
-# Check for large files (should be none > 10MB):
-git ls-files | xargs du -h | sort -rh | head -20
-```
-
-### Unity Project Health
-```
-Check:
-? Unity version matches team (6000.2.6f2)
-? No errors in Console (before entering Play Mode)
-? All scripts compile without warnings
-? PlayerInput component in scene with correct Input Actions
-```
-
----
-
-## Getting Help
-
-### Before Asking for Help, Provide:
-
-1. **Unity Version**: Help ? About Unity
-2. **Console Errors**: Copy full error with stack trace
-3. **Steps to Reproduce**: Exact steps that cause the issue
-4. **Expected vs Actual**: What should happen vs what does happen
-5. **Relevant Code**: DialogManager, Navigator, or node setup
-
-### Debug Logs to Include:
-```csharp
-// Run these Context Menu commands:
-// DialogManager ? "Print Current State"
-// DialogManager ? "Validate Setup"
-// DialogNavigator ? "Print Current State" (if available)
-```
-
-### Screenshots to Include:
-- Unity Inspector showing DialogManager setup
-- Console window with errors
-- UI Builder hierarchy (if UI issue)
-
----
-
-## Known Issues & Workarounds
-
-### Issue: TextMesh Pro Import Required
-
-**Symptom**: First time opening project, TMP import window appears
-
-**Solution**: 
-1. Click "Import TMP Essentials"
-2. Restart Unity
-3. Not a bug - this is normal
-
----
-
-### Issue: Line Ending Warnings (LF vs CRLF)
-
-**Symptom**: Git warnings about line endings
-
-**Solution**:
-```bash
-# Create/update .gitattributes in root:
-* text=auto
-*.cs text eol=lf
-*.asset text eol=lf
-*.unity text eol=lf
-```
-
----
-
-### Issue: Unity Cloud Build Not Supported
-
-**Status**: Not tested/configured yet
-
-**Workaround**: Use local builds only for now
-
----
-
-## Change Log
-
-| Date | Issue | Solution | Added By |
-|------|-------|----------|----------|
-| Jan 2025 | Dialog UI not appearing | Added force show debug tools | Jack |
-| Jan 2025 | .gitignore not working | Moved to root, added cleanup | Jack |
-| Jan 2025 | UserSettings causing conflicts | Added to .gitignore, documented | Jack |
-| Jan 2025 | Dialog Trees Missing Starting Nodes | Added fix tool and validation tools | Jack |
-| Jan 2025 | SpotlightController Input Errors | Commented out test input, added note | Jack |
-| Jan 2025 | Cannot Edit DialogNodes/Choices | Fixed ScriptableObject vs [SerializeReference] conflict | Jack |
-| Jan 2025 | Difficult to Edit Choices in Lists | Created DialogChoiceEditorWindow - RESOLVED | Jack |
-
----
-
-## Contributing to This Guide
-
-**Found a new issue?** Add it using this template:
-
+Add to `.github\copilot-instructions.md`:
 ```markdown
-### Issue: [Brief Description]
-
-**Symptoms**:
-- What the user sees/experiences
-
-**Possible Causes**:
-1. First possible cause
-2. Second possible cause
-
-**Solution**:
-[Step-by-step fix]
-
-**Prevention**:
-[How to avoid in future]
+**Use ASCII-safe characters in Debug.Log statements (no emojis)**
 ```
 
 ---
 
-**End of Troubleshooting Guide**
-
-For general setup instructions, see: `.github/copilot-instructions.md`  
-For Git cleanup commands, see: `Docs/.gitignore-cleanup-commands.txt`  
-For change review process, see: `Docs/.git-change-review-report.md`

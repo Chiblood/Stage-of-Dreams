@@ -510,6 +510,218 @@ public class SetGameFlagEvent : DialogEvent
 
 #endregion
 
+#region Minigame Events
+
+/// <summary>
+/// Event triggered when a wrong choice is selected in a minigame node.
+/// Handles escalating consequences based on severity and attempt count.
+/// SCAFFOLDING: Update when performance meters are implemented.
+/// </summary>
+[System.Serializable]
+public class WrongChoiceEvent : DialogEvent
+{
+    public enum Severity
+    {
+        Minor,      // Small boo, minimal penalty
+        Moderate,   // Medium boo, moderate penalty
+        Major,      // Heavy boo, significant penalty
+        Critical    // Intense boo, severe penalty (near failure)
+    }
+    
+    [SerializeField] private Severity severity = Severity.Minor;
+    [SerializeField] private bool scaleWithAttempts = true;
+    [SerializeField] private int baseBooPenalty = 5;
+    [SerializeField] private int baseMoodPenalty = 5;
+    
+    public Severity ChoiceSeverity
+    {
+        get => severity;
+        set => severity = value;
+    }
+    
+    public bool ScaleWithAttempts
+    {
+        get => scaleWithAttempts;
+        set => scaleWithAttempts = value;
+    }
+    
+    public int BaseBooPenalty
+    {
+        get => baseBooPenalty;
+        set => baseBooPenalty = Mathf.Max(0, value);
+    }
+    
+    public int BaseMoodPenalty
+    {
+        get => baseMoodPenalty;
+        set => baseMoodPenalty = Mathf.Max(0, value);
+    }
+    
+    protected override void OnExecute()
+    {
+        // Get current attempt count from DialogNavigator if available
+        int attemptMultiplier = 1;
+        if (scaleWithAttempts)
+        {
+            // Attempt count would come from context (passed via delegate or global state)
+            // For now, we'll use a placeholder
+            // TODO: When DialogNavigator integration is complete, get actual attempt count
+            attemptMultiplier = 1; // Will be replaced with actual attempt count
+        }
+        
+        // Calculate penalties based on severity
+        int booPoints = CalculateBooPenalty(attemptMultiplier);
+        int moodPenalty = CalculateMoodPenalty(attemptMultiplier);
+        string reactionType = GetReactionType();
+        int reactionIntensity = GetReactionIntensity();
+        
+        // Trigger audience reaction
+        var audienceManager = UnityEngine.Object.FindFirstObjectByType<AudienceManager>();
+        if (audienceManager != null)
+        {
+            audienceManager.AudienceReaction(reactionType);
+            
+            // Set mood based on penalty
+            float currentMood = 0.5f; // TODO: Get from AudienceManager when mood system exists
+            float newMood = Mathf.Clamp01(currentMood - (moodPenalty / 100f));
+            audienceManager.SetAudienceMood(newMood);
+        }
+        
+        // Update meters (when implemented)
+        // booMeter?.AddBoo(booPoints);
+        
+        Debug.Log($"[WrongChoiceEvent] Severity: {severity}, Attempts: {attemptMultiplier}x, Boo: +{booPoints}, Mood: -{moodPenalty}%");
+    }
+    
+    private int CalculateBooPenalty(int attemptMultiplier)
+    {
+        int basePenalty = severity switch
+        {
+            Severity.Minor => baseBooPenalty,
+            Severity.Moderate => baseBooPenalty * 2,
+            Severity.Major => baseBooPenalty * 3,
+            Severity.Critical => baseBooPenalty * 5,
+            _ => baseBooPenalty
+        };
+        
+        return scaleWithAttempts ? basePenalty * attemptMultiplier : basePenalty;
+    }
+    
+    private int CalculateMoodPenalty(int attemptMultiplier)
+    {
+        int basePenalty = severity switch
+        {
+            Severity.Minor => baseMoodPenalty,
+            Severity.Moderate => baseMoodPenalty * 2,
+            Severity.Major => baseMoodPenalty * 3,
+            Severity.Critical => baseMoodPenalty * 5,
+            _ => baseMoodPenalty
+        };
+        
+        return scaleWithAttempts ? basePenalty * attemptMultiplier : basePenalty;
+    }
+    
+    private string GetReactionType()
+    {
+        return severity switch
+        {
+            Severity.Minor => "boo",
+            Severity.Moderate => "boo",
+            Severity.Major => "boo",
+            Severity.Critical => "boo",
+            _ => "boo"
+        };
+    }
+    
+    private int GetReactionIntensity()
+    {
+        return severity switch
+        {
+            Severity.Minor => 3,
+            Severity.Moderate => 5,
+            Severity.Major => 7,
+            Severity.Critical => 10,
+            _ => 5
+        };
+    }
+    
+    public override string GetDisplayName()
+    {
+        string scaleText = scaleWithAttempts ? " (scales)" : "";
+        return $"Wrong Choice [{severity}]{scaleText}";
+    }
+    
+    public override bool IsValid()
+    {
+        return base.IsValid() && baseBooPenalty >= 0 && baseMoodPenalty >= 0;
+    }
+}
+
+/// <summary>
+/// Event triggered when a correct choice is selected in a minigame node.
+/// Handles positive consequences and rewards.
+/// SCAFFOLDING: Update when performance meters are implemented.
+/// </summary>
+[System.Serializable]
+public class CorrectChoiceEvent : DialogEvent
+{
+    [SerializeField] private int applauseReward = 10;
+    [SerializeField] private int moodBoost = 10;
+    [SerializeField] private bool triggerSpecialReaction = false;
+    
+    public int ApplauseReward
+    {
+        get => applauseReward;
+        set => applauseReward = Mathf.Max(0, value);
+    }
+    
+    public int MoodBoost
+    {
+        get => moodBoost;
+        set => moodBoost = Mathf.Max(0, value);
+    }
+    
+    public bool TriggerSpecialReaction
+    {
+        get => triggerSpecialReaction;
+        set => triggerSpecialReaction = value;
+    }
+    
+    protected override void OnExecute()
+    {
+        // Trigger positive audience reaction
+        var audienceManager = UnityEngine.Object.FindFirstObjectByType<AudienceManager>();
+        if (audienceManager != null)
+        {
+            int intensity = triggerSpecialReaction ? 10 : 7;
+            audienceManager.AudienceApplause(intensity);
+            audienceManager.AudienceReaction("cheer");
+            
+            // Boost mood
+            float currentMood = 0.5f; // TODO: Get from AudienceManager when mood system exists
+            float newMood = Mathf.Clamp01(currentMood + (moodBoost / 100f));
+            audienceManager.SetAudienceMood(newMood);
+        }
+        
+        // Update meters (when implemented)
+        // applauseMeter?.AddApplause(applauseReward);
+        
+        Debug.Log($"[CorrectChoiceEvent] Applause: +{applauseReward}, Mood: +{moodBoost}%, Special: {triggerSpecialReaction}");
+    }
+    
+    public override string GetDisplayName()
+    {
+        return $"Correct Choice [+{applauseReward} applause]";
+    }
+    
+    public override bool IsValid()
+    {
+        return base.IsValid() && applauseReward >= 0 && moodBoost >= 0;
+    }
+}
+
+#endregion
+
 /* 
  * USAGE EXAMPLES:
  * 

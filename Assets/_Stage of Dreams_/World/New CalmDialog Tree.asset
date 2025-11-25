@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67bf668f5b5d12c46857b4975c26affd, type: 3}
+  m_Name: New CalmDialog Tree
+  m_EditorClassIdentifier: Assembly-CSharp::CalmDialogTree
+  scriptText: 
+  scriptData: {fileID: 0}
+  questionTree: {fileID: 11400000, guid: 6f450af5ed8e29d448e57a483be2b067, type: 2}
+  correctChoiceIndex: 0
+  applauseReward: 10
+  booPenalty: 5
+  successTree: {fileID: 0}
+  failureTree: {fileID: 0}
+  editorNotes: 
+  difficultyRating: 1
+  validated: 0

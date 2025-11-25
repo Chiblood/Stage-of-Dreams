@@ -42,6 +42,12 @@ public class DialogNodeEditorWindow : EditorWindow
     private SerializedProperty onDialogStartProp;
     private SerializedProperty onDialogEndProp;
     
+    // Minigame properties
+    private SerializedProperty isMinigameNodeProp;
+    private SerializedProperty correctChoiceIndexProp;
+    private SerializedProperty maxRetriesProp;
+    private SerializedProperty allowUnlimitedRetriesProp;
+    
     /// <summary>
     /// Open window for a specific node
     /// </summary>
@@ -85,6 +91,12 @@ public class DialogNodeEditorWindow : EditorWindow
         choicesProp = nodeProperty.FindPropertyRelative("_choices");
         onDialogStartProp = nodeProperty.FindPropertyRelative("_onDialogStart");
         onDialogEndProp = nodeProperty.FindPropertyRelative("_onDialogEnd");
+        
+        // Minigame properties
+        isMinigameNodeProp = nodeProperty.FindPropertyRelative("_isMinigameNode");
+        correctChoiceIndexProp = nodeProperty.FindPropertyRelative("_correctChoiceIndex");
+        maxRetriesProp = nodeProperty.FindPropertyRelative("_maxRetries");
+        allowUnlimitedRetriesProp = nodeProperty.FindPropertyRelative("_allowUnlimitedRetries");
     }
     
     private void UpdateWindowTitle()

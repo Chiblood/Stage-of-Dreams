@@ -21,6 +21,7 @@ public class DialogNodePropertyDrawer : PropertyDrawer
         var nodeNameProp = property.FindPropertyRelative("_nodeId");
         var speakerNameProp = property.FindPropertyRelative("_characterName");
         var dialogTextProp = property.FindPropertyRelative("_dialogText");
+        var isMinigameProp = property.FindPropertyRelative("_isMinigameNode");
         
         string displayLabel = label.text;
         
@@ -39,6 +40,12 @@ public class DialogNodePropertyDrawer : PropertyDrawer
                     : dialogTextProp.stringValue;
             }
             displayLabel = $"{speakerNameProp.stringValue}: {previewText}";
+        }
+        
+        // Add minigame indicator
+        if (isMinigameProp != null && isMinigameProp.boolValue)
+        {
+            displayLabel += " [MINIGAME]";
         }
 
         // Simple foldout with minimal info
@@ -79,6 +86,19 @@ public class DialogNodePropertyDrawer : PropertyDrawer
                 yPos += lineHeight * 2;
             }
             
+            // Show minigame info if applicable
+            if (isMinigameProp != null && isMinigameProp.boolValue)
+            {
+                var correctChoiceProp = property.FindPropertyRelative("_correctChoiceIndex");
+                var maxRetriesProp = property.FindPropertyRelative("_maxRetries");
+                var unlimitedRetriesProp = property.FindPropertyRelative("_allowUnlimitedRetries");
+                
+                string retryInfo = unlimitedRetriesProp.boolValue ? "Unlimited" : maxRetriesProp.intValue.ToString();
+                EditorGUI.LabelField(new Rect(position.x, yPos, position.width, EditorGUIUtility.singleLineHeight), 
+                    $"Minigame: Correct Choice [{correctChoiceProp.intValue}], Max Retries: {retryInfo}", EditorStyles.boldLabel);
+                yPos += lineHeight;
+            }
+            
             // Help message
             var helpRect = new Rect(position.x, yPos, position.width, EditorGUIUtility.singleLineHeight * 2);
             EditorGUI.HelpBox(helpRect, "Use 'Edit' button in DialogTree inspector to edit this node in a dedicated window.", MessageType.Info);
@@ -94,7 +114,17 @@ public class DialogNodePropertyDrawer : PropertyDrawer
         if (!property.isExpanded)
             return EditorGUIUtility.singleLineHeight;
         
-        // Height when expanded: foldout + ID + Speaker + Preview (2 lines) + Help (2 lines) + spacing
-        return EditorGUIUtility.singleLineHeight * 7 + 10;
+        // Get minigame property to check if we need extra line
+        var isMinigameProp = property.FindPropertyRelative("_isMinigameNode");
+        bool isMinigame = isMinigameProp != null && isMinigameProp.boolValue;
+        
+        // Height when expanded: foldout + ID + Speaker + Preview (2 lines) + [Minigame line] + Help (2 lines) + spacing
+        float baseHeight = EditorGUIUtility.singleLineHeight * 7 + 10;
+        if (isMinigame)
+        {
+            baseHeight += EditorGUIUtility.singleLineHeight + 2; // Extra line for minigame info
+        }
+        
+        return baseHeight;
     }
 }

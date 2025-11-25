@@ -15,6 +15,7 @@ using System;
 /// <summary>
 /// Handles navigation through dialog trees independently from UI display.
 /// Manages the current state of dialog progression and provides events for UI updates.
+/// Enhanced with integrated minigame support for nodes that require correct choices.
 /// </summary>
 public class DialogNavigator
 {
@@ -23,10 +24,20 @@ public class DialogNavigator
     public event Action<DialogChoice, NPCContent> OnCustomActionTriggered;
     public event Action OnDialogEnded;
     
+    // Minigame events
+    public event Action<int> OnMinigameAttempt; // Fires with attempt count
+    public event Action<bool> OnMinigameChoiceSelected; // Fires with isCorrect
+    public event Action OnMinigameCompleted;
+    public event Action OnMinigameFailed;
+    
     // Current navigation state
     private DialogNode currentNode;
     private NPCContent currentNPC;
     private DialogTree currentTree;
+    
+    // Minigame state tracking
+    private int currentMinigameAttempts = 0;
+    private bool currentNodeMinigameCompleted = false;
     
     /// <summary>
     /// Check if navigation is currently active
@@ -100,6 +111,10 @@ public class DialogNavigator
         // Update current node
         currentNode = node;
         
+        // Reset minigame state for new node
+        currentMinigameAttempts = 0;
+        currentNodeMinigameCompleted = false;
+        
         // Execute start events for new node
         ExecuteNodeStartEvents(currentNode);
         
@@ -107,6 +122,12 @@ public class DialogNavigator
         OnNodeChanged?.Invoke(currentNode);
         
         Debug.Log($"[DialogNavigator] Navigated to node: {node.CharacterName}: '{node.DialogText.Substring(0, Mathf.Min(30, node.DialogText.Length))}...?'");
+        
+        // Log if this is a minigame node
+        if (currentNode.IsMinigameNode)
+        {
+            Debug.Log($"[DialogNavigator] This is a minigame node! Correct choice: {currentNode.CorrectChoiceIndex}");
+        }
     }
     
     /// <summary>
@@ -223,8 +244,60 @@ public class DialogNavigator
         
         Debug.Log($"[DialogNavigator] Selected choice: '{selectedChoice.ChoiceText}'");
         
-        // Execute choice events
-        ExecuteChoiceEvents(selectedChoice);
+        // MINIGAME LOGIC - Check if this is a minigame node
+        if (currentNode.IsMinigameNode && !currentNodeMinigameCompleted)
+        {
+            currentMinigameAttempts++;
+            bool isCorrect = (choiceIndex == currentNode.CorrectChoiceIndex);
+            
+            Debug.Log($"[DialogNavigator] Minigame choice - Attempt #{currentMinigameAttempts}, Correct: {isCorrect}");
+            
+            // Fire minigame events
+            OnMinigameAttempt?.Invoke(currentMinigameAttempts);
+            OnMinigameChoiceSelected?.Invoke(isCorrect);
+            
+            // Execute choice events (for effects like boo/applause)
+            ExecuteChoiceEvents(selectedChoice);
+            
+            if (isCorrect)
+            {
+                // Correct choice! Mark as completed and allow progression
+                currentNodeMinigameCompleted = true;
+                OnMinigameCompleted?.Invoke();
+                Debug.Log($"[DialogNavigator] Minigame completed successfully!");
+                
+                // Continue with normal navigation
+            }
+            else
+            {
+                // Wrong choice! Check retry limit
+                bool canRetry = currentNode.AllowUnlimitedRetries || currentMinigameAttempts < currentNode.MaxRetries;
+                
+                if (canRetry)
+                {
+                    Debug.Log($"[DialogNavigator] Wrong choice! Retrying... (Attempt {currentMinigameAttempts}/{(currentNode.AllowUnlimitedRetries ? "unlimited" : currentNode.MaxRetries.ToString())})");
+                    
+                    // Re-display current node (retry)
+                    OnNodeChanged?.Invoke(currentNode);
+                    return; // Don't navigate away
+                }
+                else
+                {
+                    // Max retries reached
+                    Debug.LogWarning($"[DialogNavigator] Max retries reached ({currentNode.MaxRetries})! Minigame failed.");
+                    OnMinigameFailed?.Invoke();
+                    
+                    // End dialog or handle failure (could add a failure path here)
+                    EndDialog();
+                    return;
+                }
+            }
+        }
+        else
+        {
+            // Normal choice handling (not a minigame or already completed)
+            ExecuteChoiceEvents(selectedChoice);
+        }
         
         // Check for custom action ID (for backwards compatibility)
         if (!string.IsNullOrEmpty(selectedChoice.ChoiceId))
@@ -434,7 +507,10 @@ public class DialogNavigator
             hasChoices = currentNode?.HasChoices ?? false,
             shouldAutoAdvance = (currentNode?.HasAutoAdvance ?? false) && (currentNode?.AutoAdvanceDelay > 0),
             autoAdvanceDelay = currentNode?.AutoAdvanceDelay ?? 0f,
-            choiceCount = currentNode?.Choices?.Count ?? 0
+            choiceCount = currentNode?.Choices?.Count ?? 0,
+            isMinigameNode = currentNode?.IsMinigameNode ?? false,
+            minigameAttempts = currentMinigameAttempts,
+            minigameCompleted = currentNodeMinigameCompleted
         };
     }
 }
@@ -452,4 +528,7 @@ public struct DialogNavigationState
     public bool shouldAutoAdvance;
     public float autoAdvanceDelay;
     public int choiceCount;
+    public bool isMinigameNode;
+    public int minigameAttempts;
+    public bool minigameCompleted;
 }

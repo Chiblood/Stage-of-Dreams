@@ -49,6 +49,12 @@ public class DialogNode
     [SerializeField] private UnityEvent _onDialogStart;
     [SerializeField] private UnityEvent _onDialogEnd;
 
+    // Minigame Settings - NEW for integrated minigame support
+    [SerializeField] private bool _isMinigameNode = false;
+    [SerializeField] private int _correctChoiceIndex = 0;
+    [SerializeField] private int _maxRetries = 3;
+    [SerializeField] private bool _allowUnlimitedRetries = true;
+
     #endregion
 
     #region Properties with Get/Set Methods
@@ -167,6 +173,34 @@ public class DialogNode
         set => _onDialogEnd = value;
     }
 
+    /// <summary> Whether this node is a minigame node (requires correct choice to progress) </summary>
+    public bool IsMinigameNode
+    {
+        get => _isMinigameNode;
+        set => _isMinigameNode = value;
+    }
+
+    /// <summary> Index of the correct choice for minigame nodes (0-based) </summary>
+    public int CorrectChoiceIndex
+    {
+        get => _correctChoiceIndex;
+        set => _correctChoiceIndex = Mathf.Max(0, value);
+    }
+
+    /// <summary> Maximum number of retry attempts for minigame nodes (0 = unlimited if allowUnlimitedRetries is true) </summary>
+    public int MaxRetries
+    {
+        get => _maxRetries;
+        set => _maxRetries = Mathf.Max(0, value);
+    }
+
+    /// <summary> Whether to allow unlimited retries for minigame nodes </summary>
+    public bool AllowUnlimitedRetries
+    {
+        get => _allowUnlimitedRetries;
+        set => _allowUnlimitedRetries = value;
+    }
+
     #endregion
 
     #region Computed Properties
@@ -179,6 +213,9 @@ public class DialogNode
 
     /// <summary> True if this node auto-advances to another node </summary>
     public bool HasAutoAdvance => _childNode != null && _autoAdvanceDelay >= 0f;
+
+    /// <summary> True if this is a valid minigame node (has minigame flag and at least 2 choices) </summary>
+    public bool IsValidMinigameNode => _isMinigameNode && HasChoices && _choices.Count >= 2;
 
     #endregion
 
@@ -209,6 +246,12 @@ public class DialogNode
         _endEvents = new List<DialogEvent>();
         _onDialogStart = new UnityEvent();
         _onDialogEnd = new UnityEvent();
+        
+        // Initialize minigame settings
+        _isMinigameNode = false;
+        _correctChoiceIndex = 0;
+        _maxRetries = 3;
+        _allowUnlimitedRetries = true;
     }
 
     #endregion
@@ -381,6 +424,22 @@ public class DialogNode
         // Cannot have both choices and auto-advance
         if (HasChoices && HasAutoAdvance)
             return false;
+
+        // Validate minigame settings if this is a minigame node
+        if (_isMinigameNode)
+        {
+            if (!HasChoices || _choices.Count < 2)
+            {
+                Debug.LogWarning($"Minigame node '{GetDisplayName()}' must have at least 2 choices!");
+                return false;
+            }
+            
+            if (_correctChoiceIndex < 0 || _correctChoiceIndex >= _choices.Count)
+            {
+                Debug.LogWarning($"Minigame node '{GetDisplayName()}' has invalid correct choice index: {_correctChoiceIndex} (must be 0-{_choices.Count - 1})");
+                return false;
+            }
+        }
 
         // Validate all events
         if (_startEvents != null)

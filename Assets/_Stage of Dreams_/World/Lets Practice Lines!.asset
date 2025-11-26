@@ -15,9 +15,9 @@ MonoBehaviour:
   treeName: CalmDialogTutorial
   description: Calm Dialog Minigame
   startingNode:
-    rid: -2
+    rid: 1825779219906691078
   allNodes:
-  - rid: -2
+  - rid: 1825779219906691078
   autoUpdateNodeList: 1
   validateOnSave: 1
   references:
@@ -25,3 +25,23 @@ MonoBehaviour:
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
+    - rid: 1825779219906691078
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        _nodeId: 
+        _characterName: Speaker
+        _dialogText: Enter dialog text here
+        _isPlayerSpeaking: 0
+        _autoAdvanceDelay: 0
+        _parentNodes: []
+        _childNode:
+          rid: -2
+        _choices: []
+        _startEvents: []
+        _endEvents: []
+        _onDialogStart:
+          m_PersistentCalls:
+            m_Calls: []
+        _onDialogEnd:
+          m_PersistentCalls:
+            m_Calls: []

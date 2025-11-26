@@ -70,16 +70,18 @@ Please assist me in learning by:
 - **Needs explanations for**: Game architecture patterns, Unity best practices, event systems
 
 ### Project Progress Tracking
-**Current Sprint**: Dialog System Enhancement (Feature/DialogNode-Functionality branch)
-- âœ“ Dialog Tree system implemented with ScriptableObjects
-- âœ“ Dialog Node structure with choices and auto-advance
-- âœ“ Dialog Event system with method delegates
-- âœ“ Integration between NPCContent, DialogueTrigger, DialogManager, and DialogNavigator
-- âœ“ UI Toolkit integration for dialog display
-- âœ“ Mermaid architecture diagrams added to Class Hierarchy
-- âœ“ Documentation consolidated and standardized
-- â³ Working on: Dialog node functionality refinement and testing
-- â³ Next up: Audience interaction system, turn-based combat
+**Current Sprint**: GameState Management & Minigame Foundation (Feature/Minigames branch)
+- Dialog Tree system implemented with ScriptableObjects
+- Dialog Node structure with choices and auto-advance
+- Dialog Event system with method delegates
+- Integration between NPCContent, DialogueTrigger, DialogManager, and DialogNavigator
+- UI Toolkit integration for dialog display
+- Mermaid architecture diagrams added to Class Hierarchy
+- Documentation consolidated and standardized
+- **GameStateManager singleton implemented** - centralized state tracking
+- **GameStateData ScriptableObject** - save/load infrastructure
+- Working on: Minigame implementation (CalmDialog, RememberTheScript)
+- Next up: Minigame UI, audience interaction system, turn-based combat
 
 **Completed Features**:
 1. Core dialog tree system with convergent path support
@@ -89,10 +91,13 @@ Please assist me in learning by:
 5. Basic stage and spotlight system
 6. Comprehensive documentation with visual diagrams
 7. Consolidated documentation structure
+8. **GameState management system** (audience metrics, scores, progression, session tracking)
+9. **Event-driven state updates** for UI integration
 
 **Known Issues/Technical Debt**:
+- Need to implement minigame UI components
 - Need to implement turn-based system
-- Audience mood/reaction system pending
+- Audience mood/reaction system partially implemented (tracking in GameState, needs audio/visual feedback)
 - Performance testing for large dialog trees needed
 
 ### Code Quality Standards Jack is Learning
@@ -264,6 +269,85 @@ private void ValidateSetup()
 private void TestFunctionality()
 {
     // Test code here
+}
+```
+
+### Singleton Pattern (for Global Managers)
+```csharp
+public class GameStateManager : MonoBehaviour
+{
+    private static GameStateManager _instance;
+    public static GameStateManager Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = FindFirstObjectByType<GameStateManager>();
+                
+                if (_instance == null)
+                {
+                    GameObject go = new GameObject("GameStateManager");
+                    _instance = go.AddComponent<GameStateManager>();
+                }
+            }
+            return _instance;
+        }
+    }
+    
+    private void Awake()
+    {
+        // Singleton enforcement
+        if (_instance != null && _instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        
+        _instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+}
+```
+
+### GameState Integration Pattern
+```csharp
+// When implementing minigames or game features:
+
+// 1. Start tracking
+GameStateManager.Instance.StartMinigame("minigame_id");
+
+// 2. Update state based on actions
+GameStateManager.Instance.AdjustApplause(10f);
+GameStateManager.Instance.AddSceneScore(50);
+
+// 3. End tracking
+GameStateManager.Instance.EndMinigame("minigame_id", success: true);
+
+// 4. Record progression
+GameStateManager.Instance.RecordSuccess();
+GameStateManager.Instance.UnlockAbility("ability_id");
+```
+
+### Event-Driven UI Updates
+```csharp
+// Subscribe to GameState events for automatic UI updates
+private void OnEnable()
+{
+    GameStateManager.Instance.OnApplauseScoreChanged += UpdateApplauseUI;
+    GameStateManager.Instance.OnSceneScoreChanged += UpdateScoreUI;
+}
+
+private void OnDisable()
+{
+    GameStateManager.Instance.OnApplauseScoreChanged -= UpdateApplauseUI;
+    GameStateManager.Instance.OnSceneScoreChanged -= UpdateScoreUI;
+}
+
+private void UpdateApplauseUI(float newScore)
+{
+    // Update UI elements
+    applauseLabel.text = $"Applause: {newScore:F0}";
 }
 ```
 

@@ -1,4 +1,4 @@
-﻿# Stage of Dreams - Class Hierarchy
+# Stage of Dreams - Class Hierarchy
 
 ## Architecture Diagrams
 
@@ -162,7 +162,11 @@ classDiagram
 graph TB
     subgraph "Core Systems"
         MENU[Main Menu Events]
+        GSM[GameStateManager]
+        GSD[GameStateData SO]
         GM[GameManager - TBD]
+        
+        GSM -->|saves/loads| GSD
     end
     
     subgraph "Player Systems"
@@ -191,6 +195,8 @@ graph TB
         NPC --> DT
         DT --> DN
         DN --> DCHC
+        
+        DNAV -.updates.- GSM
     end
     
     subgraph "Stage Systems"
@@ -202,6 +208,8 @@ graph TB
         SPOTCTRL --> SPOT
         SPOTCTRL --> LIGHT
         LIGHT --> SPOT
+        
+        AUD -.updates.- GSM
     end
     
     subgraph "Interfaces"
@@ -225,6 +233,12 @@ graph TB
     DMGR -.controls.- PC
     SPOTCTRL -.integrates.- DMGR
     
+    GSM -.provides state.- DNAV
+    GSM -.provides state.- AUD
+    GSM -.provides state.- LIGHT
+    
+    style GSM fill:#FFD700,stroke:#333,stroke-width:3px,color:#000
+    style GSD fill:#90EE90,stroke:#333,stroke-width:2px,color:#000
     style DMGR fill:#90EE90,stroke:#333,stroke-width:2px,color:#000
     style DNAV fill:#90EE90,stroke:#333,stroke-width:2px,color:#000
     style DTRIG fill:#90EE90,stroke:#333,stroke-width:2px,color:#000
@@ -437,7 +451,34 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
   - `OnExitButtonClicked()`
 - **Description:** Handles main menu UI interactions using UI Toolkit, manages scene transitions and application exit
 
-### â³ GameManager.cs (TBD)
+### âœ" GameStateManager.cs
+- **Pattern:** Singleton MonoBehaviour with ScriptableObject backing
+- **Properties:**
+  - `GameStateData defaultState`
+  - `float audienceDecayRate`
+  - `float audienceMoodSmoothTime`
+  - `int maxScorePerScene`
+  - Audience: `CurrentApplauseScore`, `CurrentBooScore`, `AudienceMood`, `CurrentAudienceReaction`
+  - Performance: `CurrentSceneScore`, `CurrentDreamScore`, `TotalGameScore`, `ConsecutiveSuccesses`, `ConsecutiveFailures`
+  - Progression: `CurrentDreamIndex`, `CurrentActIndex`, `IsSceneCompleted()`, `HasAbility()`, `HasAchievement()`
+  - Turn-Based: `IsInTurnBasedMode`, `CurrentTurn`, `RemainingActions`
+  - Session: `SessionDuration`, `TotalMinigamesAttempted`, `TotalMinigamesCompleted`, `MinigameSuccessRate`
+- **Methods:**
+  - Audience: `AdjustApplause()`, `AdjustBoo()`, `SetApplause()`, `SetBoo()`, `ResetAudienceScores()`
+  - Performance: `AddSceneScore()`, `RecordSuccess()`, `RecordFailure()`, `ResetSceneScore()`, `ResetDreamScore()`
+  - Progression: `CompleteScene()`, `UnlockAbility()`, `EarnAchievement()`, `AdvanceToDream()`, `AdvanceToAct()`
+  - Turn-Based: `StartTurnBasedMode()`, `EndTurnBasedMode()`, `NextTurn()`, `UsePlayerAction()`
+  - Minigame: `StartMinigame()`, `EndMinigame()`, `GetMinigameRetries()`
+  - Save/Load: `SaveToData()`, `LoadFromData()`
+- **Events:**
+  - Audience: `OnApplauseScoreChanged`, `OnBooScoreChanged`, `OnAudienceMoodChanged`
+  - Performance: `OnSceneScoreChanged`, `OnDreamScoreChanged`, `OnTotalScoreChanged`
+  - Progression: `OnSceneCompleted`, `OnAbilityUnlocked`, `OnAchievementEarned`, `OnDreamIndexChanged`, `OnActIndexChanged`
+  - Turn-Based: `OnTurnBasedModeStarted`, `OnTurnBasedModeEnded`, `OnTurnChanged`, `OnActionsRemainingChanged`
+  - Minigame: `OnMinigameStarted`, `OnMinigameEnded`
+- **Description:** Centralized singleton for tracking all game state including audience metrics, scores, progression, turn-based state, and session data. Provides event-driven updates for UI integration. Persists across scenes with DontDestroyOnLoad.
+
+### âœ" GameManager.cs (TBD)
 - **Properties:**
   - `GameState currentGameState`
   - `int currentDreamIndex`
@@ -573,7 +614,7 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
 - **Methods:**
   - `Start()`, `OnValidate()`
   - `AudienceApplause(int intensity)` (1-10 scale)
-  - `AudienceReaction(string reactionType)` (laugh, gasp, boo, cheer)
+  - `AudienceReaction(String reactionType)` (laugh, gasp, boo, cheer)
   - `SetAudienceMood(float moodLevel)` (0.0-1.0 scale)
   - `CreateSilence()`, `StandingOvation()`
   - `BoostEngagement(float amount)`
@@ -644,24 +685,38 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
 
 ## World/Dialog Data Classes
 
-### âœ“ Dialog Node.cs (DialogNode)
+### âœ" Dialog Node.cs (DialogNode)
 - **Properties:**
   - Details not fully examined but used throughout dialog system
 - **Description:** Core dialog node structure with choices and events
 
-### âœ“ Dialog Tree.cs (DialogTree)
+### âœ" Dialog Tree.cs (DialogTree)
 - **Properties:**
   - Details not fully examined but used throughout dialog system
 - **Methods:**
   - `IsValid()`, `GetMainDialogTree()`
 - **Description:** Container for dialog nodes and navigation structure
 
-### âœ“ Dialog Choice.cs (DialogChoice)
+### âœ" Dialog Choice.cs (DialogChoice)
 - **Properties:**
   - Details not fully examined but integrated with dialog system
 - **Description:** Individual choice options within dialog nodes
 
-### âœ“ NPC Content.cs (NPCContent)
+### âœ" GameStateData.cs
+- **Pattern:** ScriptableObject for serialization
+- **Properties:**
+  - Audience: `applauseScore`, `booScore`, `audienceMood`
+  - Performance: `sceneScore`, `dreamScore`, `totalScore`, `consecutiveSuccesses`, `consecutiveFailures`
+  - Progression: `completedScenes`, `unlockedAbilities`, `earnedAchievements`, `currentDreamIndex`, `currentActIndex`
+  - Session: `totalMinigamesAttempted`, `totalMinigamesCompleted`
+- **Methods:**
+  - `ResetToDefaults()` - Reset all values to defaults
+  - `ValidateData()` - Validate data integrity with range checks
+  - `PrintSummary()` - Print current state summary to console
+  - `OnValidate()` - Clamp values automatically in inspector
+- **Description:** Serializable game state data container for saving/loading. ScriptableObject allows creating default state assets and easy inspector editing. Used by GameStateManager for persistence.
+
+### âœ" NPC Content.cs (NPCContent)
 - **Properties:**
   - `string npcName`
   - Dialog trees and content (details not fully examined)
@@ -670,12 +725,12 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
   - `OnDialogStarted()`, `OnDialogEnded()`
 - **Description:** Container for NPC data including dialog trees, used by dialog triggers
 
-### âœ“ Example NPC.cs
+### âœ" Example NPC.cs
 - **Description:** Example implementation or template for NPCs
 
 ## Interfaces
 
-### âœ“ ISpotlightCharacter
+### âœ" ISpotlightCharacter
 - **Methods:**
   - `Vector2 GetPosition()`
   - `string GetCharacterName()`
@@ -683,7 +738,7 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
   - `bool IsInSpotlight()`
 - **Description:** Interface for characters that can be tracked by spotlights
 
-### âœ“ PlayerCharacterWrapper
+### âœ" PlayerCharacterWrapper
 - **Description:** Wrapper to make PlayerScript compatible with ISpotlightCharacter interface
 
 ## TBD Classes (Not Yet Implemented)
@@ -819,10 +874,13 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
 - `DancingCombat` // Press arrow keys in rhythm
 - `DramaticLock` // Button mash + type script combo
 
-### public enum AudienceReaction
-- `Applause` // Positive reaction from the audience
-- `Boo` // Negative reaction from the audience
-- `Confused` // Audience is unsure how to react
+### âœ" public enum AudienceReaction
+- `Hostile` // 0.0 - 0.2 mood range
+- `Disappointed` // 0.2 - 0.4 mood range
+- `Neutral` // 0.4 - 0.6 mood range
+- `Supportive` // 0.6 - 0.8 mood range
+- `Enthusiastic` // 0.8 - 1.0 mood range
+- **Description:** Used by GameStateManager to categorize audience mood into discrete reaction levels
 
 ### public enum SpotlightMovementType
 - `Static` // Doesn't move
@@ -838,6 +896,9 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
 - The dialog system is highly developed with comprehensive validation and event systems
 - Spotlight and lighting systems are feature-complete with advanced functionality
 - Player controller integrates well with other systems
+- **GameState management system is now implemented** - provides centralized state tracking for audience metrics, scores, progression, and minigames
+- GameStateManager uses singleton pattern with event-driven architecture for UI integration
+- GameStateData ScriptableObject enables easy default state configuration and save/load functionality
 - Most core gameplay systems are implemented except for minigames and stage management
 - The architecture supports easy extension for the remaining TBD classes
-- **Last Updated**: Documentation consolidated with coding patterns, standardized status indicators
+- **Last Updated**: Added GameStateManager and GameStateData (January 2025)

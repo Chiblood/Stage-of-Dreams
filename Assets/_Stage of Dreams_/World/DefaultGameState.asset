@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efd8603a8bd3973418e8fb94d5f928dd, type: 3}
+  m_Name: DefaultGameState
+  m_EditorClassIdentifier: Assembly-CSharp::GameStateData
+  applauseScore: 50
+  booScore: 0
+  audienceMood: 0.5
+  sceneScore: 0
+  dreamScore: 0
+  totalScore: 0
+  consecutiveSuccesses: 0
+  consecutiveFailures: 0
+  completedScenes: []
+  unlockedAbilities: []
+  earnedAchievements: []
+  currentDreamIndex: 0
+  currentActIndex: 0
+  totalMinigamesAttempted: 0
+  totalMinigamesCompleted: 0

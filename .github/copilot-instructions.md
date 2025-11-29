@@ -134,40 +134,40 @@ Please assist me in learning by:
 ### Folder Structure
 ```
 Assets/
-â”œâ”€â”€ _Stage of Dreams_/
-â”‚   â”œâ”€â”€ Scripts/
-â”‚   â”‚   â”œâ”€â”€ Dialog/              # Dialog system components
-â”‚   â”‚   â”‚   â”œâ”€â”€ DialogManager.cs       # UI controller
-â”‚   â”‚   â”‚   â”œâ”€â”€ DialogNavigator.cs     # Navigation logic
-â”‚   â”‚   â”‚   â”œâ”€â”€ DialogueTrigger.cs     # Interaction trigger
-â”‚   â”‚   â”‚   â”œâ”€â”€ DialogEvents.cs        # Event system
-â”‚   â”‚   â”‚   â””â”€â”€ Examples and Guides/   # Utility classes (not in main docs)
-â”‚   â”‚   â”‚       â”œâ”€â”€ CreateLinearDialog.cs
-â”‚   â”‚   â”‚       â””â”€â”€ DialogTreeFactory.cs
-â”‚   â”‚   â”œâ”€â”€ PlayerScripts/       # Player-related scripts
-â”‚   â”‚   â”‚   â”œâ”€â”€ Player_Controller.cs
-â”‚   â”‚   â”‚   â”œâ”€â”€ PlayerInteraction.cs
-â”‚   â”‚   â”‚   â””â”€â”€ Interactable.cs
-â”‚   â”‚   â””â”€â”€ StageScripts/        # Stage environment scripts
-â”‚   â”‚       â”œâ”€â”€ AudienceManager.cs
-â”‚   â”‚       â”œâ”€â”€ LightingManager.cs
-â”‚   â”‚       â”œâ”€â”€ Spotlight.cs
-â”‚   â”‚       â””â”€â”€ SpotlightController.cs
-â”‚   â””â”€â”€ World/                   # Data structures (ScriptableObjects)
-â”‚       â”œâ”€â”€ Dialog Tree.cs       # Dialog tree container
-â”‚       â”œâ”€â”€ Dialog Node.cs       # Individual dialog node
-â”‚       â”œâ”€â”€ Dialog Choice.cs     # Dialog choice data
-â”‚       â”œâ”€â”€ Character Content.cs # Base character data
-â”‚       â””â”€â”€ Dream 1/             # Level-specific content
-â”œâ”€â”€ Scenes/                      # Unity scenes
-â”œâ”€â”€ Prefabs/                     # Reusable game objects
-â””â”€â”€ UI/                          # UI Toolkit assets (UXML/USS)
+|-- _Stage of Dreams_/
+|   |-- Scripts/
+|   |   |-- Dialog/              # Dialog system components
+|   |   |   |-- DialogManager.cs       # UI controller
+|   |   |   |-- DialogNavigator.cs     # Navigation logic
+|   |   |   |-- DialogueTrigger.cs     # Interaction trigger
+|   |   |   |-- DialogEvents.cs        # Event system
+|   |   |   |-- Examples and Guides/   # Utility classes (not in main docs)
+|   |   |       |-- CreateLinearDialog.cs
+|   |   |       |-- DialogTreeFactory.cs
+|   |   |-- PlayerScripts/       # Player-related scripts
+|   |   |   |-- Player_Controller.cs
+|   |   |   |-- PlayerInteraction.cs
+|   |   |   |-- Interactable.cs
+|   |   |-- StageScripts/        # Stage environment scripts
+|   |       |-- AudienceManager.cs
+|   |       |-- LightingManager.cs
+|   |       |-- Spotlight.cs
+|   |       |-- SpotlightController.cs
+|   |-- World/                   # Data structures (ScriptableObjects)
+|       |-- Dialog Tree.cs       # Dialog tree container
+|       |-- Dialog Node.cs       # Individual dialog node
+|       |-- Dialog Choice.cs     # Dialog choice data
+|       |-- Character Content.cs # Base character data
+|       |-- Dream 1/             # Level-specific content
+|-- Scenes/                      # Unity scenes
+|-- Prefabs/                     # Reusable game objects
+|-- UI/                          # UI Toolkit assets (UXML/USS)
 
 Docs/                            # Documentation folder
-â”œâ”€â”€ Class Hierarchy.md           # Complete architecture & class reference
-â”œâ”€â”€ Project_Roadmap.md           # Feature planning & milestones
-â”œâ”€â”€ TROUBLESHOOTING.MD           # Known issues & solutions
-â””â”€â”€ Requirements.md              # Project requirements
+|-- Class Hierarchy.md           # Complete architecture & class reference
+|-- Project_Roadmap.md           # Feature planning & milestones
+|-- TROUBLESHOOTING.MD           # Known issues & solutions
+|-- Requirements.md              # Project requirements
 ```
 
 ### Technology Stack
@@ -257,6 +257,41 @@ private void OnDisable()
 }
 ```
 
+### DialogEvent Pattern (Custom Event System)
+```csharp
+// Creating custom dialog events
+[System.Serializable]
+public class MyCustomEvent : DialogEvent
+{
+    [SerializeField] private string myParameter;
+    
+    protected override void OnExecute()
+    {
+        // Your custom logic here
+        MyGameSystem.Instance?.DoSomething(myParameter);
+    }
+    
+    public override bool IsValid()
+    {
+        return base.IsValid() && !string.IsNullOrEmpty(myParameter);
+    }
+}
+
+// Adding events to dialog nodes
+DialogNode node = tree.GetStartingNode();
+node.AddStartEvent(new MyCustomEvent { myParameter = "value" });
+
+// Events execute automatically when:
+// - Node starts (StartEvents)
+// - Node ends (EndEvents)  
+// - Choice selected (ChoiceEvents)
+
+// Events support method delegates
+var evt = new MethodCallEvent();
+evt.SetMethod(() => Debug.Log("Custom action!"));
+node.AddStartEvent(evt);
+```
+
 ### Context Menu Debugging
 ```csharp
 [ContextMenu("Validate Setup")]
@@ -270,229 +305,51 @@ private void TestFunctionality()
 {
     // Test code here
 }
-```
 
-### Singleton Pattern (for Global Managers)
-```csharp
-public class GameStateManager : MonoBehaviour
-{
-    private static GameStateManager _instance;
-    public static GameStateManager Instance
-    {
-        get
-        {
-            if (_instance == null)
-            {
-                _instance = FindFirstObjectByType<GameStateManager>();
-                
-                if (_instance == null)
-                {
-                    GameObject go = new GameObject("GameStateManager");
-                    _instance = go.AddComponent<GameStateManager>();
-                }
-            }
-            return _instance;
-        }
-    }
-    
-    private void Awake()
-    {
-        // Singleton enforcement
-        if (_instance != null && _instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        
-        _instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
-}
-```
-
-### GameState Integration Pattern
-```csharp
-// When implementing minigames or game features:
-
-// 1. Start tracking
-GameStateManager.Instance.StartMinigame("minigame_id");
-
-// 2. Update state based on actions
-GameStateManager.Instance.AdjustApplause(10f);
-GameStateManager.Instance.AddSceneScore(50);
-
-// 3. End tracking
-GameStateManager.Instance.EndMinigame("minigame_id", success: true);
-
-// 4. Record progression
-GameStateManager.Instance.RecordSuccess();
-GameStateManager.Instance.UnlockAbility("ability_id");
-```
-
-### Event-Driven UI Updates
-```csharp
-// Subscribe to GameState events for automatic UI updates
-private void OnEnable()
-{
-    GameStateManager.Instance.OnApplauseScoreChanged += UpdateApplauseUI;
-    GameStateManager.Instance.OnSceneScoreChanged += UpdateScoreUI;
-}
-
-private void OnDisable()
-{
-    GameStateManager.Instance.OnApplauseScoreChanged -= UpdateApplauseUI;
-    GameStateManager.Instance.OnSceneScoreChanged -= UpdateScoreUI;
-}
-
-private void UpdateApplauseUI(float newScore)
-{
-    // Update UI elements
-    applauseLabel.text = $"Applause: {newScore:F0}";
-}
 ```
 
 ---
 
-## Future Implementation Plans
+## Dialog System Documentation
 
-### Phase 1: Core Systems (Current)
-- âœ“ Dialog system with branching conversations
-- âœ“ Player movement and interaction
-- âœ“ Dialog event system refinement
-- âœ“ Documentation structure
+### Primary Resources
+- **User Guide**: `Docs/Dialog-System-Complete-Guide.md` - For designers and content creators
+- **Technical Reference**: `Docs/Dialog-System-Technical-Reference.md` - For programmers and system integrators
+- **Class Hierarchy**: `Docs/Class Hierarchy.md` - Complete architecture overview
 
-### Phase 2: Game Mechanics
-- â³ Turn-based combat/action system
-- â³ Audience mood and reaction system
-- â³ Stage ability system (improvise, interact, perform)
-- â³ Performance scoring system
+### When to Use Each
+- Learning the system → User Guide
+- Creating dialog content → User Guide
+- Troubleshooting → User Guide > Troubleshooting section
+- Integrating with code → Technical Reference
+- Extending the system → Technical Reference > Extension Guide
+- Understanding architecture → Technical Reference > System Architecture
+- **Creating custom events** → Technical Reference > Event System
 
-### Phase 3: Content & Polish
-- â³ Complete first "Dream" level
-- â³ Multiple NPC interactions
-- â³ Sound effects and music
-- â³ Animations and visual effects
-- â³ UI polish and transitions
+### Dialog Event System Quick Reference
+The dialog system uses a polymorphic event system with method delegate support:
 
-### Phase 4: Advanced Features
-- â³ Save/load system
-- â³ Multiple "Dreams" (levels)
-- â³ Character progression
-- â³ Achievements/unlockables
+**Base Event Types:**
+- `DialogEvent` - Abstract base class with Execute() and IsValid()
+- `MethodCallEvent` - Execute any Action delegate
+- `ParameterizedMethodEvent<T>` - Execute methods with parameters
+- `StaticMethodCallEvent` - Call static methods via reflection
 
----
-
-## AI Assistance Guidelines
-
-### When I Ask for Help With...
-
-**Architecture Questions**:
-- Reference the existing MVC pattern in dialog system
-- Check `Docs\Class Hierarchy.md` for current architecture diagrams
-- Consider event-driven approaches
-- Suggest ScriptableObject-based data structures
-- **Update Class Hierarchy documentation if suggesting architectural changes**
-
-**Code Examples**:
-- Follow the property pattern with backing fields
-- Include validation methods
-- Add context menu debug options
-- Use XML documentation comments
-- **Update documentation with new patterns if they deviate from established ones**
-
-**Bug Fixes**:
-- Ask me to run context menu validation tools first
-- Check Unity console for errors
-- Verify serialization and references
-- Test in both Edit and Play modes
-- **Document the issue and solution in TROUBLESHOOTING.MD**
-
-**New Features**:
-- Break down into small, testable components
-- Consider how it integrates with existing systems
-- Plan for validation and debugging tools
-- Think about ScriptableObject data storage
-- **Update Class Hierarchy.md when adding new core classes**
-- **Add to Utility Classes section if creating helper/example code**
-- **Change â³ status to âœ“ when complete**
-
-**Documentation Tasks**:
-- When asked to update documentation, check ALL related docs
-- Identify and resolve any conflicting information
-- Maintain consistency across documentation files
-- Keep Mermaid diagrams in sync with code
-- Ask for clarification if documentation conflicts with code
-
-### Communication Style
-- Explain *why*, not just *how*
-- Reference Unity documentation when relevant
-- Reference `Docs\Class Hierarchy.md` for architecture context
-- Provide step-by-step instructions
-- Include warnings about common pitfalls
-- Suggest testing approaches
-- **Remind Jack to update documentation after making changes**
-- **Use ASCII-safe characters in Debug.Log statements (no emojis)**
-
----
-
-## Unity Best Practices
-
-### Debug Logging Standards
-
-Unity's Console window has limited Unicode support. **Always use ASCII-safe characters in debug logs.**
-
-#### ✅ DO Use:
+**Usage Pattern:**
 ```csharp
-Debug.Log("[OK] Operation successful");
-Debug.LogWarning("[WARNING] Potential issue detected");
-Debug.LogError("[ERROR] Operation failed");
-Debug.Log("[INFO] Status update");
-Debug.Log("[FIXED] Issue resolved");
+// Add event to node
+var evt = new MethodCallEvent();
+evt.SetMethod(() => GameStateManager.Instance.AdjustApplause(10f));
+node.AddStartEvent(evt);
+
+// Add event to choice
+var choiceEvt = new ParameterizedMethodEvent<string>();
+choiceEvt.SetMethod(MinigameManager.Instance.StartMinigame, "calm_dialog");
+choice.AddChoiceEvent(choiceEvt);
 ```
 
-#### ❌ DON'T Use:
-```csharp
-Debug.Log("✅ Operation successful");  // Displays as ?
-Debug.LogWarning("⚠️ Warning");        // Displays as ?
-Debug.LogError("❌ Error");            // Displays as ?
-Debug.Log("📊 Statistics");            // Displays as ?
-```
-
-#### Emoji Replacement Guide
-
-| Emoji | ASCII Replacement | Use Case |
-|-------|------------------|----------|
-| ✅ | `[OK]` or `[SUCCESS]` | Success/Valid |
-| ❌ | `[ERROR]` or `[!]` | Error/Invalid |
-| ⚠️ | `[WARNING]` or `[WARN]` | Warning |
-| 🔧 | `[FIXED]` | Fixed/Repaired |
-| 📊 | `[STATS]` or `[#]` | Statistics |
-| ✨ | `[NEW]` or `[CREATED]` | Created |
-| 🎯 | `[TARGET]` | Goal/Objective |
-| 💡 | `[TIP]` or `[INFO]` | Information |
-| 🚀 | `[START]` | Started |
-| 🎉 | `[DONE]` or `[COMPLETE]` | Completed |
-| 🐛 | `[BUG]` | Bug/Issue |
-| 🔍 | `[SEARCH]` or `[FIND]` | Searching |
-| ⏱️ | `[TIME]` | Timing/Duration |
-| 🎭 | `[DIALOG]` or `[STAGE]` | Stage/Dialog system |
-
-#### Example Implementations
-
-**Before (with emojis)**:
-```csharp
-Debug.Log($"✅ DialogTree validated: {nodeCount} nodes");
-Debug.LogWarning($"⚠️ Missing speaker name in node");
-Debug.LogError($"❌ Failed to load dialog tree");
-Debug.Log($"🎭 Starting dialog with {npcName}");
-```
-
-**After (ASCII-safe)**:
-```csharp
-Debug.Log($"[OK] DialogTree validated: {nodeCount} nodes");
-Debug.LogWarning($"[WARNING] Missing speaker name in node");
-Debug.LogError($"[ERROR] Failed to load dialog tree");
-Debug.Log($"[DIALOG] Starting dialog with {npcName}");
-```
-
----
+**When to Use:**
+- Node start/end events for setup/cleanup
+- Choice events for game system integration
+- Custom events for game-specific behaviors
+- Prefer DialogEvents over UnityEvents for type safety

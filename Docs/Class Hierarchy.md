@@ -354,47 +354,294 @@ graph TD
 
 ### Pattern: Model-View-Controller (MVC) with Event-Driven Communication
 
+### Documentation References
+
+**📚 Complete Documentation:**
+- **User Guide**: [`Docs/Dialog-System-Complete-Guide.md`](./Dialog-System-Complete-Guide.md) - For designers and content creators
+- **Technical Reference**: [`Docs/Dialog-System-Technical-Reference.md`](./Dialog-System-Technical-Reference.md) - For developers and system integrators
+- **DialogEvents Guide**: [`Docs/DialogEvents-Scaffolding-Guide.md`](./DialogEvents-Scaffolding-Guide.md) - Event system documentation
+- **Workflow Guide**: [`Docs/DialogTree-Editing-Workflow-Guide.md`](./DialogTree-Editing-Workflow-Guide.md) - Detailed editor workflow
+- **Node ID Guide**: [`Docs/DialogNodeID-NamingConvention.md`](./DialogNodeID-NamingConvention.md) - Naming conventions
+
+**📦 Archived Documentation:**
+- Historical development documents: [`Docs/Archive/Dialog-Development/`](./Archive/Dialog-Development/)
+
 ### Components
 
 #### A. Data Layer (Model)
 - **`DialogTree`** (ScriptableObject): Container for entire conversation tree
+  - Location: `Assets/_Stage of Dreams_/World/Dialog Tree.cs`
   - Stores starting node and manages node collection
   - Provides tree traversal and validation methods
   - Supports named nodes for convergent dialog paths
+  - Properties:
+    - `string treeName` - Display name
+    - `string description` - Tree description
+    - `DialogNode startingNode` - Entry point
+    - `List<DialogNode> allNodes` - All nodes in tree
+    - `bool autoUpdateNodeList` - Auto-refresh setting
+    - `bool validateOnSave` - Validation on save
+  - Key Methods:
+    - `GetStartingNode()` - Get entry point
+    - `GetAllNodes()` - Get all nodes
+    - `FindNodeByName(string)` - Find by ID
+    - `GetConvergentNodes()` - Get nodes with multiple parents
+    - `GetEndNodes()` - Get terminal nodes
+    - `ValidateTree()` - Comprehensive validation
+    - `RefreshNodeList()` - Update node collection
+    - `ResolveNamedReferences()` - Resolve named node references
+    - `CreateStartingNode()` - Create entry point
+    - `AddChoiceNode()` - Add branching node
+    - `AddSequentialNode()` - Add auto-advance node
   
-- **`DialogNode`** (ScriptableObject): Individual conversation node
-  - Properties: speaker name, dialog text, player speaking flag
-  - Supports: auto-advance, choices, parent/child relationships
-  - Events: start events, end events
+- **`DialogNode`** (Serializable Class): Individual conversation node
+  - Location: `Assets/_Stage of Dreams_/World/Dialog Node.cs`
+  - Properties:
+    - Node Identification:
+      - `string NodeName` - Unique identifier (e.g., `act1_director_intro_01`)
+    - Dialog Content:
+      - `string CharacterName` - Speaker name
+      - `string DialogText` - Dialog content (TextArea 3-6 lines)
+      - `bool IsPlayerSpeaking` - Player dialog flag
+    - Flow Control:
+      - `float AutoAdvanceDelay` - Auto-advance timing (0 = manual advance)
+    - Tree Structure:
+      - `List<DialogNode> ParentNodes` - Incoming connections (supports convergent paths)
+      - `DialogNode ChildNode` - Auto-advance target (null if has choices)
+      - `List<DialogChoice> Choices` - Player choice options
+    - Events:
+      - `List<DialogEvent> StartEvents` - Events triggered on node start
+      - `List<DialogEvent> EndEvents` - Events triggered on node end
+      - `UnityEvent OnDialogStart` - Legacy start event (backwards compatibility)
+      - `UnityEvent OnDialogEnd` - Legacy end event (backwards compatibility)
+    - Computed Properties:
+      - `bool IsRootNode` - True if no parent nodes
+      - `bool HasChoices` - True if has choice options
+      - `bool HasAutoAdvance` - True if has child node
+  - Key Methods:
+    - Hierarchy Management:
+      - `SetChildNode(DialogNode)` - Set auto-advance target
+      - `CreateChildNode(string speaker, string text, ...)` - Create and link child node
+      - `AddParentNode(DialogNode)` - Add parent reference
+      - `RemoveParentNode(DialogNode)` - Remove parent reference
+    - Choice Management:
+      - `AddChoice(string text, DialogNode target, string choiceId)` - Add player choice
+      - `RemoveChoice(int index)` - Remove choice by index
+    - Event Management:
+      - `AddStartEvent(DialogEvent)` - Add start event
+      - `AddEndEvent(DialogEvent)` - Add end event
+      - `RemoveStartEvent(int)` - Remove start event
+      - `RemoveEndEvent(int)` - Remove end event
+      - `ExecuteStartEvents()` - Trigger all start events
+      - `ExecuteEndEvents()` - Trigger all end events
+    - Validation:
+      - `IsValid()` - Validate node configuration
+      - `GetDisplayName()` - Get display name for UI
   
-- **`DialogChoice`** (ScriptableObject): Choice option in dialog
-  - Properties: choice text, target node, choice events
-  - Supports: named node references, convergent paths
+- **`DialogChoice`** (Serializable Class): Choice option in dialog
+  - Location: `Assets/_Stage of Dreams_/World/Dialog Choice.cs`
+  - Properties:
+    - Choice Data:
+      - `string ChoiceText` - Display text for choice
+      - `string ChoiceId` - Unique identifier for custom actions
+      - `List<bool> Conditions` - Conditions to show choice (not implemented yet)
+    - References:
+      - `DialogNode ParentNode` - Node this choice belongs to
+      - `DialogNode TargetNode` - Direct target node reference
+      - `string TargetNodeName` - Named target for convergent paths
+    - Events:
+      - `List<DialogEvent> ChoiceEvents` - Events triggered on selection
+      - `UnityEvent OnChoiceSelected` - Legacy choice event (backwards compatibility)
+    - Computed Properties:
+      - `bool HasNamedTarget` - True if using named reference
+      - `bool HasValidTarget` - True if has target (direct or named)
+      - `bool HasEvents` - True if has events to execute
+  - Key Methods:
+    - Event Management:
+      - `AddChoiceEvent(DialogEvent)` - Add choice event
+      - `RemoveChoiceEvent(int)` - Remove choice event
+      - `ExecuteChoiceEvents()` - Trigger all choice events
+    - Target Management:
+      - `CreateTargetNode(string speaker, string text, ...)` - Create and set target node
+      - `SetTarget(DialogNode)` - Set direct target reference
+      - `SetTargetByName(string)` - Set named target for convergent paths
+      - `ResolveNamedTarget(DialogTree)` - Resolve named target to actual node
+    - Validation:
+      - `IsValid()` - Validate choice configuration
+      - `IsTargetResolved()` - Check if named target is resolved
+      - `GetDisplayName()` - Get display name for UI
+      - `GetTargetInfo()` - Get target information for debugging
+- **`DialogEvent`** (Abstract Base Class): Polymorphic event system
+  - Location: `Assets/_Stage of Dreams_/Scripts/Dialog/DialogEvents.cs`
+  - Base Properties:
+    - `string eventName` - Event identifier
+    - `bool isEnabled` - Enable/disable flag
+    - `string description` - Event description
+    - `Action onExecuteDelegate` - Method delegate support
+    - `Func<bool> validationDelegate` - Custom validation
+  - Base Methods:
+    - `Execute()` - Trigger event
+    - `IsValid()` - Validate event
+    - `SetExecuteDelegate(Action)` - Set method delegate
+    - `SetValidationDelegate(Func<bool>)` - Set validation method
+  - Implemented Event Types:
+    - `MethodCallEvent` - Execute Action delegates
+    - `ParameterizedMethodEvent<T>` - Execute Action<T> with parameters
+    - `StaticMethodCallEvent` - Call static methods via reflection
+  - Usage: See [`DialogEvents-Scaffolding-Guide.md`](./DialogEvents-Scaffolding-Guide.md)
 
 #### B. Logic Layer (Controller)
 - **`DialogNavigator`**: Navigation logic engine
-  - Manages current node and navigation state
-  - Handles choice selection and auto-advance
-  - Fires navigation events (node changed, dialog ended, custom actions)
+  - Location: `Assets/_Stage of Dreams_/Scripts/Dialog/DialogNavigator.cs`
+  - Properties:
+    - `DialogNode currentNode` - Current position in tree
+    - `NPCContent currentNPC` - Current NPC context
+    - `DialogTree currentTree` - Current tree
+    - `bool IsActive` - Navigation active flag
+  - Events:
+    - `Action<DialogNode> OnNodeChanged` - Node navigation event
+    - `Action<DialogChoice, NPCContent> OnCustomActionTriggered` - Custom action event
+    - `Action OnDialogEnded` - Dialog completion event
+  - Key Methods:
+    - `StartDialog(NPCContent, string)` - Begin navigation
+    - `NavigateToNode(DialogNode)` - Move to specific node
+    - `SelectChoice(int)` - Handle choice selection
+    - `AdvanceDialog()` - Advance to next node
+    - `EndDialog()` - Complete navigation
+    - `SwitchToTree(string)` - Change dialog tree
+    - `GetCurrentState()` - Get navigation state
   
 - **`DialogueTrigger`**: Interaction trigger component
-  - Bridges player interaction with dialog system
-  - Validates NPC content and starts dialog sessions
-  - Manages dialog lifecycle events
+  - Location: `Assets/_Stage of Dreams_/Scripts/Dialog/DialogueTrigger.cs`
+  - Properties:
+    - `bool triggerOnSpotlight` - Spotlight trigger flag
+    - `bool triggerOnInteraction` - Interaction trigger flag
+    - `bool triggerOnProximity` - Proximity trigger flag
+    - `float interactionRadius` - Interaction range
+    - `float proximityRadius` - Proximity range
+    - `bool requireInteractionInput` - Require key press
+    - `NPCContent targetNPC` - Target NPC reference
+    - `string specificDialogTree` - Specific tree name
+    - `bool canRetrigger` - Allow retriggering
+    - `float retriggerDelay` - Retrigger cooldown
+  - Events:
+    - `Action OnDialogTriggered` - Dialog started event
+    - `Action OnDialogEnded` - Dialog ended event
+  - Key Methods:
+    - `ManualTrigger()` - Force trigger
+    - `SetTriggerType(bool, bool, bool)` - Configure trigger types
+    - `ValidateSetup()` - Validate configuration
+    - `IsReadyToTrigger()` - Check trigger readiness
+    - `GetSetupStatus()` - Get setup status string
+    - `GetTargetDialogTree()` - Get target tree
 
 #### C. View Layer
-- **`DialogManager`**: UI controller
-  - Manages UI Toolkit elements (UXML/USS)
-  - Displays dialog text and choices
-  - Handles user input for choices
-  - Coordinates with DialogNavigator
+- **`DialogManager`**: UI controller (Singleton)
+  - Location: `Assets/_Stage of Dreams_/Scripts/Dialog/DialogManager.cs`
+  - Properties:
+    - `static DialogManager Instance` - Singleton instance
+    - `UIDocument uiDocument`
+    - `VisualTreeAsset dialogVisualTree`
+    - `string interactActionName = "Interact"`
+    - `bool enableInputLogging`, `enableDebugLogs`, `validateOnStart`
+    - `GroupBox dialogBox`, `Label dialogLabel`
+    - `Button choiceButton1-5`
+    - `PlayerInput playerInput`, `InputAction interactAction`
+    - `DialogNavigator navigator`
+    - `bool isUIActive`, `isInitialized`
+    - `NPCContent currentNPC`, `DialogTree currentTree`
+    - `int dialogSessionCount`
+  - Methods:
+    - `Awake()`, `Start()`, `Update()`, `OnDestroy()`
+    - `InitializeDialogManager()`, `InitializeNavigator()`, `InitializeUI()`, `InitializeInput()`
+    - `ValidateSetup()`, `ValidateNPCContent()`
+    - `StartDialog(NPCContent)`, `StartDialog(NPCContent, string)`
+    - `HandleNodeChanged(DialogNode)`, `HandleCustomAction()`, `HandleDialogEnded()`
+    - `DisplayNode(DialogNode)`, `ShowChoices()`, `HideChoices()`, `HideDialog()`
+    - `OnChoiceClicked(int)`, `AdvanceDialog()`, `EndDialog()`
+    - `IsDialogActive()`, `GetNavigationState()`, `IsReady()`
+  - Events:
+    - `OnDialogStarted`, `OnDialogEnded`, `OnNodeDisplayed`, `OnCustomActionHandled`
+  - Description: Singleton dialog manager handling UI display and integration with DialogNavigator, supports UI Toolkit
+
+- **`DialogNavigator`**: Navigation logic engine
+  - Location: `Assets/_Stage of Dreams_/Scripts/Dialog/DialogNavigator.cs`
+  - Properties:
+    - `DialogNode currentNode` - Current position in tree
+    - `NPCContent currentNPC` - Current NPC context
+    - `DialogTree currentTree` - Current tree being navigated
+    - `bool IsActive` - Whether navigation is active
+    - `DialogNode CurrentNode` - Public accessor for current node
+    - `NPCContent CurrentNPC` - Public accessor for current NPC
+  - Methods:
+    - `StartDialog(NPCContent, string)` - Begin dialog navigation
+    - `NavigateToNode(DialogNode)` - Move to specific node
+    - `SelectChoice(int)` - Handle player choice selection
+    - `AdvanceDialog()` - Advance to next node (auto-advance or manual)
+    - `EndDialog()` - Complete dialog session
+    - `SwitchToTree(string)` - Change to different dialog tree
+    - `ForceNavigateToNode(DialogNode)` - Force navigation to specific node
+    - `GetCurrentState()` - Get current navigation state
+    - `ExecuteNodeStartEvents(DialogNode)` - Execute node start events
+    - `ExecuteNodeEndEvents(DialogNode)` - Execute node end events
+    - `ExecuteChoiceEvents(DialogChoice)` - Execute choice events
+  - Events:
+    - `OnNodeChanged` - Fired when navigating to new node
+    - `OnCustomActionTriggered` - Fired for custom choice actions
+    - `OnDialogEnded` - Fired when dialog completes
+  - Description: Handles dialog tree navigation logic, separate from UI concerns. Pure logic component that coordinates with DialogManager.
+
+- **`DialogueTrigger`**: Interaction trigger component
+  - Location: `Assets/_Stage of Dreams_/Scripts/Dialog/DialogueTrigger.cs`
+  - Properties:
+    - `bool triggerOnSpotlight`, `triggerOnInteraction`, `triggerOnProximity`
+    - `float interactionRadius = 2f`, `proximityRadius = 1.5f`
+    - `bool requireInteractionInput = true`
+    - `KeyCode interactionKey = KeyCode.E`
+    - `NPCContent targetNPC`
+    - `string specificDialogTree`
+    - `bool canRetrigger`, `float retriggerDelay = 10f`
+    - `DialogManager dialogManager`, `PlayerScript player`
+    - `bool hasTriggered`, `isWaitingForInput`
+  - Methods:
+    - `Start()`, `Update()`, `OnDestroy()`, `OnDisable()`
+    - `InitializeReferences()`, `ValidateSetup()`, `ValidateNPCContent()`
+    - `IsReadyToTrigger()`, `CheckSpotlightTrigger()`, `CheckInteractionTrigger()`, `CheckProximityTrigger()`
+    - `PassNPCContent()`, `PrepareNPCForDialog()`
+    - `SubscribeToDialogEvents()`, `HandleDialogManagerEnded()`
+    - `ResetTrigger()`, `ManualTrigger()`
+    - `SetTriggerType(bool spotlight, bool interaction, bool proximity)`, `SetTargetNPC(NPCContent)`
+    - `GetTargetDialogTree()`, `GetSetupStatus()`
+  - Events:
+    - `OnDialogTriggered`, `OnDialogEnded`
+  - Description: Unified dialog trigger system supporting multiple trigger conditions (spotlight, interaction, proximity) and comprehensive validation
+
+### ✅ DialogEvents.cs
+- **Pattern:** Polymorphic Event System
+- **Location:** `Assets/_Stage of Dreams_/Scripts/Dialog/DialogEvents.cs`
+- **Classes:**
+  - **DialogEvent** (Abstract Base):
+    - Properties: `eventName`, `isEnabled`, `description`
+    - Methods: `Execute()`, `IsValid()`, `SetExecuteDelegate(Action)`, `SetValidationDelegate(Func<bool>)`
+  - **MethodCallEvent**:
+    - Executes Action delegates
+    - Properties: `methodToCall`, `methodDescription`
+    - Methods: `SetMethod(Action, string)`
+  - **ParameterizedMethodEvent<T>**:
+    - Executes Action<T> delegates with parameters
+    - Properties: `methodToCall`, `parameter`, `methodDescription`
+    - Methods: `SetMethod(Action<T>, T, string)`
+  - **StaticMethodCallEvent**:
+    - Calls static methods via reflection
+    - Properties: `className`, `methodName`, `stringParameters`
+- **Description:** Type-safe event system for dialog integration with game systems. Supports method delegates and custom event types.
 
 ### Integration Flow
 ```
-Player Interaction â†’ DialogueTrigger â†’ DialogManager â†’ DialogNavigator
-                                            â†“
+Player Interaction → DialogueTrigger → DialogManager → DialogNavigator
+                                            ↓
                                        NPC Content
-                                            â†“
+                                            ↓
                                        Dialog Tree
 ```
 
@@ -404,24 +651,12 @@ Player Interaction â†’ DialogueTrigger â†’ DialogManager â†’ Dial
 - **Validation**: Comprehensive validation at multiple levels (tree, node, choice)
 - **Auto-Advance**: Nodes can automatically progress after delay
 - **Method Delegates**: Events support both UnityEvents and direct method calls
+- **Editor Windows**: Dedicated windows for complex tree editing
+- **Tree Navigation**: Navigate between nodes using parent/child/choice references
+- **Named Nodes**: Reference nodes by name for convergent dialog paths
 
 ### Event System Pattern
 **Observer pattern with polymorphic event types**
-
-#### Base Event Class:
-```csharp
-public abstract class DialogEvent
-{
-    - Execute(): Triggers the event
-    - IsValid(): Validates event configuration
-    - SetExecuteDelegate(Action): Supports method delegates
-}
-```
-
-#### Implemented Event Types:
-- `MethodCallEvent`: Execute custom methods
-- `ParameterizedMethodEvent<T>`: Execute methods with parameters
-- `StaticMethodCallEvent`: Call static methods via reflection
 
 #### Usage Pattern:
 ```csharp
@@ -431,469 +666,165 @@ node.AddEndEvent(new MethodCallEvent());
 
 // At choice selection
 choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
+
+// With method delegates
+var evt = new MethodCallEvent();
+evt.SetMethod(() => GameStateManager.Instance.AdjustApplause(10f));
+node.AddStartEvent(evt);
 ```
 
+### Editor Tools
+
+#### DialogTreeEditor
+- Location: `Assets/_Stage of Dreams_/Editor/DialogTreeEditor.cs`
+- Custom inspector for DialogTree
+- Read-only workflow with edit buttons
+- Quick tree builder
+- Validation and debugging tools
+
+#### DialogNodeEditorWindow
+- Location: `Assets/_Stage of Dreams_/Editor/DialogNodeEditorWindow.cs`
+- Dedicated window for editing individual nodes
+- Tree navigation buttons (parents, children, choice targets)
+- Choice management interface
+- Unity Events and DialogEvents integration
+
+#### DialogTreeUtilities
+- Location: `Assets/_Stage of Dreams_/Editor/DialogTreeUtilities.cs`
+- Menu items: `Tools > Dialog System`
+- Node ID generator
+- Tree validation
+- Batch operations
+
 ---
-
-## Scripts Folder: Core Classes
-
-### âœ“ Main Menu Events.cs
-- **Properties:**
-  - `UIDocument _document`
-  - `List<Button> _menuButtons`
-  - `AudioSource _audioSource`
-- **Methods:**
-  - `Awake()`
-  - `OnMenuButtonClicked(ClickEvent evt, string buttonName)`
-  - `OnDestroy()`
-  - `OnStartButtonClicked()`
-  - `OnSettingsButtonClicked()`
-  - `OnExitButtonClicked()`
-- **Description:** Handles main menu UI interactions using UI Toolkit, manages scene transitions and application exit
-
-### âœ" GameStateManager.cs
-- **Pattern:** Singleton MonoBehaviour with ScriptableObject backing
-- **Properties:**
-  - `GameStateData defaultState`
-  - `float audienceDecayRate`
-  - `float audienceMoodSmoothTime`
-  - `int maxScorePerScene`
-  - Audience: `CurrentApplauseScore`, `CurrentBooScore`, `AudienceMood`, `CurrentAudienceReaction`
-  - Performance: `CurrentSceneScore`, `CurrentDreamScore`, `TotalGameScore`, `ConsecutiveSuccesses`, `ConsecutiveFailures`
-  - Progression: `CurrentDreamIndex`, `CurrentActIndex`, `IsSceneCompleted()`, `HasAbility()`, `HasAchievement()`
-  - Turn-Based: `IsInTurnBasedMode`, `CurrentTurn`, `RemainingActions`
-  - Session: `SessionDuration`, `TotalMinigamesAttempted`, `TotalMinigamesCompleted`, `MinigameSuccessRate`
-- **Methods:**
-  - Audience: `AdjustApplause()`, `AdjustBoo()`, `SetApplause()`, `SetBoo()`, `ResetAudienceScores()`
-  - Performance: `AddSceneScore()`, `RecordSuccess()`, `RecordFailure()`, `ResetSceneScore()`, `ResetDreamScore()`
-  - Progression: `CompleteScene()`, `UnlockAbility()`, `EarnAchievement()`, `AdvanceToDream()`, `AdvanceToAct()`
-  - Turn-Based: `StartTurnBasedMode()`, `EndTurnBasedMode()`, `NextTurn()`, `UsePlayerAction()`
-  - Minigame: `StartMinigame()`, `EndMinigame()`, `GetMinigameRetries()`
-  - Save/Load: `SaveToData()`, `LoadFromData()`
-- **Events:**
-  - Audience: `OnApplauseScoreChanged`, `OnBooScoreChanged`, `OnAudienceMoodChanged`
-  - Performance: `OnSceneScoreChanged`, `OnDreamScoreChanged`, `OnTotalScoreChanged`
-  - Progression: `OnSceneCompleted`, `OnAbilityUnlocked`, `OnAchievementEarned`, `OnDreamIndexChanged`, `OnActIndexChanged`
-  - Turn-Based: `OnTurnBasedModeStarted`, `OnTurnBasedModeEnded`, `OnTurnChanged`, `OnActionsRemainingChanged`
-  - Minigame: `OnMinigameStarted`, `OnMinigameEnded`
-- **Description:** Centralized singleton for tracking all game state including audience metrics, scores, progression, turn-based state, and session data. Provides event-driven updates for UI integration. Persists across scenes with DontDestroyOnLoad.
-
-### âœ" GameManager.cs (TBD)
-- **Properties:**
-  - `GameState currentGameState`
-  - `int currentDreamIndex`
-  - `bool isInTurnBasedMode`
-  - `DreamStage activeDreamStage`
-  - `ActorStats playerStats`
-- **Methods:**
-  - `StartGame()`
-  - `LoadDreamStage(int stageIndex)`
-  - `SwitchGameState(GameState newState)`
-  - `EndGame()`
-  - `SaveGameProgress()`
-  - `LoadGameProgress()`
-- **Description:** Controls game state, scene transitions, and dream progression
-
-## PlayerScripts Folder
-
-### âœ“ Player_Controller.cs (PlayerScript.cs)
-- **Properties:**
-  - `float _moveSpeed = 5f`
-  - `bool inSpotlight`
-  - `bool canMove = true`
-  - `Vector2 _moveDir`
-  - `Rigidbody2D _rb`
-  - `Animator _animator`
-  - `SpriteRenderer _spriteRenderer`
-  - `PlayerInput _playerInput`
-  - `PlayerInteraction _playerInteraction`
-- **Methods:**
-  - `Awake()`
-  - `Update()`
-  - `FixedUpdate()`
-  - `GatherInput()`
-  - `MovementUpdate()`
-  - `DisableMovement()`
-  - `EnableMovement()`
-  - `IsMoving()`
-- **Description:** Handles player movement, input processing, and integration with dialog/spotlight systems
-
-### âœ“ PlayerInteraction.cs
-- **Properties:**
-  - Referenced in PlayerScript but implementation details not fully examined
-- **Description:** Handles player interaction system (separate from movement)
-
-### âœ“ Interactable.cs
-- **Description:** Base interface/class for interactable objects
-
-## StageScripts Folder
-
-### âœ“ Spotlight.cs
-- **Properties:**
-  - `float radius = 1.5f`
-  - `LayerMask characterLayer`
-  - `SpotlightMovementType movementType`
-  - `float moveSpeed = 2f`
-  - `Transform targetToFollow`
-  - `Vector2 movementBounds`
-  - `float randomMoveInterval = 3f`
-  - `bool trackAllCharacters = true`
-  - `PlayerScript specificPlayer`
-  - `bool startVisible = true`
-  - `float fadeSpeed = 2f`
-  - `float baseIntensity = 20f`
-  - `HashSet<ISpotlightCharacter> charactersInSpotlight`
-  - `Light2D spotlightLight`
-  - `SpriteRenderer spotlightRenderer`
-- **Methods:**
-  - `Awake()`, `Start()`, `Update()`
-  - `AppearSpotlight()`, `DisappearSpotlight()`
-  - `ShowSpotlightInstant()`, `HideSpotlightInstant()`
-  - `ToggleSpotlight()`, `IsVisible()`, `IsFullyVisible()`
-  - `SetMovementType()`, `MoveToPosition()`, `SetTarget()`
-  - `StartRandomMovement()`, `StopMovement()`
-  - `GetCharactersInSpotlight()`, `HasCharacterInSpotlight()`
-  - `SetIntensity()`, `SetColor()`, `SetRadius()`
-- **Events:**
-  - `OnCharacterEnteredSpotlight`, `OnCharacterExitedSpotlight`
-  - `OnSpotlightMoved`, `OnSpotlightAppeared`, `OnSpotlightDisappeared`
-- **Description:** Advanced spotlight system with visibility control, movement patterns, and character detection using Light2D integration
-
-### âœ“ SpotlightController.cs
-- **Properties:**
-  - `Spotlight mainSpotlight`
-  - `Transform[] performers`
-  - `float performanceTime = 30f`
-  - `bool autoStartPerformance = false`
-  - `Spotlight[] spotlightsForDialog`
-  - `LightingManager lightingManager`
-  - `bool enableLightingEffects = true`
-- **Methods:**
-  - `Start()`, `OnDestroy()`, `Update()`
-  - `ShowSpotlightByName(string)`, `HideSpotlightByName(string)`
-  - `ShowSpotlight1-3()`, `HideSpotlight1-3()` (Unity Inspector methods)
-  - `ShowMainStageSpotlight()`, `ShowLeftSpotlight()`, `ShowRightSpotlight()`
-  - `SetSpotlightColor()`, `SetSpotlightIntensity()`
-  - `EnableDarkLighting()`, `DisableDarkLighting()`, `ToggleDarkLighting()`
-  - `StartPerformance()`, `StopPerformance()`
-  - `StartRandomMovement()`, `FollowCharacter()`
-- **Description:** High-level controller for coordinating multiple spotlights and lighting effects, integrates with dialog system
-
-### âœ“ LightingManager.cs
-- **Properties:**
-  - `Light2D globalLight`
-  - `Camera mainCamera`
-  - `float normalAmbientIntensity = 1f`
-  - `float darkAmbientIntensity = 0.1f`
-  - `Color normalBackgroundColor`, `Color darkBackgroundColor`
-  - `float transitionSpeed = 2f`
-  - `bool startInDarkMode = false`
-  - `Spotlight[] namedSpotlights`
-  - `bool isDarkMode`, `bool isTransitioning`
-- **Methods:**
-  - `Awake()`, `Update()`
-  - `EnableDarkMode()`, `DisableDarkMode()`, `ToggleDarkMode()`
-  - `SetDarkModeInstant(bool)`, `SetAmbientIntensity(float)`
-  - `SetBackgroundColor(Color)`, `IsDarkMode()`, `IsTransitioning()`
-  - `ShowSpotlight1-5()`, `HideSpotlight1-5()` (Unity Inspector methods)
-  - `ShowMainStageSpotlight()`, `ShowLeftSideSpotlight()`, etc.
-  - `ShowAllNamedSpotlights()`, `HideAllNamedSpotlights()`
-  - `RefreshNamedSpotlights()`
-- **Events:**
-  - `OnDarkModeEnabled`, `OnDarkModeDisabled`, `OnLightingTransitionComplete`
-- **Description:** Manages global lighting states and dramatic lighting effects, integrates with dialog system
-
-### âœ“ AudienceManager.cs
-- **Properties:**
-  - `AudioSource audienceAudioSource`
-  - `ParticleSystem applauseParticles`
-  - `Animator audienceAnimator`
-  - `AudioClip lightApplauseClip`, `heavyApplauseClip`, `laughterClip`, `gaspClip`, `booClip`
-  - `float baseVolume = 0.7f`
-  - `bool enableDebugLogs = true`
-- **Methods:**
-  - `Start()`, `OnValidate()`
-  - `AudienceApplause(int intensity)` (1-10 scale)
-  - `AudienceReaction(String reactionType)` (laugh, gasp, boo, cheer)
-  - `SetAudienceMood(float moodLevel)` (0.0-1.0 scale)
-  - `CreateSilence()`, `StandingOvation()`
-  - `BoostEngagement(float amount)`
-  - `LogPerformanceEvent(string)` (static method)
-- **Description:** Manages audience reactions and feedback, designed for Unity Event integration from dialog nodes
-
-## Dialog System
-
-### âœ“ DialogManager.cs
-- **Properties:**
-  - `UIDocument uiDocument`
-  - `VisualTreeAsset dialogVisualTree`
-  - `string interactActionName = "Interact"`
-  - `bool enableInputLogging`, `enableDebugLogs`, `validateOnStart`
-  - `GroupBox dialogBox`, `Label dialogLabel`
-  - `Button choiceButton1-5`
-  - `PlayerInput playerInput`, `InputAction interactAction`
-  - `DialogNavigator navigator`
-  - `bool isUIActive`, `isInitialized`
-  - `NPCContent currentNPC`, `DialogTree currentTree`
-  - `int dialogSessionCount`
-- **Methods:**
-  - `Awake()`, `Start()`, `Update()`, `OnDestroy()`
-  - `InitializeDialogManager()`, `InitializeNavigator()`, `InitializeUI()`, `InitializeInput()`
-  - `ValidateSetup()`, `ValidateNPCContent()`
-  - `StartDialog(NPCContent)`, `StartDialog(NPCContent, string)`
-  - `HandleNodeChanged(DialogNode)`, `HandleCustomAction()`, `HandleDialogEnded()`
-  - `DisplayNode(DialogNode)`, `ShowChoices()`, `HideChoices()`, `HideDialog()`
-  - `OnChoiceClicked(int)`, `AdvanceDialog()`, `EndDialog()`
-  - `IsDialogActive()`, `GetNavigationState()`, `IsReady()`
-- **Events:**
-  - `OnDialogStarted`, `OnDialogEnded`, `OnNodeDisplayed`, `OnCustomActionHandled`
-- **Description:** Singleton dialog manager handling UI display and integration with DialogNavigator, supports UI Toolkit
-
-### âœ“ DialogNavigator.cs
-- **Properties:**
-  - Details not fully examined but integrated with DialogManager
-- **Methods:**
-  - `StartDialog()`, `AdvanceDialog()`, `SelectChoice()`, `EndDialog()`
-  - `GetCurrentState()`, `IsActive`
-- **Events:**
-  - `OnNodeChanged`, `OnCustomActionTriggered`, `OnDialogEnded`
-- **Description:** Handles dialog tree navigation logic, separate from UI concerns
-
-### âœ“ DialogueTrigger.cs
-- **Properties:**
-  - `bool triggerOnSpotlight`, `triggerOnInteraction`, `triggerOnProximity`
-  - `float interactionRange = 2f`, `proximityRange = 1.5f`
-  - `bool requireInteractionInput = true`
-  - `KeyCode interactionKey = KeyCode.E`
-  - `NPCContent targetNPC`
-  - `string specificDialogTree`
-  - `bool canRetrigger`, `float retriggerDelay = 10f`
-  - `DialogManager dialogManager`, `PlayerScript player`
-  - `bool hasTriggered`, `isWaitingForInput`
-- **Methods:**
-  - `Start()`, `Update()`, `OnDestroy()`, `OnDisable()`
-  - `InitializeReferences()`, `ValidateSetup()`, `ValidateNPCContent()`
-  - `IsReadyToTrigger()`, `CheckSpotlightTrigger()`, `CheckInteractionTrigger()`, `CheckProximityTrigger()`
-  - `PassNPCContent()`, `PrepareNPCForDialog()`
-  - `SubscribeToDialogEvents()`, `HandleDialogManagerEnded()`
-  - `ResetTrigger()`, `ManualTrigger()`
-  - `SetTriggerType()`, `SetTargetNPC()`
-  - `GetTargetDialogTree()`, `GetSetupStatus()`
-- **Events:**
-  - `OnDialogTriggered`, `OnDialogEnded`
-- **Description:** Unified dialog trigger system supporting multiple trigger conditions and comprehensive validation
-
 ## World/Dialog Data Classes
 
-### âœ" Dialog Node.cs (DialogNode)
+### ✅ Dialog Tree.cs (DialogTree)
+- **Pattern:** ScriptableObject
+- **Location:** `Assets/_Stage of Dreams_/World/Dialog Tree.cs`
 - **Properties:**
-  - Details not fully examined but used throughout dialog system
-- **Description:** Core dialog node structure with choices and events
-
-### âœ" Dialog Tree.cs (DialogTree)
-- **Properties:**
-  - Details not fully examined but used throughout dialog system
+  - `string treeName` - Display name for the tree
+  - `string description` - Tree description
+  - `DialogNode startingNode` - Entry point for conversation
+  - `List<DialogNode> allNodes` - All nodes in tree
+  - `bool autoUpdateNodeList = true` - Auto-refresh node list
+  - `bool validateOnSave = true` - Validate on save
 - **Methods:**
-  - `IsValid()`, `GetMainDialogTree()`
-- **Description:** Container for dialog nodes and navigation structure
+  - Tree Management:
+    - `GetStartingNode()` - Get entry point
+    - `IsValid()` - Validate tree structure
+    - `GetAllNodes()` - Get all nodes in tree
+    - `FindNodeByName(string)` - Find node by unique ID
+    - `GetNamedNodes()` - Get all nodes with names
+    - `GetConvergentNodes()` - Get nodes with multiple parents
+    - `GetEndNodes()` - Get terminal nodes
+    - `GetMaxDepth()` - Get maximum tree depth
+    - `IsNodeNameUnique(string, DialogNode)` - Check name uniqueness
+    - `RefreshNodeList()` - Update node collection
+    - `ResolveNamedReferences()` - Resolve all named node references
+  - Node Creation:
+    - `CreateStartingNode(string speaker, string text, bool isPlayer, string nodeId)` - Create entry point
+    - `AddChoiceNode(DialogNode parent, string choiceText, ...)` - Add branching node
+    - `AddSequentialNode(DialogNode parent, string speaker, string text, ...)` - Add auto-advance node
+    - `AddChoiceToNamedNode(DialogNode parent, string choiceText, string targetName)` - Add convergent choice
+    - `CreateLinearConversation(string[] speakers, string[] texts, ...)` - Build linear conversation
+  - Event Management:
+    - `AddEventToAllNodes(DialogEvent, bool isStartEvent)` - Add event to all nodes
+    - `GetNodesWithStartEvents()` - Get nodes with start events
+    - `GetNodesWithEndEvents()` - Get nodes with end events
+  - Validation:
+    - `ValidateTree()` - Comprehensive validation with console output
+    - `PrintTreeStructure()` - Print tree hierarchy to console
+- **Description:** Container for dialog nodes and navigation structure. Supports convergent paths, validation, and tree building methods.
 
-### âœ" Dialog Choice.cs (DialogChoice)
+### ✅ Dialog Node.cs (DialogNode)
+- **Pattern:** Serializable Class (not ScriptableObject)
+- **Location:** `Assets/_Stage of Dreams_/World/Dialog Node.cs`
 - **Properties:**
-  - Details not fully examined but integrated with dialog system
-- **Description:** Individual choice options within dialog nodes
+  - Node Identification:
+    - `string NodeName` - Unique identifier (e.g., `act1_director_intro_01`)
+  - Dialog Content:
+    - `string CharacterName` - Speaker name
+    - `string DialogText` - Dialog content (TextArea 3-6 lines)
+    - `bool IsPlayerSpeaking` - Player dialog flag
+  - Flow Control:
+    - `float AutoAdvanceDelay` - Auto-advance timing (0 = manual advance)
+  - Tree Structure:
+    - `List<DialogNode> ParentNodes` - Incoming connections (supports convergent paths)
+    - `DialogNode ChildNode` - Auto-advance target (null if has choices)
+    - `List<DialogChoice> Choices` - Player choice options
+  - Events:
+    - `List<DialogEvent> StartEvents` - Events triggered on node start
+    - `List<DialogEvent> EndEvents` - Events triggered on node end
+    - `UnityEvent OnDialogStart` - Legacy start event (backwards compatibility)
+    - `UnityEvent OnDialogEnd` - Legacy end event (backwards compatibility)
+  - Computed Properties:
+    - `bool IsRootNode` - True if no parent nodes
+    - `bool HasChoices` - True if has choice options
+    - `bool HasAutoAdvance` - True if has child node
+- **Methods:**
+  - Hierarchy Management:
+    - `SetChildNode(DialogNode)` - Set auto-advance target
+    - `CreateChildNode(string speaker, string text, ...)` - Create and link child node
+    - `AddParentNode(DialogNode)` - Add parent reference
+    - `RemoveParentNode(DialogNode)` - Remove parent reference
+  - Choice Management:
+    - `AddChoice(string text, DialogNode target, string choiceId)` - Add player choice
+    - `RemoveChoice(int index)` - Remove choice by index
+  - Event Management:
+    - `AddStartEvent(DialogEvent)` - Add start event
+    - `AddEndEvent(DialogEvent)` - Add end event
+    - `RemoveStartEvent(int)` - Remove start event
+    - `RemoveEndEvent(int)` - Remove end event
+    - `ExecuteStartEvents()` - Trigger all start events
+    - `ExecuteEndEvents()` - Trigger all end events
+  - Validation:
+    - `IsValid()` - Validate node configuration
+    - `GetDisplayName()` - Get display name for UI
+- **Description:** Core dialog node structure with choices and events. Supports parent/child relationships, convergent paths, and both DialogEvent and UnityEvent systems.
 
-### âœ" GameStateData.cs
-- **Pattern:** ScriptableObject for serialization
+### ✅ Dialog Choice.cs (DialogChoice)
+- **Pattern:** Serializable Class (not ScriptableObject)
+- **Location:** `Assets/_Stage of Dreams_/World/Dialog Choice.cs`
 - **Properties:**
-  - Audience: `applauseScore`, `booScore`, `audienceMood`
-  - Performance: `sceneScore`, `dreamScore`, `totalScore`, `consecutiveSuccesses`, `consecutiveFailures`
-  - Progression: `completedScenes`, `unlockedAbilities`, `earnedAchievements`, `currentDreamIndex`, `currentActIndex`
-  - Session: `totalMinigamesAttempted`, `totalMinigamesCompleted`
-- **Methods:**
-  - `ResetToDefaults()` - Reset all values to defaults
-  - `ValidateData()` - Validate data integrity with range checks
-  - `PrintSummary()` - Print current state summary to console
-  - `OnValidate()` - Clamp values automatically in inspector
-- **Description:** Serializable game state data container for saving/loading. ScriptableObject allows creating default state assets and easy inspector editing. Used by GameStateManager for persistence.
-
-### âœ" NPC Content.cs (NPCContent)
-- **Properties:**
-  - `string npcName`
-  - Dialog trees and content (details not fully examined)
-- **Methods:**
-  - `HasValidDialogContent()`, `GetDialogTree(string)`, `GetMainDialogTree()`
-  - `OnDialogStarted()`, `OnDialogEnded()`
-- **Description:** Container for NPC data including dialog trees, used by dialog triggers
-
-### âœ" Example NPC.cs
-- **Description:** Example implementation or template for NPCs
-
-## Interfaces
-
-### âœ" ISpotlightCharacter
-- **Methods:**
-  - `Vector2 GetPosition()`
-  - `string GetCharacterName()`
-  - `void SetInSpotlight(bool)`
-  - `bool IsInSpotlight()`
-- **Description:** Interface for characters that can be tracked by spotlights
-
-### âœ" PlayerCharacterWrapper
-- **Description:** Wrapper to make PlayerScript compatible with ISpotlightCharacter interface
-
-## TBD Classes (Not Yet Implemented)
-
-### â³ ActorStats.cs (TBD)
-- **Properties:**
-  - `int _health = 100`
-  - `float _applauseMeter = 0f`
-  - `float _booMeter = 0f`
-  - `bool _hasMask = false`
-  - `int maxHealth = 100`
-  - `float maxApplause = 100f`
-  - `float maxBoo = 100f`
-- **Methods:**
-  - `TakeDamage(int damage)`
-  - `Heal(int amount)`
-  - `AddApplause(float amount)`
-  - `AddBoo(float amount)`
-  - `ResetMeters()`
-  - `GetHealthPercentage()`
-  - `GetApplausePercentage()`
-  - `GetBooPercentage()`
-- **Description:** Stores health, applause meter, boo meter, and mask state
-
-### â³ Ability.cs (TBD)
-- **Properties:**
-  - `string abilityName`
-  - `string description`
-  - `float cooldown`
-  - `bool isAvailable = true`
-  - `ActorStats requiredStats`
-- **Methods:**
-  - `virtual Execute(ActorStats stats)`
-  - `virtual CanExecute(ActorStats stats)`
-  - `StartCooldown()`
-  - `ResetCooldown()`
-- **Description:** Base class for abilities like "PumpUpAudience", "ImprovedDialogue", "UseProp"
-
-### â³ DreamStage.cs (TBD)
-- **Properties:**
-  - `string stageName`
-  - `Act[] acts` // Act I, II, III
-  - `ClimaxBox climaxBox`
-  - `int currentActIndex`
-  - `bool isCompleted`
-- **Methods:**
-  - `StartStage()`
-  - `ProgressToNextAct()`
-  - `TriggerClimaxBox()`
-  - `CompleteStage()`
-  - `GetCurrentAct()`
-- **Description:** Defines dream structure: Act I, II, III, ClimaxBox
-
-### â³ DreamStageManager.cs (TBD)
-- **Properties:**
-  - `DreamStage[] availableStages`
-  - `int currentStageIndex`
-  - `bool isTransitioning`
-  - `float transitionDuration = 2f`
-- **Methods:**
-  - `LoadStage(int stageIndex)`
-  - `TransitionToNextStage()`
-  - `UnloadCurrentStage()`
-  - `StartTransition()`
-  - `CompleteTransition()`
-- **Description:** Manages transitions between dream stages and loading scenes
-
-### â³ MinigameManager.cs (TBD)
-- **Properties:**
-  - `MinigameType currentMinigame`
-  - `bool isMinigameActive`
-  - `float minigameTimer`
-  - `int score`
-  - `int requiredScore`
-  - `ActorStats playerStats`
-- **Methods:**
-  - `StartMinigame(MinigameType type)`
-  - `EndMinigame(bool success)`
-  - `CalmDialogue()` // 3 dialogue options, 1 correct
-  - `RememberTheScript()` // Type out a word/phrase
-  - `DancingCombat()` // Press arrow keys in rhythm
-  - `DramaticLock()` // Button mash followed by typing script
-  - `CheckMinigameSuccess()`
-  - `GiveReward(int applause, int score)`
-- **Description:** Handles minigame activation, success/failure conditions, and rewards
-
-## TBD Data Classes
-
-### â³ AudienceMember.cs (TBD)
-- **Properties:**
-  - `string memberName`
-  - `float mood`
-  - `Sprite memberSprite`
-  - `Vector3 seatPosition`
-- **Methods:**
-  - `ReactToPerformance(float impact)`
-  - `GetReactionSprite()`
-- **Description:** Individual audience member with mood and reactions
-
-### â³ Act.cs (TBD)
-- **Properties:**
-  - `string actName`
-  - `List<DialogueData> actDialogue`
-  - `List<MinigameType> requiredMinigames`
-  - `bool isCompleted`
-- **Methods:**
-  - `StartAct()`
-  - `CompleteAct()`
-- **Description:** Represents one act within a dream stage
-
-### â³ ClimaxBox.cs (TBD)
-- **Properties:**
-  - `MinigameType climaxMinigame`
-  - `float timeLimit`
-  - `int requiredScore`
-- **Methods:**
-  - `TriggerClimax()`
-  - `CompleteClimax(bool success)`
-- **Description:** Special climax encounter for each dream stage
-
-## Enums (Implementation Status Unknown)
-
-### public enum GameState
-- `Exploration` // Player moving around stage
-- `Dialogue` // in dialogue with NPC
-- `TurnBased` // Turn-based combat mode
-- `Minigame` // Playing one of the 4 minigames
-- `Transition` // switching between scenes/acts
-
-### public enum MinigameType
-- `CalmDialogue` // Choose correct dialogue (1 of 3 options)
-- `RememberTheScript` // Type out a word/phrase
-- `DancingCombat` // Press arrow keys in rhythm
-- `DramaticLock` // Button mash + type script combo
-
-### âœ" public enum AudienceReaction
-- `Hostile` // 0.0 - 0.2 mood range
-- `Disappointed` // 0.2 - 0.4 mood range
-- `Neutral` // 0.4 - 0.6 mood range
-- `Supportive` // 0.6 - 0.8 mood range
-- `Enthusiastic` // 0.8 - 1.0 mood range
-- **Description:** Used by GameStateManager to categorize audience mood into discrete reaction levels
-
-### public enum SpotlightMovementType
-- `Static` // Doesn't move
-- `Random` // Moves to random positions within bounds
-- `FollowTarget` // Follows a specific target
-
-## Legend
-- âœ“ **Implemented** - Class is fully implemented and functional
-- â³ **TBD (To Be Developed)** - Class is planned but not yet implemented
-- âŒ **Deprecated** - No longer in use
+  - Choice Data:
+    - `string ChoiceText` - Display text for choice
+    - `string ChoiceId` - Unique identifier for custom actions
+    - `List<bool> Conditions` - Conditions to show choice (not implemented yet)
+  - References:
+    - `DialogNode ParentNode` - Node this choice belongs to
+    - `DialogNode TargetNode` - Direct target node reference
+    - `string TargetNodeName` - Named target for convergent paths
+  - Events:
+    - `List<DialogEvent> ChoiceEvents` - Events triggered on selection
+    - `UnityEvent OnChoiceSelected` - Legacy choice event (backwards compatibility)
+  - Computed Properties:
+    - `bool HasNamedTarget` - True if using named reference
+    - `bool HasValidTarget` - True if has target (direct or named)
+    - `bool HasEvents` - True if has events to execute
+  - Key Methods:
+    - Event Management:
+      - `AddChoiceEvent(DialogEvent)` - Add choice event
+      - `RemoveChoiceEvent(int)` - Remove choice event
+      - `ExecuteChoiceEvents()` - Trigger all choice events
+    - Target Management:
+      - `CreateTargetNode(string speaker, string text, ...)` - Create and set target node
+      - `SetTarget(DialogNode)` - Set direct target reference
+      - `SetTargetByName(string)` - Set named target for convergent paths
+      - `ResolveNamedTarget(DialogTree)` - Resolve named target to actual node
+    - Validation:
+      - `IsValid()` - Validate choice configuration
+      - `IsTargetResolved()` - Check if named target is resolved
+      - `GetDisplayName()` - Get display name for UI
+      - `GetTargetInfo()` - Get target information for debugging
+- **Description:** Individual choice options within dialog nodes. Supports named node references for convergent dialog paths and both DialogEvent and UnityEvent systems.
 
 ## Notes
 - The dialog system is highly developed with comprehensive validation and event systems
+  - **DialogEvent system** provides type-safe, extensible event handling
+  - **Convergent paths** supported through named node references
+  - **Editor tools** provide dedicated windows for complex tree editing
+  - **Complete documentation** available in consolidated guides
 - Spotlight and lighting systems are feature-complete with advanced functionality
 - Player controller integrates well with other systems
 - **GameState management system is now implemented** - provides centralized state tracking for audience metrics, scores, progression, and minigames
@@ -901,4 +832,5 @@ choice.AddChoiceEvent(new ParameterizedMethodEvent<string>());
 - GameStateData ScriptableObject enables easy default state configuration and save/load functionality
 - Most core gameplay systems are implemented except for minigames and stage management
 - The architecture supports easy extension for the remaining TBD classes
-- **Last Updated**: Added GameStateManager and GameStateData (January 2025)
+- **Documentation consolidated** - Historical dialog docs archived to `Docs/Archive/Dialog-Development/`
+- **Last Updated**: Dialog System documentation consolidated and DialogEvents integrated (January 2025)

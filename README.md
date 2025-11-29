@@ -1,12 +1,12 @@
-﻿# Stage of Dreams
+# Stage of Dreams
 
-## ?? A 2D Top-Down Theater Performance Game
+##  A 2D Top-Down Theater Performance Game
 
 **Stage of Dreams** is a Unity 2D game where players navigate dream-like theater stages, engaging in dialogue, spotlight mechanics, and performance-based minigames. Experience the thrill of live theater with turn-based combat enhanced by audience reactions and applause meters.
 
 ---
 
-## ?? Game Overview
+##  Game Overview
 
 Navigate through dream stages as a theater performer, mastering the art of live performance through:
 
@@ -18,26 +18,26 @@ Navigate through dream stages as a theater performer, mastering the art of live 
 
 ---
 
-## ?? Core Gameplay Features
+##  Core Gameplay Features
 
-### ?? Spotlight Performance System
+###  Spotlight Performance System
 - Move through theater stages with dynamic spotlight detection
 - Spotlights trigger performance opportunities and dialog encounters
 - Advanced lighting system with smooth transitions and dramatic effects
 
-### ?? Integrated Dialog System
+###  Integrated Dialog System
 - **Node-based conversations** with branching choices and consequences
 - **Multiple trigger types**: Spotlight-based, proximity, and interaction triggers
 - **Reusable dialog trees** stored as ScriptableObject assets
 - **Event-driven architecture** for seamless game integration
 
-### ?? Performance Minigames
+###  Performance Minigames
 - **CalmDialogue**: Choose correct dialog options based on the script (1 of 3 choices)
 - **RememberTheScript**: Type scripted lines quickly and accurately
 - **DramaticLock**: Button masher followed by script recitation for dramatic tension
 - **DancingCombat**: Rhythm-based arrow key sequences for choreographed combat
 
-### ?? Audience Interaction
+###  Audience Interaction
 - **Applause Meter**: Increases with successful performances
 - **Boo Meter**: Penalty for poor performance, requires retry until success
 - **Dynamic Reactions**: Audience responds with applause, laughter, gasps, and boos
@@ -45,7 +45,7 @@ Navigate through dream stages as a theater performer, mastering the art of live 
 
 ---
 
-## ??? Technical Architecture
+## ? Technical Architecture
 
 ### Core Systems
 - **Unity 2D with Universal Render Pipeline (URP)** for advanced 2D lighting
@@ -69,24 +69,24 @@ DialogNode ? DialogTree ? NPCContent ? DialogueTrigger ? DialogManager (Singleto
 
 ---
 
-## ?? Project Structure
+##  Project Structure
 
 ```
 Assets/
-??? _Stage of Dreams_/
-?   ??? Scripts/
-?   ?   ??? Dialog/               # Complete dialog system
-?   ?   ??? PlayerScripts/        # Player movement and interaction
-?   ?   ??? StageScripts/         # Spotlight, lighting, and stage logic
-?   ??? World/                    # Dialog trees and NPC content
-?   ??? Scenes/                   # Game scenes and levels
-??? Docs/                         # Comprehensive documentation
-??? UI/                          # UI Toolkit assets and stylesheets
+ _Stage of Dreams_/
+?    Scripts/
+?   ?   ? Dialog/               # Complete dialog system
+?   ?   ? PlayerScripts/        # Player movement and interaction
+?   ?   ? StageScripts/         # Spotlight, lighting, and stage logic
+?   ? World/                    # Dialog trees and NPC content
+?   ? Scenes/                   # Game scenes and levels
+? Docs/                         # Comprehensive documentation
+? UI/                          # UI Toolkit assets and stylesheets
 ```
 
 ---
 
-## ?? Art & Audio Vision
+##  Art & Audio Vision
 
 - **Pixel Art Style**: Character sprites and tilesets for theater environments
 - **Dynamic Lighting**: 2D lighting system for dramatic stage effects
@@ -95,7 +95,7 @@ Assets/
 
 ---
 
-## ?? Development Status
+##  Development Status
 
 ### ? Implemented Systems
 - **Player Movement & Control**: Complete 2D movement with physics integration
@@ -106,7 +106,7 @@ Assets/
 - **UI Framework**: Modern UI Toolkit implementation
 - **Main Menu**: Scene transitions and application management
 
-### ?? In Development
+###  In Development
 - **Minigame Systems**: Performance minigame implementation
 - **Game State Management**: Overall game flow and progression
 - **Actor Stats**: Health, applause, and performance metrics
@@ -114,7 +114,7 @@ Assets/
 
 ---
 
-## ?? Target Platforms
+##  Target Platforms
 
 - **Primary**: Windows PC
 - **Secondary**: WebGL for browser play
@@ -122,14 +122,14 @@ Assets/
 
 ---
 
-## ?? Development Goals
+##  Development Goals
 
 ### Phase 1: Core Mechanics ?
 - Player movement and basic interaction systems
 - Dialog system with branching conversations
 - Spotlight detection and lighting effects
 
-### Phase 2: Performance Systems ??
+### Phase 2: Performance Systems 
 - Implementation of all four minigames
 - Audience feedback integration
 - Stage progression mechanics
@@ -146,7 +146,7 @@ Assets/
 
 ---
 
-## ??? Getting Started (Development)
+##  Getting Started (Development)
 
 ### Prerequisites
 - Unity 6000.2.6f2 or later
@@ -170,7 +170,7 @@ Assets/
 
 ---
 
-## ?? Documentation
+##  Documentation
 
 Comprehensive documentation is available in the `/Docs` folder:
 
@@ -181,7 +181,7 @@ Comprehensive documentation is available in the `/Docs` folder:
 
 ---
 
-## ?? About the Vision
+##  About the Vision
 
 **Stage of Dreams** explores the magical, surreal world of live theater through the lens of a performer's dreams. Each stage represents a different aspect of theatrical performance - from overcoming stage fright to mastering complex choreography. The game celebrates the art of live performance while providing engaging gameplay that captures the excitement, tension, and joy of being on stage.
 
@@ -189,16 +189,16 @@ The unique combination of turn-based mechanics, audience interaction, and perfor
 
 ---
 
-## ?? Contributing
+##  Contributing
 
 This is a solo development project, but feedback and suggestions are welcome! Check the Issues tab for known bugs or feature requests.
 
 ---
 
-## ?? License
+##  License
 
 This project is developed as a personal game development showcase. All rights reserved.
 
 ---
 
-**"The stage is set, the lights are bright, and the audience awaits your performance. Break a leg!"** ??
+**"The stage is set, the lights are bright, and the audience awaits your performance. Break a leg!"** 

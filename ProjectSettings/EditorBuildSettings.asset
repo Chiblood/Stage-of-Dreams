@@ -5,9 +5,15 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/_Stage of Dreams_/Scenes/SampleScene.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
+  - enabled: 1
+    path: Assets/_Stage of Dreams_/Scenes/Main Menu.unity
+    guid: 2d53d31ace590e94382ef5446d17e616
+  - enabled: 1
+    path: Assets/_Stage of Dreams_/Scenes/Main Stage.unity
+    guid: d2b64857e3c0f4b448234b141f15848e
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: 01ec4524ec7a03f4588bbd084b5dcb41, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}

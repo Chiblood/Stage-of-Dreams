@@ -153,10 +153,16 @@ public class DialogTree : ScriptableObject
         visited.Add(node);
         allNodes.Add(node);
         
-        // Check child node for auto-advance
+        // Check child node for auto-advance (SUCCESS PATH)
         if (node.ChildNode != null)
         {
             TraverseAndCollectNodes(node.ChildNode, visited);
+        }
+        
+        // Check failure node for minigames (FAILURE PATH)
+        if (node.FailureNode != null)
+        {
+            TraverseAndCollectNodes(node.FailureNode, visited);
         }
         
         // Check all choice targets
@@ -199,6 +205,30 @@ public class DialogTree : ScriptableObject
     #endregion
     
     #region Node Creation Methods
+    
+    /// <summary>
+    /// Add a standalone node to the tree (useful for minigame outcome nodes)
+    /// </summary>
+    public void AddNode(DialogNode node)
+    {
+        if (node == null)
+        {
+            Debug.LogWarning("[DialogTree] Cannot add null node");
+            return;
+        }
+        
+        // Check if node already exists in tree
+        if (allNodes.Contains(node))
+        {
+            Debug.LogWarning($"[DialogTree] Node '{node.NodeName}' already exists in tree");
+            return;
+        }
+        
+        // Add to internal list
+        allNodes.Add(node);
+        
+        Debug.Log($"[DialogTree] Added standalone node '{node.NodeName}' to tree");
+    }
     
     /// <summary>
     /// Create the starting node for this tree
@@ -620,7 +650,7 @@ public class DialogTree : ScriptableObject
                     string targetInfo = "";
                     if (choice.HasNamedTarget)
                     {
-                        targetInfo = $" ? [{choice.TargetNodeName}]";
+                        targetInfo = $" → [{choice.TargetNodeName}]";
                     }
                     
                     Debug.Log($"{indent}  Choice: {choice.ChoiceText}{targetInfo}");
@@ -631,11 +661,22 @@ public class DialogTree : ScriptableObject
                 }
             }
         }
-        else if (node.ChildNode != null)
+        else if (node.ChildNode != null || node.FailureNode != null)
         {
-            string autoAdvanceText = node.AutoAdvanceDelay > 0 ? $" ({node.AutoAdvanceDelay}s)" : "";
-            Debug.Log($"{indent}  (Auto-advance{autoAdvanceText})");
-            PrintNodeStructure(node.ChildNode, indent + "  ", visited);
+            // Print success path (child node)
+            if (node.ChildNode != null)
+            {
+                string autoAdvanceText = node.AutoAdvanceDelay > 0 ? $" ({node.AutoAdvanceDelay}s)" : "";
+                Debug.Log($"{indent}  (Success/Auto-advance{autoAdvanceText})");
+                PrintNodeStructure(node.ChildNode, indent + "  ", visited);
+            }
+            
+            // Print failure path (minigame failure)
+            if (node.FailureNode != null)
+            {
+                Debug.Log($"{indent}  (Failure - minigame)");
+                PrintNodeStructure(node.FailureNode, indent + "  ", visited);
+            }
         }
     }
     

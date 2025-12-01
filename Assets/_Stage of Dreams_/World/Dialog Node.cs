@@ -17,6 +17,19 @@ using UnityEngine.Events;
 using System.Collections.Generic;
 
 /// <summary>
+/// Node type enum for specialized dialog behaviors
+/// </summary>
+public enum DialogNodeType
+{
+    StandardDialog,      // Regular dialog with choices or auto-advance
+    RememberTheScript,   // Typing minigame
+    // Future minigame types can be added here:
+    // CalmDialog,
+    // ImproveSkill,
+    // etc.
+}
+
+/// <summary>
 /// Represents a single dialog node containing text, speaker info, and possible choices.
 /// Enhanced with true tree structure including parent references and node identification for convergent paths.
 /// Each node can link to other nodes through choices, auto-advance, or convergent references.
@@ -27,6 +40,9 @@ public class DialogNode
 {
     // Node Identification - no header here, PropertyDrawer handles organization and display in Inspector
     #region Backing Fields - SerializeField for Unity serialization
+
+    [SerializeField, Tooltip("Node type - determines which editor and behavior to use")]
+    private DialogNodeType _nodeType = DialogNodeType.StandardDialog;
 
     [SerializeField, Tooltip("Unique name for this node - enables convergent dialog paths and node referencing")]
     private string _nodeId;
@@ -49,9 +65,46 @@ public class DialogNode
     [SerializeField] private UnityEvent _onDialogStart;
     [SerializeField] private UnityEvent _onDialogEnd;
 
+    // RememberTheScript Minigame Settings
+    [SerializeField, Tooltip("Enable RememberTheScript typing minigame for this node")]
+    private bool _isRememberScriptNode = false;
+    
+    [SerializeField, Tooltip("The exact phrase the player must type")]
+    private string _targetPhrase = "";
+    
+    [SerializeField, Tooltip("Maximum number of mistakes allowed before failure")]
+    private int _maxMistakes = 3;
+    
+    [SerializeField, Tooltip("Time limit in seconds (0 = no limit)")]
+    private float _timeLimit = 30f;
+    
+    [SerializeField, Tooltip("Audience score penalty per mistake")]
+    private float _scorePerMistake = -5f;
+    
+    [SerializeField, Tooltip("Audience score reward on successful completion")]
+    private float _scoreOnSuccess = 20f;
+    
+    [SerializeField, Tooltip("Should typing be case-sensitive?")]
+    private bool _caseSensitive = false;
+    
+    // NEW: Direct object reference for failure node (same as success node pattern)
+    [SerializeReference, Tooltip("Node to jump to on failure (null = retry)")]
+    private DialogNode _failureNode = null;
+    
+    // LEGACY: Keep string reference for backwards compatibility
+    [SerializeField, Tooltip("LEGACY: Node name to jump to on failure (use _failureNode instead)")]
+    private string _failureNodeName = "";
+
     #endregion
 
     #region Properties with Get/Set Methods
+
+    /// <summary> Type of this dialog node (determines editor and behavior) </summary>
+    public DialogNodeType NodeType
+    {
+        get => _nodeType;
+        set => _nodeType = value;
+    }
 
     /// <summary> Unique identifier for this node, used for referencing </summary>
     public string NodeName
@@ -167,6 +220,91 @@ public class DialogNode
         set => _onDialogEnd = value;
     }
 
+    // RememberTheScript Minigame Properties
+    /// <summary> Whether this node triggers the RememberTheScript typing minigame </summary>
+    public bool IsRememberScriptNode
+    {
+        get => _isRememberScriptNode;
+        set => _isRememberScriptNode = value;
+    }
+
+    /// <summary> The exact phrase the player must type </summary>
+    public string TargetPhrase
+    {
+        get => _targetPhrase ?? string.Empty;
+        set => _targetPhrase = value;
+    }
+
+    /// <summary> Maximum number of mistakes allowed before failure </summary>
+    public int MaxMistakes
+    {
+        get => _maxMistakes;
+        set => _maxMistakes = Mathf.Max(0, value);
+    }
+
+    /// <summary> Time limit in seconds (0 = no limit) </summary>
+    public float TimeLimit
+    {
+        get => _timeLimit;
+        set => _timeLimit = Mathf.Max(0f, value);
+    }
+
+    /// <summary> Audience score penalty per mistake </summary>
+    public float ScorePerMistake
+    {
+        get => _scorePerMistake;
+        set => _scorePerMistake = value;
+    }
+
+    /// <summary> Audience score reward on successful completion </summary>
+    public float ScoreOnSuccess
+    {
+        get => _scoreOnSuccess;
+        set => _scoreOnSuccess = value;
+    }
+
+    /// <summary> Should typing be case-sensitive? </summary>
+    public bool CaseSensitive
+    {
+        get => _caseSensitive;
+        set => _caseSensitive = value;
+    }
+
+    /// <summary> Direct object reference to failure node (null = retry) </summary>
+    public DialogNode FailureNode
+    {
+        get => _failureNode;
+        set
+        {
+            _failureNode = value;
+            // Keep legacy name in sync
+            if (value != null)
+            {
+                _failureNodeName = value.NodeName;
+            }
+            else
+            {
+                _failureNodeName = "";
+            }
+        }
+    }
+
+    /// <summary> Node name to jump to on failure (LEGACY - use FailureNode instead) </summary>
+    public string FailureNodeName
+    {
+        get
+        {
+            // Prefer the object reference name if it exists
+            if (_failureNode != null && !string.IsNullOrEmpty(_failureNode.NodeName))
+            {
+                return _failureNode.NodeName;
+            }
+            // Fall back to legacy string field
+            return _failureNodeName ?? string.Empty;
+        }
+        set => _failureNodeName = value;
+    }
+
     #endregion
 
     #region Computed Properties
@@ -179,6 +317,11 @@ public class DialogNode
 
     /// <summary> True if this node auto-advances to another node </summary>
     public bool HasAutoAdvance => _childNode != null && _autoAdvanceDelay >= 0f;
+
+    /// <summary> True if this node has RememberTheScript minigame configured </summary>
+    public bool HasRememberScriptMinigame => _nodeType == DialogNodeType.RememberTheScript && 
+                                               _isRememberScriptNode && 
+                                               !string.IsNullOrEmpty(_targetPhrase);
 
     #endregion
 
@@ -272,7 +415,7 @@ public class DialogNode
     #region Choice Management
 
     /// <summary> Add a choice to this node and create/link to target node, set ChildNode to null </summary>
-    public DialogChoice AddChoice(string choiceText, DialogNode targetNode, String choiceId)
+    public DialogChoice AddChoice(String choiceText, DialogNode targetNode, String choiceId)
     {
         // DialogChoice is now a regular class, just use new
         var newChoice = new DialogChoice(choiceText, this, targetNode, choiceId);
@@ -382,6 +525,22 @@ public class DialogNode
         if (HasChoices && HasAutoAdvance)
             return false;
 
+        // Validate RememberTheScript minigame settings
+        if (_isRememberScriptNode)
+        {
+            // Must have a target phrase
+            if (string.IsNullOrEmpty(_targetPhrase))
+                return false;
+
+            // Max mistakes must be positive
+            if (_maxMistakes <= 0)
+                return false;
+
+            // Time limit must be non-negative
+            if (_timeLimit < 0f)
+                return false;
+        }
+
         // Validate all events
         if (_startEvents != null)
         {
@@ -422,6 +581,242 @@ public class DialogNode
             return _dialogText.Length > 30 ? _dialogText.Substring(0, 30) + "..." : _dialogText;
 
         return "Empty Node";
+    }
+
+    /// <summary>
+    /// Configure this node as a RememberTheScript minigame node
+    /// </summary>
+    public void ConfigureRememberScript(
+        string targetPhrase,
+        int maxMistakes = 3,
+        float timeLimit = 30f,
+        float scoreOnSuccess = 20f,
+        float scorePerMistake = -5f,
+        bool caseSensitive = false,
+        string failureNodeName = "")
+    {
+        _isRememberScriptNode = true;
+        _targetPhrase = targetPhrase;
+        _maxMistakes = maxMistakes;
+        _timeLimit = timeLimit;
+        _scoreOnSuccess = scoreOnSuccess;
+        _scorePerMistake = scorePerMistake;
+        _caseSensitive = caseSensitive;
+        _failureNodeName = failureNodeName;
+    }
+
+    #endregion
+
+    #region Node Type Conversion
+
+    /// <summary>
+    /// Convert this node to a different type while preserving connections and core data
+    /// </summary>
+    public void ConvertToType(DialogNodeType newType)
+    {
+        if (_nodeType == newType)
+            return; // Already this type
+        
+        DialogNodeType oldType = _nodeType;
+        _nodeType = newType;
+        
+        // Handle type-specific conversions
+        switch (newType)
+        {
+            case DialogNodeType.StandardDialog:
+                ConvertToStandardDialog(oldType);
+                break;
+                
+            case DialogNodeType.RememberTheScript:
+                ConvertToRememberTheScript(oldType);
+                break;
+        }
+        
+        Debug.Log($"[DialogNode] Converted node '{NodeName}' from {oldType} to {newType}");
+    }
+    
+    private void ConvertToStandardDialog(DialogNodeType fromType)
+    {
+        // Clear minigame-specific data
+        _isRememberScriptNode = false;
+        _targetPhrase = "";
+        _maxMistakes = 3;
+        _timeLimit = 0f;
+        _scorePerMistake = -5f;
+        _scoreOnSuccess = 20f;
+        _caseSensitive = false;
+        _failureNodeName = "";
+        
+        // Sync NodeType
+        _nodeType = DialogNodeType.StandardDialog;
+        
+        // Preserve: NodeName, CharacterName, DialogText, IsPlayerSpeaking, AutoAdvanceDelay
+        // Preserve: ParentNodes, ChildNode, Choices, Events
+        
+        Debug.Log($"[DialogNode] Cleared {fromType} minigame data");
+    }
+    
+    private void ConvertToRememberTheScript(DialogNodeType fromType)
+    {
+        // Enable RememberTheScript with default values
+        _isRememberScriptNode = true;
+        _nodeType = DialogNodeType.RememberTheScript;
+        
+        // Set defaults if not already configured
+        if (string.IsNullOrEmpty(_targetPhrase))
+        {
+            _targetPhrase = "Enter phrase here";
+        }
+        
+        if (_maxMistakes == 0)
+            _maxMistakes = 3;
+        
+        if (_timeLimit == 0f)
+            _timeLimit = 30f;
+        
+        if (_scoreOnSuccess == 0f)
+            _scoreOnSuccess = 20f;
+        
+        if (_scorePerMistake == 0f)
+            _scorePerMistake = -5f;
+        
+        // Preserve: NodeName, CharacterName, DialogText, IsPlayerSpeaking
+        // Preserve: ParentNodes, ChildNode, Choices, Events
+        // Note: AutoAdvanceDelay ignored during minigame
+        
+        Debug.Log($"[DialogNode] Initialized RememberTheScript minigame settings");
+    }
+    
+    /// <summary>
+    /// Get a human-readable description of what this node type does
+    /// </summary>
+    public static string GetNodeTypeDescription(DialogNodeType type)
+    {
+        switch (type)
+        {
+            case DialogNodeType.StandardDialog:
+                return "Standard dialog with text, choices, and events";
+                
+            case DialogNodeType.RememberTheScript:
+                return "Typing minigame - player must type phrase correctly";
+                
+            default:
+                return "Unknown node type";
+        }
+    }
+    
+    /// <summary>
+    /// Check if conversion will lose data (warn user before converting)
+    /// </summary>
+    public bool WillConversionLoseData(DialogNodeType newType)
+    {
+        if (_nodeType == newType)
+            return false;
+        
+        // Converting from RememberTheScript to StandardDialog loses minigame data
+        if (_nodeType == DialogNodeType.RememberTheScript && newType == DialogNodeType.StandardDialog)
+        {
+            return !string.IsNullOrEmpty(_targetPhrase) || 
+                   _maxMistakes != 3 || 
+                   _timeLimit != 30f ||
+                   _scoreOnSuccess != 20f ||
+                   _scorePerMistake != -5f ||
+                   _caseSensitive ||
+                   !string.IsNullOrEmpty(_failureNodeName);
+        }
+        
+        // Add checks for future minigame types here
+        
+        return false;
+    }
+
+    #endregion
+
+    #region Minigame Outcome Node Management
+
+    /// <summary>
+    /// Create default success and failure nodes for a minigame
+    /// </summary>
+    public void CreateMinigameOutcomeNodes()
+    {
+        if (_nodeType != DialogNodeType.RememberTheScript)
+        {
+            Debug.LogWarning("[DialogNode] CreateMinigameOutcomeNodes called on non-minigame node");
+            return;
+        }
+        
+        // Create success node if it doesn't exist
+        if (_childNode == null)
+        {
+            var successNode = new DialogNode(
+                "Director", 
+                "Excellent work! Your performance was flawless!", 
+                false,
+                $"{_nodeId}_success"
+            );
+            SetChildNode(successNode);
+            Debug.Log($"[DialogNode] Created success node: {successNode.NodeName}");
+        }
+        
+        // Set failure node reference if not already set
+        // NOTE: The actual failure node object needs to be created by the DialogTree or editor
+        // because we don't have direct access to the tree's node list from here
+        if (string.IsNullOrEmpty(_failureNodeName))
+        {
+            string failureNodeId = $"{_nodeId}_failure";
+            _failureNodeName = failureNodeId;
+            
+            Debug.Log($"[DialogNode] Set failure node reference: {failureNodeId}");
+            Debug.Log($"[DialogNode] Note: Failure node object must be created separately in the tree");
+        }
+    }
+    
+    /// <summary>
+    /// Link to an existing node in the tree as the success node
+    /// </summary>
+    public void LinkToSuccessNode(DialogNode existingNode)
+    {
+        if (existingNode == null)
+        {
+            Debug.LogWarning("[DialogNode] Cannot link to null success node");
+            return;
+        }
+        
+        SetChildNode(existingNode);
+        Debug.Log($"[DialogNode] Linked to existing success node: {existingNode.NodeName}");
+    }
+    
+    /// <summary>
+    /// Link to an existing node in the tree as the failure node (by name)
+    /// </summary>
+    public void LinkToFailureNode(string nodeName)
+    {
+        if (string.IsNullOrEmpty(nodeName))
+        {
+            Debug.LogWarning("[DialogNode] Cannot link to failure node with empty name");
+            return;
+        }
+        
+        _failureNodeName = nodeName;
+        Debug.Log($"[DialogNode] Set failure node reference: {nodeName}");
+    }
+    
+    /// <summary>
+    /// Clear the failure node reference (allows retry)
+    /// </summary>
+    public void ClearFailureNode()
+    {
+        _failureNodeName = "";
+        Debug.Log("[DialogNode] Cleared failure node - player can retry");
+    }
+    
+    /// <summary>
+    /// Check if this minigame node has outcome nodes configured
+    /// </summary>
+    public bool HasMinigameOutcomes()
+    {
+        return _childNode != null; // Success node exists
+        // Failure node is optional (empty = retry)
     }
 
     #endregion

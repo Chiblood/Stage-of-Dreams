@@ -512,3 +512,5 @@ $RECYCLE.BIN/
 /UIElementsSchema
 U I E l e m e n t s S c h e m a /  
  
+# User-specific files in ProjectSettings
+/[Pp]roject[Ss]ettings/**/TimelineSettings.asset

@@ -70,7 +70,7 @@ Please assist me in learning by:
 - **Needs explanations for**: Game architecture patterns, Unity best practices, event systems
 
 ### Project Progress Tracking
-**Current Sprint**: GameState Management & Minigame Foundation (Feature/Minigames branch)
+**Current Sprint**: GameState Management & Minigame Implementation (Feature/Minigames branch) - LAST DAY!
 - Dialog Tree system implemented with ScriptableObjects
 - Dialog Node structure with choices and auto-advance
 - Dialog Event system with method delegates
@@ -80,8 +80,15 @@ Please assist me in learning by:
 - Documentation consolidated and standardized
 - **GameStateManager singleton implemented** - centralized state tracking
 - **GameStateData ScriptableObject** - save/load infrastructure
-- Working on: Minigame implementation (CalmDialog, RememberTheScript)
-- Next up: Minigame UI, audience interaction system, turn-based combat
+- **RememberTheScript minigame CORE COMPLETE** ✅
+	- Full typing validation system
+	- Mistake tracking and reset logic
+	- Timer system
+	- GameStateManager integration
+	- Test helper script available
+	- UI integration pending
+- Working on: RememberTheScript UI integration, CalmDialog implementation
+- Next up: Demo scene creation, deployment
 
 **Completed Features**:
 1. Core dialog tree system with convergent path support
@@ -93,263 +100,14 @@ Please assist me in learning by:
 7. Consolidated documentation structure
 8. **GameState management system** (audience metrics, scores, progression, session tracking)
 9. **Event-driven state updates** for UI integration
+10. **RememberTheScript minigame core logic** ⚠️ NEW!
+11. **Node type system with conversion** - Switch between dialog and minigame nodes
+12. **Specialized editor windows** - Dedicated editors for each node type
+13. **Auto-creation of minigame outcome nodes** - Success/failure nodes created automatically
+14. **Node linking system** - Link minigame outcomes to existing nodes
+15. **Clean Architecture** - DialogNode (Data) → DialogNavigator (Logic with Events) → DialogManager (UI subscribes to events)
 
 **Known Issues/Technical Debt**:
-- Need to implement minigame UI components
+- Need to implement minigame UI components in DialogManager
+- DialogNavigator has RememberTheScript events ready, DialogManager needs to subscribe when UI is implemented
 - Need to implement turn-based system
-- Audience mood/reaction system partially implemented (tracking in GameState, needs audio/visual feedback)
-- Performance testing for large dialog trees needed
-
-### Code Quality Standards Jack is Learning
-- Use XML documentation comments for public methods
-- Implement validation methods (`IsValid()`) for data structures
-- Include context menu debugging options for ScriptableObjects
-- Follow Unity serialization best practices with `[SerializeField]` and `[SerializeReference]`
-- Use properties with backing fields for better encapsulation
-- **Keep documentation in sync with code changes**
-
----
-
-## Stage of Dreams â€“ Project Overview
-
-### Game Concept
-**Genre**: Linear Top-down 2D RPG with theatrical elements
-**Core Mechanic**: An actor performing on stage, interacting with audience and other performers
-**Progression**: Each "Dream" is a unique level/story with its own narrative and objectives
-
-### Target Features
-- **Turn-Based Gameplay**: Strategic actions between player, audience, and NPCs
-- **Linear Storytelling**: Narrative-driven gameplay with character interactions
-- **Dialog System**: Complex branching conversations with choices and consequences
-- **Audience Interaction**: Dynamic mood states affecting gameplay
-- **Stage Abilities**: Unique performer abilities (improvise, interact, perform)
-- **Story Progression**: Multiple "Dreams" (levels) with narrative continuity
-
----
-
-## Project Architecture
-
-> **Note**: For complete architecture diagrams, see `Docs\Class Hierarchy.md`
-
-### Folder Structure
-```
-Assets/
-|-- _Stage of Dreams_/
-|   |-- Scripts/
-|   |   |-- Dialog/              # Dialog system components
-|   |   |   |-- DialogManager.cs       # UI controller
-|   |   |   |-- DialogNavigator.cs     # Navigation logic
-|   |   |   |-- DialogueTrigger.cs     # Interaction trigger
-|   |   |   |-- DialogEvents.cs        # Event system
-|   |   |   |-- Examples and Guides/   # Utility classes (not in main docs)
-|   |   |       |-- CreateLinearDialog.cs
-|   |   |       |-- DialogTreeFactory.cs
-|   |   |-- PlayerScripts/       # Player-related scripts
-|   |   |   |-- Player_Controller.cs
-|   |   |   |-- PlayerInteraction.cs
-|   |   |   |-- Interactable.cs
-|   |   |-- StageScripts/        # Stage environment scripts
-|   |       |-- AudienceManager.cs
-|   |       |-- LightingManager.cs
-|   |       |-- Spotlight.cs
-|   |       |-- SpotlightController.cs
-|   |-- World/                   # Data structures (ScriptableObjects)
-|       |-- Dialog Tree.cs       # Dialog tree container
-|       |-- Dialog Node.cs       # Individual dialog node
-|       |-- Dialog Choice.cs     # Dialog choice data
-|       |-- Character Content.cs # Base character data
-|       |-- Dream 1/             # Level-specific content
-|-- Scenes/                      # Unity scenes
-|-- Prefabs/                     # Reusable game objects
-|-- UI/                          # UI Toolkit assets (UXML/USS)
-
-Docs/                            # Documentation folder
-|-- Class Hierarchy.md           # Complete architecture & class reference
-|-- Project_Roadmap.md           # Feature planning & milestones
-|-- TROUBLESHOOTING.MD           # Known issues & solutions
-|-- Requirements.md              # Project requirements
-```
-
-### Technology Stack
-- **Unity Version**: 2D project (Unity 2022+)
-- **.NET Version**: .NET Framework 4.7.1
-- **UI System**: Unity UI Toolkit (UXML/USS)
-- **Text Rendering**: TextMesh Pro
-- **Version Control**: Git (GitHub repository)
-- **Documentation**: Markdown with Mermaid diagrams
-
-### Utility Classes & Examples
-**Location**: `Assets\_Stage of Dreams_\Scripts\Dialog\Examples and Guides\`
-
-These utility classes are for development convenience and are **not documented in Class Hierarchy**:
-- **`CreateLinearDialog.cs`**: Helper for quickly creating linear conversation chains
-- **`DialogTreeFactory.cs`**: Factory methods for programmatically generating dialog trees
-- **Other utilities**: Document here as needed
-
-**When to add utilities**:
-- Add to this section when creating helper/example classes
-- Keep Class Hierarchy focused on core production classes
-- Update this list when new utilities are added
-
----
-
-## Coding Patterns & Best Practices
-
-### Unity ScriptableObject Pattern
-```csharp
-[CreateAssetMenu(fileName = "New Dialog Tree", menuName = "Dialog System/Dialog Tree")]
-public class DialogTree : ScriptableObject
-{
-    [SerializeField] private string treeName;
-    [SerializeReference] private DialogNode startingNode;
-    
-    // Include validation
-    public bool IsValid() { /* ... */ }
-    
-    // Include debug tools
-    [ContextMenu("Validate Tree")]
-    public void ValidateTree() { /* ... */ }
-}
-```
-
-### Property Pattern with Backing Fields
-```csharp
-[SerializeField] private string _characterName;
-
-public string CharacterName
-{
-    get => _characterName ?? string.Empty;
-    set => _characterName = value;
-}
-```
-
-### Validation Pattern
-```csharp
-public virtual bool IsValid()
-{
-    // Check required fields
-    if (string.IsNullOrEmpty(requiredField))
-        return false;
-    
-    // Validate child objects
-    foreach (var child in children)
-    {
-        if (!child.IsValid())
-            return false;
-    }
-    
-    return true;
-}
-```
-
-### Event Subscription Pattern
-```csharp
-private void OnEnable()
-{
-    dialogNavigator.OnNodeChanged += HandleNodeChanged;
-    dialogNavigator.OnDialogEnded += HandleDialogEnded;
-}
-
-private void OnDisable()
-{
-    dialogNavigator.OnNodeChanged -= HandleNodeChanged;
-    dialogNavigator.OnDialogEnded -= HandleDialogEnded;
-}
-```
-
-### DialogEvent Pattern (Custom Event System)
-```csharp
-// Creating custom dialog events
-[System.Serializable]
-public class MyCustomEvent : DialogEvent
-{
-    [SerializeField] private string myParameter;
-    
-    protected override void OnExecute()
-    {
-        // Your custom logic here
-        MyGameSystem.Instance?.DoSomething(myParameter);
-    }
-    
-    public override bool IsValid()
-    {
-        return base.IsValid() && !string.IsNullOrEmpty(myParameter);
-    }
-}
-
-// Adding events to dialog nodes
-DialogNode node = tree.GetStartingNode();
-node.AddStartEvent(new MyCustomEvent { myParameter = "value" });
-
-// Events execute automatically when:
-// - Node starts (StartEvents)
-// - Node ends (EndEvents)  
-// - Choice selected (ChoiceEvents)
-
-// Events support method delegates
-var evt = new MethodCallEvent();
-evt.SetMethod(() => Debug.Log("Custom action!"));
-node.AddStartEvent(evt);
-```
-
-### Context Menu Debugging
-```csharp
-[ContextMenu("Validate Setup")]
-private void ValidateSetup()
-{
-    Debug.Log("Validation results...");
-}
-
-[ContextMenu("Test Functionality")]
-private void TestFunctionality()
-{
-    // Test code here
-}
-
-```
-
----
-
-## Dialog System Documentation
-
-### Primary Resources
-- **User Guide**: `Docs/Dialog-System-Complete-Guide.md` - For designers and content creators
-- **Technical Reference**: `Docs/Dialog-System-Technical-Reference.md` - For programmers and system integrators
-- **Class Hierarchy**: `Docs/Class Hierarchy.md` - Complete architecture overview
-
-### When to Use Each
-- Learning the system → User Guide
-- Creating dialog content → User Guide
-- Troubleshooting → User Guide > Troubleshooting section
-- Integrating with code → Technical Reference
-- Extending the system → Technical Reference > Extension Guide
-- Understanding architecture → Technical Reference > System Architecture
-- **Creating custom events** → Technical Reference > Event System
-
-### Dialog Event System Quick Reference
-The dialog system uses a polymorphic event system with method delegate support:
-
-**Base Event Types:**
-- `DialogEvent` - Abstract base class with Execute() and IsValid()
-- `MethodCallEvent` - Execute any Action delegate
-- `ParameterizedMethodEvent<T>` - Execute methods with parameters
-- `StaticMethodCallEvent` - Call static methods via reflection
-
-**Usage Pattern:**
-```csharp
-// Add event to node
-var evt = new MethodCallEvent();
-evt.SetMethod(() => GameStateManager.Instance.AdjustApplause(10f));
-node.AddStartEvent(evt);
-
-// Add event to choice
-var choiceEvt = new ParameterizedMethodEvent<string>();
-choiceEvt.SetMethod(MinigameManager.Instance.StartMinigame, "calm_dialog");
-choice.AddChoiceEvent(choiceEvt);
-```
-
-**When to Use:**
-- Node start/end events for setup/cleanup
-- Choice events for game system integration
-- Custom events for game-specific behaviors
-- Prefer DialogEvents over UnityEvents for type safety

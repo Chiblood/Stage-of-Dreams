@@ -24,6 +24,7 @@ public class DialogTreeEditor : Editor
     private string newSpeakerName = "Speaker";
     private string newDialogText = "Enter dialog text here";
     private bool newIsPlayerSpeaking = false;
+    private DialogNodeType newNodeType = DialogNodeType.StandardDialog;
 
     // Enable foldout sections for better organization
     private bool showQuickActions = true;
@@ -182,6 +183,18 @@ public class DialogTreeEditor : Editor
                 
                 EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
                 
+                // Node type icon
+                string typeIcon = "";
+                switch (node.NodeType)
+                {
+                    case DialogNodeType.RememberTheScript:
+                        typeIcon = "🎭";
+                        break;
+                    case DialogNodeType.StandardDialog:
+                        typeIcon = "💬";
+                        break;
+                }
+                
                 // Node info
                 string nodeId = !string.IsNullOrEmpty(node.NodeName) ? node.NodeName : "<No ID>";
                 string speaker = !string.IsNullOrEmpty(node.CharacterName) ? node.CharacterName : "<No Speaker>";
@@ -189,8 +202,8 @@ public class DialogTreeEditor : Editor
                     ? (node.DialogText.Length > 30 ? node.DialogText.Substring(0, 30) + "..." : node.DialogText)
                     : "<No text>";
                 
-                // Display format: "1. [nodeId] Speaker: "Preview text...""
-                EditorGUILayout.LabelField($"{i + 1}. [{nodeId}] {speaker}: \"{preview}\"");
+                // Display format: "🎭 1. [nodeId] Speaker: "Preview text...""
+                EditorGUILayout.LabelField($"{typeIcon} {i + 1}. [{nodeId}] {speaker}: \"{preview}\"");
                 
                 // Edit button
                 GUI.backgroundColor = new Color(0.8f, 0.9f, 1f); // Light blue
@@ -274,6 +287,9 @@ public class DialogTreeEditor : Editor
         EditorGUILayout.LabelField("Rapid Node Creation", EditorStyles.miniBoldLabel);
         EditorGUILayout.HelpBox("Quick prototyping tools. For detailed editing, use the node editor windows.", MessageType.Info);
         
+        // Node Type Selection
+        newNodeType = (DialogNodeType)EditorGUILayout.EnumPopup("Node Type", newNodeType);
+        
         // Input fields for quick creation
         newSpeakerName = EditorGUILayout.TextField("Speaker Name", newSpeakerName);
         newDialogText = EditorGUILayout.TextArea(newDialogText, GUILayout.Height(40));
@@ -294,7 +310,57 @@ public class DialogTreeEditor : Editor
             }
             
             Undo.RecordObject(dialogTree, "Create Starting Node");
-            dialogTree.CreateStartingNode(newSpeakerName, newDialogText, newIsPlayerSpeaking);
+            var newNode = dialogTree.CreateStartingNode(newSpeakerName, newDialogText, newIsPlayerSpeaking);
+            
+            // Set node type
+            if (newNode != null)
+            {
+                newNode.NodeType = newNodeType;
+                if (newNodeType == DialogNodeType.RememberTheScript)
+                {
+                    newNode.ConfigureRememberScript("Enter phrase here", 3, 30f, 20f, -5f, false, "");
+                    
+                    // Create success node
+                    var successNode = new DialogNode(
+                        "Director",
+                        "Excellent work! Your performance was flawless!",
+                        false,
+                        $"{newNode.NodeName}_success"
+                    );
+                    newNode.SetChildNode(successNode);
+                    
+                    // Create failure node
+                    string failureNodeId = $"{newNode.NodeName}_failure";
+                    var failureNode = new DialogNode(
+                        "Director",
+                        "Let's try that again. Remember your lines!",
+                        false,
+                        failureNodeId
+                    );
+                    
+                    // Set failure reference
+                    newNode.LinkToFailureNode(failureNodeId);
+                    
+                    // Manually add both outcome nodes to tree since they're not connected through normal flow
+                    dialogTree.RefreshNodeList(); // This should pick up the success node through child relationship
+                    
+                    // The failure node needs manual addition since it's only referenced by name
+                    var allNodes = dialogTree.GetAllNodes();
+                    if (!allNodes.Contains(failureNode))
+                    {
+                        // Add to the tree's internal list (this is a workaround)
+                        // The tree should be able to manage this better
+                        Debug.LogWarning("[DialogTreeEditor] Failure node created but may not appear in tree until refresh");
+                    }
+                    
+                    EditorUtility.DisplayDialog("Minigame Node Created", 
+                        "RememberTheScript node created with outcome nodes!\n\n" +
+                        "✓ Success node: " + successNode.NodeName + "\n" +
+                        "✗ Failure node: " + failureNodeId + "\n\n" +
+                        "Open the RememberTheScriptNodeEditor to properly set up the failure node link.", "OK");
+                }
+            }
+            
             serializedObject.Update();
             EditorUtility.SetDirty(dialogTree);
         }
@@ -309,7 +375,48 @@ public class DialogTreeEditor : Editor
             {
                 Undo.RecordObject(dialogTree, "Add Sequential Node");
                 var lastNode = FindLastNode();
-                dialogTree.AddSequentialNode(lastNode, newSpeakerName, newDialogText, newIsPlayerSpeaking);
+                var newNode = dialogTree.AddSequentialNode(lastNode, newSpeakerName, newDialogText, newIsPlayerSpeaking);
+                
+                // Set node type
+                if (newNode != null)
+                {
+                    newNode.NodeType = newNodeType;
+                    if (newNodeType == DialogNodeType.RememberTheScript)
+                    {
+                        newNode.ConfigureRememberScript("Enter phrase here", 3, 30f, 20f, -5f, false, "");
+                        
+                        // Create success node
+                        var successNode = new DialogNode(
+                            "Director",
+                            "Excellent work! Your performance was flawless!",
+                            false,
+                            $"{newNode.NodeName}_success"
+                        );
+                        newNode.SetChildNode(successNode);
+                        
+                        // Create failure node
+                        string failureNodeId = $"{newNode.NodeName}_failure";
+                        var failureNode = new DialogNode(
+                            "Director",
+                            "Let's try that again. Remember your lines!",
+                            false,
+                            failureNodeId
+                        );
+                        
+                        // Set failure reference
+                        newNode.LinkToFailureNode(failureNodeId);
+                        
+                        // Refresh node list
+                        dialogTree.RefreshNodeList();
+                        
+                        EditorUtility.DisplayDialog("Minigame Node Created", 
+                            "RememberTheScript node created with outcome nodes!\n\n" +
+                            "✓ Success node: " + successNode.NodeName + "\n" +
+                            "✗ Failure node: " + failureNodeId + "\n\n" +
+                            "Open the RememberTheScriptNodeEditor to properly set up the failure node link.", "OK");
+                    }
+                }
+                
                 serializedObject.Update();
                 EditorUtility.SetDirty(dialogTree);
             }

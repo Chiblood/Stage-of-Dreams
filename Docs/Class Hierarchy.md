@@ -354,6 +354,33 @@ graph TD
 
 ### Pattern: Model-View-Controller (MVC) with Event-Driven Communication
 
+**Clean Architecture (Current Implementation):**
+```
+DialogNode (Data - Model)
+    ↓
+DialogNavigator (Game Logic - Controller)
+    ├─ Fires: OnNodeChanged
+    ├─ Fires: OnRememberScriptStarted
+    ├─ Fires: OnRememberScriptProgress
+    ├─ Fires: OnRememberScriptSuccess/Failure
+    └─ Fires: OnDialogEnded
+         ↓
+    DialogManager (View - UI Controller)
+         └─ Subscribes to events and renders UI
+```
+
+**Key Principle**: 
+- DialogNavigator focuses purely on game logic (validation, scoring, state)
+- DialogNavigator fires events when state changes
+- DialogManager (or future UI controllers) subscribe to events and handle presentation
+- **No UI code in DialogNavigator** - complete separation of concerns
+
+**Current Status**:
+- ✅ DialogNavigator has full minigame logic with events
+- ✅ RememberTheScript events defined and functional
+- ⏳ DialogManager needs to subscribe to minigame events (when UI is added)
+- ⏳ Minigame UI components need to be created in DialogManager
+
 ### Documentation References
 
 **📚 Complete Documentation:**
@@ -537,7 +564,7 @@ graph TD
 
 #### C. View Layer
 - **`DialogManager`**: UI controller (Singleton)
-  - Location: `Assets/_Stage of Dreams_/Scripts/Dialog/DialogManager.cs`
+  - Location: `Assets\_Stage of Dreams_\Scripts\Dialog\DialogManager.cs`
   - Properties:
     - `static DialogManager Instance` - Singleton instance
     - `UIDocument uiDocument`
@@ -563,6 +590,7 @@ graph TD
   - Events:
     - `OnDialogStarted`, `OnDialogEnded`, `OnNodeDisplayed`, `OnCustomActionHandled`
   - Description: Singleton dialog manager handling UI display and integration with DialogNavigator, supports UI Toolkit
+  - **Future Enhancement**: Will subscribe to DialogNavigator minigame events (OnRememberScriptStarted, OnRememberScriptProgress, etc.) when minigame UI is implemented
 
 - **`DialogNavigator`**: Navigation logic engine
   - Location: `Assets/_Stage of Dreams_/Scripts/Dialog/DialogNavigator.cs`
@@ -676,161 +704,71 @@ node.AddStartEvent(evt);
 ### Editor Tools
 
 #### DialogTreeEditor
-- Location: `Assets/_Stage of Dreams_/Editor/DialogTreeEditor.cs`
+- Location: `Assets\_Stage of Dreams_\Editor\DialogTreeEditor.cs`
 - Custom inspector for DialogTree
 - Read-only workflow with edit buttons
 - Quick tree builder
 - Validation and debugging tools
 
 #### DialogNodeEditorWindow
-- Location: `Assets/_Stage of Dreams_/Editor/DialogNodeEditorWindow.cs`
-- Dedicated window for editing individual nodes
+- Location: `Assets\_Stage of Dreams_\Editor\DialogNodeEditorWindow.cs`
+- Dedicated window for editing standard dialog nodes
 - Tree navigation buttons (parents, children, choice targets)
 - Choice management interface
 - Unity Events and DialogEvents integration
+- **Smart routing**: Detects specialized node types and redirects to appropriate editor
+
+#### RememberTheScriptNodeEditor
+- Location: `Assets\_Stage of Dreams_\Editor\RememberTheScriptNodeEditor.cs`
+- **NEW**: Specialized editor for RememberTheScript minigame nodes
+- Focused UI showing only minigame-relevant settings:
+  - Target phrase configuration with character count
+  - Difficulty settings (max mistakes, time limit, case sensitivity)
+  - Score settings (success reward, mistake penalty)
+  - Success/failure node navigation
+  - Estimated difficulty rating calculator
+  - Score preview for perfect/worst runs
+- Test minigame button for quick validation
+- Automatic visual preview of target phrase
+- Integration with tree navigation system
+
+#### DialogChoiceEditorWindow
+- Location: `Assets\_Stage of Dreams_\Editor\DialogChoiceEditorWindow.cs`
+- Dedicated window for editing dialog choices
+- Choice-specific UI and validation
 
 #### DialogTreeUtilities
-- Location: `Assets/_Stage of Dreams_/Editor/DialogTreeUtilities.cs`
+- Location: `Assets\_Stage of Dreams_\Editor\DialogTreeUtilities.cs`
 - Menu items: `Tools > Dialog System`
 - Node ID generator
 - Tree validation
 - Batch operations
 
+### Editor Architecture Pattern
+
+**Specialized Editor Windows for Minigames**
+
+The editor system uses a **router pattern** where `DialogNodeEditorWindow.OpenWindow()` detects node types and routes to specialized editors:
+
+```
+Node Edit Request
+    ↓
+DialogNodeEditorWindow.OpenWindow()
+    ├─ IsRememberTheScriptNode? → RememberTheScriptNodeEditor
+    ├─ IsCalmDialogNode? → CalmDialogNodeEditor (future)
+    └─ Default → DialogNodeEditorWindow (standard dialog)
+```
+
+**Benefits:**
+- Single Responsibility: Each editor handles one node type
+- Scalability: New minigames = new editors (no modification to existing code)
+- Clean UI: Only relevant fields shown for each node type
+- Easy Maintenance: Changes isolated to specific editors
+
+**Adding New Minigame Editors:**
+1. Create new editor class (e.g., `CalmDialogNodeEditor.cs`)
+2. Add detection method in `DialogNodeEditorWindow` (e.g., `IsCalmDialogNode()`)
+3. Add routing logic in `OpenWindow()` method
+4. Update documentation
+
 ---
-## World/Dialog Data Classes
-
-### ✅ Dialog Tree.cs (DialogTree)
-- **Pattern:** ScriptableObject
-- **Location:** `Assets/_Stage of Dreams_/World/Dialog Tree.cs`
-- **Properties:**
-  - `string treeName` - Display name for the tree
-  - `string description` - Tree description
-  - `DialogNode startingNode` - Entry point for conversation
-  - `List<DialogNode> allNodes` - All nodes in tree
-  - `bool autoUpdateNodeList = true` - Auto-refresh node list
-  - `bool validateOnSave = true` - Validate on save
-- **Methods:**
-  - Tree Management:
-    - `GetStartingNode()` - Get entry point
-    - `IsValid()` - Validate tree structure
-    - `GetAllNodes()` - Get all nodes in tree
-    - `FindNodeByName(string)` - Find node by unique ID
-    - `GetNamedNodes()` - Get all nodes with names
-    - `GetConvergentNodes()` - Get nodes with multiple parents
-    - `GetEndNodes()` - Get terminal nodes
-    - `GetMaxDepth()` - Get maximum tree depth
-    - `IsNodeNameUnique(string, DialogNode)` - Check name uniqueness
-    - `RefreshNodeList()` - Update node collection
-    - `ResolveNamedReferences()` - Resolve all named node references
-  - Node Creation:
-    - `CreateStartingNode(string speaker, string text, bool isPlayer, string nodeId)` - Create entry point
-    - `AddChoiceNode(DialogNode parent, string choiceText, ...)` - Add branching node
-    - `AddSequentialNode(DialogNode parent, string speaker, string text, ...)` - Add auto-advance node
-    - `AddChoiceToNamedNode(DialogNode parent, string choiceText, string targetName)` - Add convergent choice
-    - `CreateLinearConversation(string[] speakers, string[] texts, ...)` - Build linear conversation
-  - Event Management:
-    - `AddEventToAllNodes(DialogEvent, bool isStartEvent)` - Add event to all nodes
-    - `GetNodesWithStartEvents()` - Get nodes with start events
-    - `GetNodesWithEndEvents()` - Get nodes with end events
-  - Validation:
-    - `ValidateTree()` - Comprehensive validation with console output
-    - `PrintTreeStructure()` - Print tree hierarchy to console
-- **Description:** Container for dialog nodes and navigation structure. Supports convergent paths, validation, and tree building methods.
-
-### ✅ Dialog Node.cs (DialogNode)
-- **Pattern:** Serializable Class (not ScriptableObject)
-- **Location:** `Assets/_Stage of Dreams_/World/Dialog Node.cs`
-- **Properties:**
-  - Node Identification:
-    - `string NodeName` - Unique identifier (e.g., `act1_director_intro_01`)
-  - Dialog Content:
-    - `string CharacterName` - Speaker name
-    - `string DialogText` - Dialog content (TextArea 3-6 lines)
-    - `bool IsPlayerSpeaking` - Player dialog flag
-  - Flow Control:
-    - `float AutoAdvanceDelay` - Auto-advance timing (0 = manual advance)
-  - Tree Structure:
-    - `List<DialogNode> ParentNodes` - Incoming connections (supports convergent paths)
-    - `DialogNode ChildNode` - Auto-advance target (null if has choices)
-    - `List<DialogChoice> Choices` - Player choice options
-  - Events:
-    - `List<DialogEvent> StartEvents` - Events triggered on node start
-    - `List<DialogEvent> EndEvents` - Events triggered on node end
-    - `UnityEvent OnDialogStart` - Legacy start event (backwards compatibility)
-    - `UnityEvent OnDialogEnd` - Legacy end event (backwards compatibility)
-  - Computed Properties:
-    - `bool IsRootNode` - True if no parent nodes
-    - `bool HasChoices` - True if has choice options
-    - `bool HasAutoAdvance` - True if has child node
-- **Methods:**
-  - Hierarchy Management:
-    - `SetChildNode(DialogNode)` - Set auto-advance target
-    - `CreateChildNode(string speaker, string text, ...)` - Create and link child node
-    - `AddParentNode(DialogNode)` - Add parent reference
-    - `RemoveParentNode(DialogNode)` - Remove parent reference
-  - Choice Management:
-    - `AddChoice(string text, DialogNode target, string choiceId)` - Add player choice
-    - `RemoveChoice(int index)` - Remove choice by index
-  - Event Management:
-    - `AddStartEvent(DialogEvent)` - Add start event
-    - `AddEndEvent(DialogEvent)` - Add end event
-    - `RemoveStartEvent(int)` - Remove start event
-    - `RemoveEndEvent(int)` - Remove end event
-    - `ExecuteStartEvents()` - Trigger all start events
-    - `ExecuteEndEvents()` - Trigger all end events
-  - Validation:
-    - `IsValid()` - Validate node configuration
-    - `GetDisplayName()` - Get display name for UI
-- **Description:** Core dialog node structure with choices and events. Supports parent/child relationships, convergent paths, and both DialogEvent and UnityEvent systems.
-
-### ✅ Dialog Choice.cs (DialogChoice)
-- **Pattern:** Serializable Class (not ScriptableObject)
-- **Location:** `Assets/_Stage of Dreams_/World/Dialog Choice.cs`
-- **Properties:**
-  - Choice Data:
-    - `string ChoiceText` - Display text for choice
-    - `string ChoiceId` - Unique identifier for custom actions
-    - `List<bool> Conditions` - Conditions to show choice (not implemented yet)
-  - References:
-    - `DialogNode ParentNode` - Node this choice belongs to
-    - `DialogNode TargetNode` - Direct target node reference
-    - `string TargetNodeName` - Named target for convergent paths
-  - Events:
-    - `List<DialogEvent> ChoiceEvents` - Events triggered on selection
-    - `UnityEvent OnChoiceSelected` - Legacy choice event (backwards compatibility)
-  - Computed Properties:
-    - `bool HasNamedTarget` - True if using named reference
-    - `bool HasValidTarget` - True if has target (direct or named)
-    - `bool HasEvents` - True if has events to execute
-  - Key Methods:
-    - Event Management:
-      - `AddChoiceEvent(DialogEvent)` - Add choice event
-      - `RemoveChoiceEvent(int)` - Remove choice event
-      - `ExecuteChoiceEvents()` - Trigger all choice events
-    - Target Management:
-      - `CreateTargetNode(string speaker, string text, ...)` - Create and set target node
-      - `SetTarget(DialogNode)` - Set direct target reference
-      - `SetTargetByName(string)` - Set named target for convergent paths
-      - `ResolveNamedTarget(DialogTree)` - Resolve named target to actual node
-    - Validation:
-      - `IsValid()` - Validate choice configuration
-      - `IsTargetResolved()` - Check if named target is resolved
-      - `GetDisplayName()` - Get display name for UI
-      - `GetTargetInfo()` - Get target information for debugging
-- **Description:** Individual choice options within dialog nodes. Supports named node references for convergent dialog paths and both DialogEvent and UnityEvent systems.
-
-## Notes
-- The dialog system is highly developed with comprehensive validation and event systems
-  - **DialogEvent system** provides type-safe, extensible event handling
-  - **Convergent paths** supported through named node references
-  - **Editor tools** provide dedicated windows for complex tree editing
-  - **Complete documentation** available in consolidated guides
-- Spotlight and lighting systems are feature-complete with advanced functionality
-- Player controller integrates well with other systems
-- **GameState management system is now implemented** - provides centralized state tracking for audience metrics, scores, progression, and minigames
-- GameStateManager uses singleton pattern with event-driven architecture for UI integration
-- GameStateData ScriptableObject enables easy default state configuration and save/load functionality
-- Most core gameplay systems are implemented except for minigames and stage management
-- The architecture supports easy extension for the remaining TBD classes
-- **Documentation consolidated** - Historical dialog docs archived to `Docs/Archive/Dialog-Development/`
-- **Last Updated**: Dialog System documentation consolidated and DialogEvents integrated (January 2025)

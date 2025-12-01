@@ -1,4 +1,4 @@
-﻿/* DialogEvent.cs - Enhanced with method delegate support */
+/* DialogEvent.cs - Enhanced with method delegate support */
 
 using UnityEngine;
 using System;

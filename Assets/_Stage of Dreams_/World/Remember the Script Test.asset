@@ -1,0 +1,155 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60bb80c9727209d4db564d14f667a070, type: 3}
+  m_Name: Remember the Script Test
+  m_EditorClassIdentifier: Assembly-CSharp::DialogTree
+  treeName: Remember the Script Test
+  description: Test Tree
+  startingNode:
+    rid: 6262275097848185074
+  allNodes:
+  - rid: 6262275097848185074
+  - rid: 6262275097848185075
+  - rid: 6262275097848185087
+  - rid: 6262275097848185100
+  autoUpdateNodeList: 1
+  validateOnSave: 1
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 6262275097848185074
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        _nodeType: 1
+        _nodeId: 
+        _characterName: Speaker
+        _dialogText: Enter dialog text here
+        _isPlayerSpeaking: 0
+        _autoAdvanceDelay: 0
+        _parentNodes: []
+        _childNode:
+          rid: 6262275097848185075
+        _choices: []
+        _startEvents: []
+        _endEvents: []
+        _onDialogStart:
+          m_PersistentCalls:
+            m_Calls: []
+        _onDialogEnd:
+          m_PersistentCalls:
+            m_Calls: []
+        _isRememberScriptNode: 1
+        _targetPhrase: Enter phrase here
+        _maxMistakes: 3
+        _timeLimit: 30
+        _scorePerMistake: -5
+        _scoreOnSuccess: 20
+        _caseSensitive: 0
+        _failureNode:
+          rid: 6262275097848185087
+        _failureNodeName: 
+    - rid: 6262275097848185075
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        _nodeType: 0
+        _nodeId: _success
+        _characterName: Director
+        _dialogText: Excellent work! Your performance was flawless!
+        _isPlayerSpeaking: 0
+        _autoAdvanceDelay: 0
+        _parentNodes:
+        - rid: 6262275097848185074
+        _childNode:
+          rid: -2
+        _choices: []
+        _startEvents: []
+        _endEvents: []
+        _onDialogStart:
+          m_PersistentCalls:
+            m_Calls: []
+        _onDialogEnd:
+          m_PersistentCalls:
+            m_Calls: []
+        _isRememberScriptNode: 0
+        _targetPhrase: 
+        _maxMistakes: 3
+        _timeLimit: 30
+        _scorePerMistake: -5
+        _scoreOnSuccess: 20
+        _caseSensitive: 0
+        _failureNode:
+          rid: -2
+        _failureNodeName: 
+    - rid: 6262275097848185087
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        _nodeType: 1
+        _nodeId: failure_node
+        _characterName: Director
+        _dialogText: Let's try that again. Remember your lines!
+        _isPlayerSpeaking: 0
+        _autoAdvanceDelay: 0
+        _parentNodes: []
+        _childNode:
+          rid: 6262275097848185075
+        _choices: []
+        _startEvents: []
+        _endEvents: []
+        _onDialogStart:
+          m_PersistentCalls:
+            m_Calls: []
+        _onDialogEnd:
+          m_PersistentCalls:
+            m_Calls: []
+        _isRememberScriptNode: 1
+        _targetPhrase: 
+        _maxMistakes: 3
+        _timeLimit: 30
+        _scorePerMistake: -5
+        _scoreOnSuccess: 20
+        _caseSensitive: 0
+        _failureNode:
+          rid: 6262275097848185100
+        _failureNodeName: 
+    - rid: 6262275097848185100
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        _nodeType: 0
+        _nodeId: failure_node_failure
+        _characterName: Director
+        _dialogText: Umm... Maybe lets try something else.
+        _isPlayerSpeaking: 0
+        _autoAdvanceDelay: 0
+        _parentNodes: []
+        _childNode:
+          rid: -2
+        _choices: []
+        _startEvents: []
+        _endEvents: []
+        _onDialogStart:
+          m_PersistentCalls:
+            m_Calls: []
+        _onDialogEnd:
+          m_PersistentCalls:
+            m_Calls: []
+        _isRememberScriptNode: 0
+        _targetPhrase: 
+        _maxMistakes: 3
+        _timeLimit: 30
+        _scorePerMistake: -5
+        _scoreOnSuccess: 20
+        _caseSensitive: 0
+        _failureNode:
+          rid: -2
+        _failureNodeName: 

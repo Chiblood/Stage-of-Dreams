@@ -655,3 +655,145 @@ Add to `.github\copilot-instructions.md`:
 
 ---
 
+### Issue: Failure Node Shows "(not found)" and No Edit Button in RememberTheScriptNodeEditor
+
+**Status**: 🔴 **ACTIVE ISSUE** (December 2025)
+
+**Symptoms**:
+- In RememberTheScriptNodeEditor, failure node displays as "(not found)"
+- Edit button missing for failure node
+- NullReferenceException when closing editor window
+- Error: `NullReferenceException: Object reference not set to an instance of an object`
+- Stack trace points to `RememberTheScriptNodeEditor.OnDisable()` line 86
+
+**Root Cause**:
+The failure node is stored as a **name reference** (string) in `_failureNodeName` but the actual DialogNode object may not exist in the tree's `allNodes` list, or the reference becomes null when the editor window closes.
+
+**Related Error**:
+```csharp
+NullReferenceException: Object reference not set to an instance of an object.
+UnityEngine.Bindings.ThrowHelper.ThrowNullReferenceException (System.Object obj)
+UnityEditor.SerializedObject.get_targetObject ()
+RememberTheScriptNodeEditor.OnDisable () (at Assets/_Stage of Dreams_/Editor/RememberTheScriptNodeEditor.cs:86)
+```
+
+**Current Investigation**:
+
+The issue appears in the OnDisable method when trying to access `serializedObject.targetObject`:
+```csharp
+// Line 86 area - OnDisable method
+if (serializedObject != null && serializedObject.targetObject != null)
+{
+    serializedObject.ApplyModifiedProperties();
+}
+```
+
+**Possible Causes**:
+1. **SerializedObject Disposed**: The serialized object reference becomes invalid before OnDisable is called
+2. **Failure Node Not In Tree**: The failure node object was never properly added to the tree's allNodes list
+3. **Reference Timing Issue**: The window closes before the tree refreshes and adds the new node
+4. **Missing Null Check**: OnDisable doesn't properly guard against null references
+
+**Temporary Workaround**:
+
+1. **Manual Failure Node Creation**:
+   - Click "Create New Failure Node" button
+   - Wait for tree to refresh
+   - Close and reopen RememberTheScriptNodeEditor window
+   - Check if failure node now appears with Edit button
+
+2. **Use Auto-Create**:
+   - Click "Auto-Create Success & Failure Nodes" button
+   - Verify both nodes created in DialogTree All Nodes list
+   - Close and reopen editor window
+
+3. **Link to Existing Node**:
+   - Create a standard dialog node first through DialogTree inspector
+   - Use "Link to Existing Node" for failure
+   - This avoids the creation timing issue
+
+**Investigation Steps**:
+
+1. **Check OnDisable Method**:
+   - Add better null guarding
+   - Verify serializedObject validity before accessing targetObject
+   - Add try-catch to prevent editor crash
+
+2. **Verify Failure Node Creation**:
+   - Ensure `CreateFailureNode()` properly adds node to tree
+   - Check that `parentTree.RefreshNodeList()` completes before window closes
+   - Verify node appears in tree's allNodes list
+
+3. **Test Node Lookup**:
+   - Confirm `parentTree.FindNodeByName(failureNodeNameProp.stringValue)` works
+   - Check timing of when lookup happens vs when node is added
+
+**Current Status**:
+- ✅ Success node creation works correctly
+- ✅ Success node Edit button displays
+- 🔧 Failure node creation improved with better refresh logic
+- 🔧 Failure node "(not found)" issue - Refresh button added
+- ✅ NullReferenceException on window close FIXED
+
+**Fixes Implemented** (December 2025):
+
+1. **OnDisable NullReferenceException - FIXED**:
+   - Added extra null checks before accessing `serializedObject.targetObject`
+   - Wrapped in try-catch to handle disposal exceptions gracefully
+   - Silently catches common disposal exceptions (NullReferenceException, MissingReferenceException)
+
+2. **OnGUI NullReferenceException - FIXED** (Line 157):
+   - Added defensive null checking with try-catch for `serializedObject.targetObject`
+   - Unity's internal null check can throw even when object appears non-null
+   - Window now shows "Node reference lost" message and Close button instead of crashing
+   - Prevents window from throwing exceptions when DialogTree is deleted or modified externally
+   - Applied to both RememberTheScriptNodeEditor and DialogNodeEditorWindow
+
+3. **SerializedProperty Access After Disposal - FIXED** (Line 769 in DrawNavigationSettings):
+   - Added try-catch around `failureNodeNameProp.stringValue` access
+   - SerializedObject can be disposed by Unity between validity checks and property access
+   - Window now shows "SerializedObject disposed" message instead of crashing
+   - All SerializedProperty accesses in drawing methods now have defensive checks
+   - Prevents crashes when Unity internally disposes the SerializedObject during GUI drawing
+
+4. **SerializedProperty Access in DrawQuickActions - FIXED** (Line 902):
+   - Added comprehensive try-catch protection around all property accesses in status display
+   - Each property (`nodeIdProp`, `isRememberScriptNodeProp`, `targetPhraseProp`, etc.) now checked individually
+   - Prevents crashes when accessing `.stringValue`, `.boolValue`, `.intValue`, or `.managedReferenceValue`
+   - Shows "SerializedObject disposed. Status unavailable." message instead of crashing
+   - Applied same defensive pattern to all drawing methods that access SerializedProperties
+
+5. **CreateFailureNode Improvements**:
+   - Forces immediate `AssetDatabase.SaveAssets()` after creation
+   - Calls `parentTree.RefreshNodeList()` immediately
+   - Verifies node was added with `FindNodeByName()` check
+   - Provides clear feedback if node needs window refresh
+
+6. **UpdateWindowTitle After Disposal - FIXED** (Line 269):
+   - Added defensive null checking before calling `UpdateWindowTitle()`
+   - Window title update now wrapped in try-catch
+   - Prevents accessing disposed serializedObject properties
+   - Skips title update gracefully if object is disposed
+
+7. **CreateFailureNode Async Verification - IMPROVED**:
+   - Uses `EditorApplication.delayCall` to defer verification
+   - Gives Unity time to process and register the new node
+   - Performs verification in two stages with delays
+   - Auto-refreshes all open RememberTheScriptNodeEditor windows
+   - More reliable node detection after creation
+
+8. **DialogTree.AddNode Method - ADDED** (Final Fix):
+   - Added public `AddNode(DialogNode node)` method to DialogTree
+   - Allows manual addition of standalone nodes (e.g., minigame failure nodes)
+   - `CreateFailureNode` now uses reflection to call `AddNode` if available
+   - Falls back to SerializedProperty method if reflection fails
+   - Node is immediately added to tree's internal `allNodes` list
+   - Much more reliable than relying solely on tree traversal
+
+**CURRENT STATUS** (December 2025):
+- ✅ All NullReferenceExceptions fixed
+- ✅ SerializedObject disposal handled gracefully
+- ✅ DialogTree.AddNode method implemented
+- 🔧 Failure node creation improved but may still need window refresh
+- ℹ️ Recommended: Close and reopen editor window if Edit button doesn't appear immediately
+

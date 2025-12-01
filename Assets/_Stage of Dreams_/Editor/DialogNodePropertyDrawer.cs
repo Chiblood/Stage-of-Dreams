@@ -18,16 +18,34 @@ public class DialogNodePropertyDrawer : PropertyDrawer
         EditorGUI.BeginProperty(position, label, property);
 
         // Get node info for better label display
+        var nodeTypeProp = property.FindPropertyRelative("_nodeType");
         var nodeNameProp = property.FindPropertyRelative("_nodeId");
         var speakerNameProp = property.FindPropertyRelative("_characterName");
         var dialogTextProp = property.FindPropertyRelative("_dialogText");
         
         string displayLabel = label.text;
+        string typeLabel = "";
+        
+        // Show node type in label
+        if (nodeTypeProp != null)
+        {
+            DialogNodeType nodeType = (DialogNodeType)nodeTypeProp.enumValueIndex;
+            
+            switch (nodeType)
+            {
+                case DialogNodeType.RememberTheScript:
+                    typeLabel = " [🎭 RememberTheScript]";
+                    break;
+                case DialogNodeType.StandardDialog:
+                    typeLabel = " [💬]";
+                    break;
+            }
+        }
         
         // Enhanced label with node name if available
         if (nodeNameProp != null && !string.IsNullOrEmpty(nodeNameProp.stringValue))
         {
-            displayLabel = $"[{nodeNameProp.stringValue}]";
+            displayLabel = $"[{nodeNameProp.stringValue}]{typeLabel}";
         }
         else if (speakerNameProp != null && !string.IsNullOrEmpty(speakerNameProp.stringValue))
         {
@@ -38,7 +56,11 @@ public class DialogNodePropertyDrawer : PropertyDrawer
                     ? dialogTextProp.stringValue.Substring(0, 20) + "..." 
                     : dialogTextProp.stringValue;
             }
-            displayLabel = $"{speakerNameProp.stringValue}: {previewText}";
+            displayLabel = $"{speakerNameProp.stringValue}: {previewText}{typeLabel}";
+        }
+        else
+        {
+            displayLabel = $"{label.text}{typeLabel}";
         }
 
         // Simple foldout with minimal info
@@ -51,6 +73,14 @@ public class DialogNodePropertyDrawer : PropertyDrawer
             float lineHeight = EditorGUIUtility.singleLineHeight + 2;
             
             EditorGUI.indentLevel++;
+            
+            // Show node type
+            if (nodeTypeProp != null)
+            {
+                var typeRect = new Rect(position.x, yPos, position.width, EditorGUIUtility.singleLineHeight);
+                EditorGUI.LabelField(typeRect, "Type:", ((DialogNodeType)nodeTypeProp.enumValueIndex).ToString());
+                yPos += lineHeight;
+            }
             
             // Show minimal read-only info
             if (nodeNameProp != null)
@@ -94,7 +124,7 @@ public class DialogNodePropertyDrawer : PropertyDrawer
         if (!property.isExpanded)
             return EditorGUIUtility.singleLineHeight;
         
-        // Height when expanded: foldout + ID + Speaker + Preview (2 lines) + Help (2 lines) + spacing
-        return EditorGUIUtility.singleLineHeight * 7 + 10;
+        // Height when expanded: foldout + Type + ID + Speaker + Preview (2 lines) + Help (2 lines) + spacing
+        return EditorGUIUtility.singleLineHeight * 8 + 10;
     }
 }

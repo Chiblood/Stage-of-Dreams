@@ -510,7 +510,18 @@ $RECYCLE.BIN/
 *.lnk
 /Assets/TextMesh Pro
 /UIElementsSchema
-U I E l e m e n t s S c h e m a /  
+U I E l e m e n t s S c h e m a / 
+ 
  
 # User-specific files in ProjectSettings
 /[Pp]roject[Ss]ettings/**/TimelineSettings.asset
+
+# ============================================
+# Unity Package Samples
+# ============================================
+# Ignore Unity package sample files (2D Animation, etc.)
+/[Aa]ssets/[Ss]amples/
+
+# Ignore 2D Animation sample asset bundles in StreamingAssets
+/[Aa]ssets/[Ss]treamingAssets/2DAnimationSampleAssetBundles/
+

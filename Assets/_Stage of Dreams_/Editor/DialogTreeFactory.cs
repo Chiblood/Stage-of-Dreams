@@ -383,4 +383,458 @@ public class DialogTreeFactory
         Debug.Log($"Created Stage Crew Banter Template at: {path}");
         Debug.Log("✓ Demonstrates multiple convergence points in single conversation");
     }
+
+    [MenuItem("Dialog System/Create Minigame Test Tree")]
+    public static void CreateMinigameTestTree()
+    {
+        DialogTree tree = ScriptableObject.CreateInstance<DialogTree>();
+        tree.treeName = "Minigame System Test";
+        tree.description = "Test tree demonstrating minigame nodes (RememberTheScript) as choice branches";
+
+        // Starting node - Director offers practice choices
+        DialogNode start = tree.CreateStartingNode(
+            speakerName: "Director",
+            dialogText: "Let's warm up before the big performance! What would you like to practice?",
+            isPlayerSpeaking: false,
+            nodeName: "npc_director_warmup_01"
+        );
+
+        // CHOICE 1: Short easy phrase (RememberTheScript minigame node)
+        DialogNode easyPhraseNode = tree.AddChoiceNode(
+            parentNode: start,
+            choiceText: "Practice a short line",
+            speakerName: "Director",
+            dialogText: "Good choice! Let's start with something simple. Type this line exactly as I say it:",
+            isPlayerSpeaking: false,
+            customActionId: "minigame_easy",
+            nodeName: "minigame_easy_phrase_01"
+        );
+
+        // Configure as RememberTheScript minigame
+        easyPhraseNode.NodeType = DialogNodeType.RememberTheScript;
+        easyPhraseNode.ConfigureRememberScript(
+            targetPhrase: "To be or not to be",
+            maxMistakes: 5,
+            timeLimit: 15f,
+            scoreOnSuccess: 10f,
+            scorePerMistake: -2f,
+            caseSensitive: false,
+            failureNodeName: ""
+        );
+
+        // Success node for easy phrase
+        DialogNode easySuccess = new DialogNode(
+            "Director",
+            "Perfect! You nailed it! That was a classic line, delivered with confidence.",
+            false,
+            "minigame_easy_success_01"
+        );
+        easyPhraseNode.SetChildNode(easySuccess);
+
+        // Failure node for easy phrase
+        DialogNode easyFailure = new DialogNode(
+            "Director",
+            "Don't worry, even the greats stumble on their lines. Let's try something else!",
+            false,
+            "minigame_easy_failure_01"
+        );
+        easyPhraseNode.FailureNode = easyFailure;
+        tree.AddNode(easyFailure); // Manually add failure node to tree
+
+        // CHOICE 2: Medium difficulty phrase (RememberTheScript minigame node)
+        DialogNode mediumPhraseNode = tree.AddChoiceNode(
+            parentNode: start,
+            choiceText: "Practice a dramatic monologue",
+            speakerName: "Director",
+            dialogText: "Excellent! This one requires more focus. Type exactly what you hear:",
+            isPlayerSpeaking: false,
+            customActionId: "minigame_medium",
+            nodeName: "minigame_medium_phrase_01"
+        );
+
+        // Configure as RememberTheScript minigame
+        mediumPhraseNode.NodeType = DialogNodeType.RememberTheScript;
+        mediumPhraseNode.ConfigureRememberScript(
+            targetPhrase: "All the world's a stage, and all the men and women merely players",
+            maxMistakes: 3,
+            timeLimit: 25f,
+            scoreOnSuccess: 25f,
+            scorePerMistake: -5f,
+            caseSensitive: false,
+            failureNodeName: ""
+        );
+
+        // Success node for medium phrase
+        DialogNode mediumSuccess = new DialogNode(
+            "Director",
+            "Magnificent! You've captured the essence of Shakespeare himself! The audience will love this!",
+            false,
+            "minigame_medium_success_01"
+        );
+        mediumPhraseNode.SetChildNode(mediumSuccess);
+
+        // Failure node for medium phrase
+        DialogNode mediumFailure = new DialogNode(
+            "Director",
+            "That's a tough one. Remember, precision is key in theater. Let's keep working on it!",
+            false,
+            "minigame_medium_failure_01"
+        );
+        mediumPhraseNode.FailureNode = mediumFailure;
+        tree.AddNode(mediumFailure); // Manually add failure node to tree
+
+        // CHOICE 3: Hard difficulty phrase (RememberTheScript minigame node)
+        DialogNode hardPhraseNode = tree.AddChoiceNode(
+            parentNode: start,
+            choiceText: "Practice a complex speech",
+            speakerName: "Director",
+            dialogText: "Bold choice! This is advanced material. Focus and type carefully:",
+            isPlayerSpeaking: false,
+            customActionId: "minigame_hard",
+            nodeName: "minigame_hard_phrase_01"
+        );
+
+        // Configure as RememberTheScript minigame
+        hardPhraseNode.NodeType = DialogNodeType.RememberTheScript;
+        hardPhraseNode.ConfigureRememberScript(
+            targetPhrase: "Now is the winter of our discontent made glorious summer by this sun of York",
+            maxMistakes: 2,
+            timeLimit: 30f,
+            scoreOnSuccess: 50f,
+            scorePerMistake: -10f,
+            caseSensitive: true, // Case sensitive for hard mode
+            failureNodeName: ""
+        );
+
+        // Success node for hard phrase
+        DialogNode hardSuccess = new DialogNode(
+            "Director",
+            "OUTSTANDING! You're a natural! That level of precision is rare. The stage awaits you!",
+            false,
+            "minigame_hard_success_01"
+        );
+        hardPhraseNode.SetChildNode(hardSuccess);
+
+        // Failure node for hard phrase
+        DialogNode hardFailure = new DialogNode(
+            "Director",
+            "That's master-level material. Don't be discouraged - few can master it. Let's try something else.",
+            false,
+            "minigame_hard_failure_01"
+        );
+        hardPhraseNode.FailureNode = hardFailure;
+        tree.AddNode(hardFailure); // Manually add failure node to tree
+
+        // CHOICE 4: Skip practice (standard dialog)
+        DialogNode skipNode = tree.AddChoiceNode(
+            parentNode: start,
+            choiceText: "I'm ready, no practice needed",
+            speakerName: "Director",
+            dialogText: "Confidence! I like it. Just remember - the show must go on. Break a leg!",
+            isPlayerSpeaking: false,
+            customActionId: "skip_practice",
+            nodeName: "npc_director_confident_01"
+        );
+
+        // Convergent ending - all paths lead here
+        DialogNode finalNode = tree.AddSequentialNode(
+            parentNode: easySuccess,
+            speakerName: "Director",
+            dialogText: "Alright, warm-up's over. Time for the real performance. Places everyone!",
+            isPlayerSpeaking: false,
+            autoAdvanceDelay: 0f,
+            nodeName: "npc_convergence_finalcall_01"
+        );
+
+        // Link other success/failure/skip paths to final node
+        tree.AddChoiceToNamedNode(mediumSuccess, "Ready for the show!", "npc_convergence_finalcall_01");
+        tree.AddChoiceToNamedNode(hardSuccess, "Let's do this!", "npc_convergence_finalcall_01");
+        tree.AddChoiceToNamedNode(easyFailure, "I'll do better in the performance", "npc_convergence_finalcall_01");
+        tree.AddChoiceToNamedNode(mediumFailure, "Let's move on", "npc_convergence_finalcall_01");
+        tree.AddChoiceToNamedNode(hardFailure, "I'll give it my all anyway", "npc_convergence_finalcall_01");
+        tree.AddChoiceToNamedNode(skipNode, "I'm ready!", "npc_convergence_finalcall_01");
+
+        // Save the asset
+        string path = "Assets/_Stage of Dreams_/World/Dream 1/Minigame Test Tree.asset";
+        AssetDatabase.CreateAsset(tree, path);
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+        EditorUtility.FocusProjectWindow();
+        Selection.activeObject = tree;
+
+        Debug.Log($"Created Minigame Test Tree at: {path}");
+        Debug.Log("✓ Demonstrates RememberTheScript minigame nodes as choice branches");
+        Debug.Log("✓ Shows easy, medium, and hard difficulty configurations");
+        Debug.Log("✓ Includes success and failure outcome nodes for each minigame");
+        Debug.Log("✓ All paths converge to final node");
+    }
+
+    [MenuItem("Dialog System/Create GameState Test Tree")]
+    public static void CreateGameStateTestTree()
+    {
+        DialogTree tree = ScriptableObject.CreateInstance<DialogTree>();
+        tree.treeName = "GameState & Audience Test";
+        tree.description = "Test tree demonstrating GameStateManager integration and audience interaction";
+
+        // Starting node with initial audience setup
+        DialogNode start = tree.CreateStartingNode(
+            speakerName: "Stage Manager",
+            dialogText: "Welcome to the stage! The audience is watching. Let's see how you perform under pressure.",
+            isPlayerSpeaking: false,
+            nodeName: "npc_stagemgr_intro_01"
+        );
+
+        // Add start event to reset audience scores
+        var resetEvent = new MethodCallEvent();
+        resetEvent.SetMethod(() => {
+            if (GameStateManager.Instance != null)
+            {
+                GameStateManager.Instance.ResetAudienceScores();
+                Debug.Log("[Test] Audience scores reset");
+            }
+        }, "Reset audience scores");
+        start.AddStartEvent(resetEvent);
+
+        // CHOICE 1: Confident performance (positive audience reaction)
+        DialogNode confidentNode = tree.AddChoiceNode(
+            parentNode: start,
+            choiceText: "Deliver a powerful monologue",
+            speakerName: "Stage Manager",
+            dialogText: "The audience is captivated by your commanding presence!",
+            isPlayerSpeaking: false,
+            customActionId: "confident_performance",
+            nodeName: "npc_choice_confident_01"
+        );
+
+        // Add end event to boost applause
+        var confidentEvent = new MethodCallEvent();
+        confidentEvent.SetMethod(() => {
+            if (GameStateManager.Instance != null)
+            {
+                GameStateManager.Instance.AdjustApplause(20f);
+                GameStateManager.Instance.AddSceneScore(50);
+                Debug.Log("[Test] +20 Applause, +50 Score");
+            }
+        }, "Boost applause and score");
+        confidentNode.AddEndEvent(confidentEvent);
+
+        // CHOICE 2: Nervous performance (minor negative reaction)
+        DialogNode nervousNode = tree.AddChoiceNode(
+            parentNode: start,
+            choiceText: "Nervously recite your lines",
+            speakerName: "Stage Manager",
+            dialogText: "You stumble a bit, but the audience is patient. Keep going!",
+            isPlayerSpeaking: false,
+            customActionId: "nervous_performance",
+            nodeName: "npc_choice_nervous_01"
+        );
+
+        // Add end event for minor penalty
+        var nervousEvent = new MethodCallEvent();
+        nervousEvent.SetMethod(() => {
+            if (GameStateManager.Instance != null)
+            {
+                GameStateManager.Instance.AdjustApplause(-5f);
+                GameStateManager.Instance.AdjustBoo(10f);
+                Debug.Log("[Test] -5 Applause, +10 Boo");
+            }
+        }, "Minor audience disappointment");
+        nervousNode.AddEndEvent(nervousEvent);
+
+        // CHOICE 3: Forget lines (major negative reaction)
+        DialogNode forgetNode = tree.AddChoiceNode(
+            parentNode: start,
+            choiceText: "Completely forget your lines",
+            speakerName: "Stage Manager",
+            dialogText: "Oh no! The audience is starting to boo! Quick, improvise something!",
+            isPlayerSpeaking: false,
+            customActionId: "forget_lines",
+            nodeName: "npc_choice_forget_01"
+        );
+
+        // Add end event for major penalty
+        var forgetEvent = new MethodCallEvent();
+        forgetEvent.SetMethod(() => {
+            if (GameStateManager.Instance != null)
+            {
+                GameStateManager.Instance.AdjustApplause(-15f);
+                GameStateManager.Instance.AdjustBoo(25f);
+                GameStateManager.Instance.RecordFailure();
+                Debug.Log("[Test] -15 Applause, +25 Boo, Failure recorded");
+            }
+        }, "Major audience disappointment");
+        forgetNode.AddEndEvent(forgetEvent);
+
+        // CHOICE 4: Interact with audience (special positive reaction)
+        DialogNode interactNode = tree.AddChoiceNode(
+            parentNode: start,
+            choiceText: "Break the fourth wall and address the audience",
+            speakerName: "Stage Manager",
+            dialogText: "The audience loves the bold choice! They're laughing and applauding!",
+            isPlayerSpeaking: false,
+            customActionId: "audience_interaction",
+            nodeName: "npc_choice_interact_01"
+        );
+
+        // Add end event for major boost
+        var interactEvent = new MethodCallEvent();
+        interactEvent.SetMethod(() => {
+            if (GameStateManager.Instance != null)
+            {
+                GameStateManager.Instance.AdjustApplause(30f);
+                GameStateManager.Instance.AddSceneScore(75);
+                GameStateManager.Instance.RecordSuccess();
+                Debug.Log("[Test] +30 Applause, +75 Score, Success recorded");
+            }
+        }, "Major audience approval");
+        interactNode.AddEndEvent(interactEvent);
+
+        // Audience reaction check node
+        DialogNode reactionCheckNode = tree.AddSequentialNode(
+            parentNode: confidentNode,
+            speakerName: "Stage Manager",
+            dialogText: "Let me check the audience reaction...",
+            isPlayerSpeaking: false,
+            autoAdvanceDelay: 1f,
+            nodeName: "npc_stagemgr_check_01"
+        );
+
+        // Link other paths to reaction check
+        tree.AddChoiceToNamedNode(nervousNode, "Continue", "npc_stagemgr_check_01");
+        tree.AddChoiceToNamedNode(forgetNode, "Try to recover", "npc_stagemgr_check_01");
+        tree.AddChoiceToNamedNode(interactNode, "Take a bow", "npc_stagemgr_check_01");
+
+        // Final feedback node - dynamically responds to audience state
+        DialogNode feedbackNode = tree.AddSequentialNode(
+            parentNode: reactionCheckNode,
+            speakerName: "Stage Manager",
+            dialogText: "Performance complete! Check the console for your audience metrics and score.",
+            isPlayerSpeaking: false,
+            autoAdvanceDelay: 0f,
+            nodeName: "npc_stagemgr_feedback_01"
+        );
+
+        // Add end event to print game state
+        var printStateEvent = new MethodCallEvent();
+        printStateEvent.SetMethod(() => {
+            if (GameStateManager.Instance != null)
+            {
+                GameStateManager.Instance.PrintCurrentState();
+            }
+        }, "Print final game state");
+        feedbackNode.AddEndEvent(printStateEvent);
+
+        // Minigame integration test branch
+        DialogNode minigameTestNode = tree.AddChoiceNode(
+            parentNode: feedbackNode,
+            choiceText: "Try a minigame with audience scoring",
+            speakerName: "Stage Manager",
+            dialogText: "Let's test a minigame that affects the audience! Type this line:",
+            isPlayerSpeaking: false,
+            customActionId: "test_minigame_with_scoring",
+            nodeName: "minigame_audience_test_01"
+        );
+
+        // Configure as RememberTheScript minigame with audience scoring
+        minigameTestNode.NodeType = DialogNodeType.RememberTheScript;
+        minigameTestNode.ConfigureRememberScript(
+            targetPhrase: "The show must go on",
+            maxMistakes: 3,
+            timeLimit: 20f,
+            scoreOnSuccess: 40f,  // This will be sent to GameStateManager
+            scorePerMistake: -8f, // Penalty per mistake
+            caseSensitive: false,
+            failureNodeName: ""
+        );
+
+        // Success node with audience celebration
+        DialogNode minigameSuccess = new DialogNode(
+            "Stage Manager",
+            "Perfect! The audience is on their feet! Check your scores!",
+            false,
+            "minigame_audience_success_01"
+        );
+        minigameTestNode.SetChildNode(minigameSuccess);
+
+        // Add success event
+        var successEvent = new MethodCallEvent();
+        successEvent.SetMethod(() => {
+            if (GameStateManager.Instance != null)
+            {
+                GameStateManager.Instance.AdjustApplause(40f);
+                GameStateManager.Instance.AddSceneScore(40);
+                GameStateManager.Instance.EndMinigame("remember_script_test", true);
+                Debug.Log("[Test] Minigame Success! +40 Applause, +40 Score");
+            }
+        }, "Minigame success rewards");
+        minigameSuccess.AddEndEvent(successEvent);
+
+        // Failure node with audience disappointment
+        DialogNode minigameFailure = new DialogNode(
+            "Stage Manager",
+            "The audience seems confused. That's okay, let's keep practicing!",
+            false,
+            "minigame_audience_failure_01"
+        );
+        minigameTestNode.FailureNode = minigameFailure;
+        tree.AddNode(minigameFailure);
+
+        // Add failure event
+        var failureEvent = new MethodCallEvent();
+        failureEvent.SetMethod(() => {
+            if (GameStateManager.Instance != null)
+            {
+                GameStateManager.Instance.AdjustBoo(15f);
+                GameStateManager.Instance.EndMinigame("remember_script_test", false);
+                Debug.Log("[Test] Minigame Failed! +15 Boo");
+            }
+        }, "Minigame failure penalty");
+        minigameFailure.AddEndEvent(failureEvent);
+
+        // Final end node
+        DialogNode endNode = tree.AddChoiceNode(
+            parentNode: feedbackNode,
+            choiceText: "End performance test",
+            speakerName: "Stage Manager",
+            dialogText: "Thank you for testing! Check the console for your final stats. The GameStateManager is tracking everything!",
+            isPlayerSpeaking: false,
+            customActionId: "end_test",
+            nodeName: "npc_stagemgr_end_01"
+        );
+
+        // Link minigame outcomes to end node
+        tree.AddChoiceToNamedNode(minigameSuccess, "Finish test", "npc_stagemgr_end_01");
+        tree.AddChoiceToNamedNode(minigameFailure, "Finish test", "npc_stagemgr_end_01");
+
+        // Add final state print
+        var finalPrintEvent = new MethodCallEvent();
+        finalPrintEvent.SetMethod(() => {
+            if (GameStateManager.Instance != null)
+            {
+                GameStateManager.Instance.PrintCurrentState();
+                Debug.Log("=== TEST COMPLETE ===");
+                Debug.Log("✓ Audience scores tested");
+                Debug.Log("✓ Performance scores tested");
+                Debug.Log("✓ Minigame integration tested");
+                Debug.Log("✓ Success/failure tracking tested");
+            }
+        }, "Final state summary");
+        endNode.AddEndEvent(finalPrintEvent);
+
+        // Save the asset
+        string path = "Assets/_Stage of Dreams_/World/Dream 1/GameState Test Tree.asset";
+        AssetDatabase.CreateAsset(tree, path);
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+        EditorUtility.FocusProjectWindow();
+        Selection.activeObject = tree;
+
+        Debug.Log($"Created GameState Test Tree at: {path}");
+        Debug.Log("✓ Demonstrates GameStateManager integration");
+        Debug.Log("✓ Tests audience metrics (applause/boo/mood)");
+        Debug.Log("✓ Tests performance scoring");
+        Debug.Log("✓ Tests success/failure tracking");
+        Debug.Log("✓ Includes minigame with audience interaction");
+        Debug.Log("✓ Uses DialogEvents with method delegates");
+    }
 }

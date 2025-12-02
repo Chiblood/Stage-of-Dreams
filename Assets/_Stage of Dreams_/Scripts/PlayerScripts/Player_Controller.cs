@@ -24,6 +24,11 @@ public class PlayerScript : MonoBehaviour
     #region Editor Data
     [Header("Movement Attributes")]
     [SerializeField] private float _moveSpeed = 5f;
+    
+    [Header("Animation Settings")]
+    [SerializeField] private bool _scaleAnimationSpeed = true;
+    [SerializeField] private float _minAnimationSpeed = 0.5f;
+    [SerializeField] private float _maxAnimationSpeed = 2f;
 
     [Header("Dependencies")]
     [SerializeField] Rigidbody2D _rb;
@@ -90,6 +95,51 @@ public class PlayerScript : MonoBehaviour
         {
             Vector2 movement = _moveDir * _moveSpeed * Time.deltaTime;
             _rb.MovePosition(_rb.position + movement);
+
+            // Update animations
+            if (_animator != null)
+            {
+                // Only set IsMoving to true if there's actual movement input
+                bool isMoving = _moveDir.sqrMagnitude > 0.01f;
+                _animator.SetBool("IsMoving", isMoving);
+                _animator.SetFloat("MoveX", _moveDir.x);
+                _animator.SetFloat("MoveY", _moveDir.y);
+                
+                float currentSpeed = _moveDir.sqrMagnitude;
+                _animator.SetFloat("Speed", currentSpeed);
+                
+                // Scale animation speed based on movement speed (if enabled)
+                if (_scaleAnimationSpeed && isMoving)
+                {
+                    // Normalize speed relative to max speed for smooth animation scaling
+                    float speedRatio = Mathf.Sqrt(currentSpeed); // Use sqrt to counteract sqrMagnitude
+                    _animator.speed = Mathf.Clamp(speedRatio, _minAnimationSpeed, _maxAnimationSpeed);
+                }
+                else
+                {
+                    _animator.speed = 1f; // Reset to normal speed when idle or scaling disabled
+                }
+                
+                // Flip sprite based on movement direction
+                if (_moveDir.x > 0)
+                {
+                    _spriteRenderer.flipX = false;
+                }
+                else if (_moveDir.x < 0)
+                {
+                    _spriteRenderer.flipX = true;
+                }
+            }
+        }
+        else
+        {
+            // If movement is disabled, ensure the player is not moving
+            if (_animator != null)
+            {
+                _animator.SetBool("IsMoving", false);
+                _animator.SetFloat("Speed", 0f);
+                _animator.speed = 1f; // Reset animator speed
+            }
         }
     }
     #endregion

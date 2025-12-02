@@ -1195,7 +1195,7 @@ GameObject:
   - component: {fileID: 656809455}
   - component: {fileID: 656809454}
   m_Layer: 0
-  m_Name: Hero_0
+  m_Name: Hero
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1224,12 +1224,12 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 656809452}
-  m_Enabled: 0
+  m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 7f69d0f252afc0b45a8f1617f6db5860, type: 2}
+  m_Controller: {fileID: 9100000, guid: 370053ddc3437974baaa0ef78017475d, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
-  m_ApplyRootMotion: 0
+  m_ApplyRootMotion: 1
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
@@ -3965,8 +3965,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerScript
   _moveSpeed: 5
+  _scaleAnimationSpeed: 1
+  _minAnimationSpeed: 0.5
+  _maxAnimationSpeed: 2
   _rb: {fileID: 1795472656}
-  _animator: {fileID: 1795472660}
+  _animator: {fileID: 656809454}
   _spriteRenderer: {fileID: 656809455}
   _playerInteraction: {fileID: 0}
 --- !u!4 &1795472658

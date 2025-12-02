@@ -9,8 +9,8 @@
  * 
  */
 
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
 /// Base class for NPC content that contains dialog trees and handles custom actions.
@@ -22,15 +22,15 @@ public class NPCContent : MonoBehaviour
     public string npcName;
     [TextArea(2, 3)]
     public string npcDescription = ""; // Optional description for editor
-    
+
     [Header("Dialog Content")]
     public DialogTree mainDialogTree;
     public DialogTree[] additionalDialogTrees; // For different conversation contexts
-    
+
     [Header("Dialog Settings")]
     [SerializeField] private bool validateOnStart = true;
     [SerializeField] private bool enableDebugLogs = false;
-    
+
     // Dialog state tracking
     private bool isInDialog = false;
     private int dialogCount = 0;
@@ -47,7 +47,7 @@ public class NPCContent : MonoBehaviour
             ValidateDialogContent();
         }
     }
-    
+
     /// <summary>
     /// Validate all dialog content attached to this NPC
     /// </summary>
@@ -55,14 +55,14 @@ public class NPCContent : MonoBehaviour
     {
         bool isValid = true;
         List<string> errors = new List<string>();
-        
+
         // Check if NPC has a name
         if (string.IsNullOrEmpty(npcName))
         {
             errors.Add("NPC name is not set");
             isValid = false;
         }
-        
+
         // Check main dialog tree
         if (mainDialogTree == null)
         {
@@ -74,7 +74,7 @@ public class NPCContent : MonoBehaviour
             errors.Add($"Main dialog tree '{mainDialogTree.treeName}' is invalid (no starting node)");
             isValid = false;
         }
-        
+
         // Check additional dialog trees
         if (additionalDialogTrees != null)
         {
@@ -97,14 +97,14 @@ public class NPCContent : MonoBehaviour
                     isValid = false;
                 }
             }
-            
+
             // Check for duplicate tree names
             HashSet<string> treeNames = new HashSet<string>();
             if (mainDialogTree != null && !string.IsNullOrEmpty(mainDialogTree.treeName))
             {
                 treeNames.Add(mainDialogTree.treeName);
             }
-            
+
             foreach (var tree in additionalDialogTrees)
             {
                 if (tree != null && !string.IsNullOrEmpty(tree.treeName))
@@ -121,7 +121,7 @@ public class NPCContent : MonoBehaviour
                 }
             }
         }
-        
+
         // Log results
         if (isValid)
         {
@@ -135,10 +135,10 @@ public class NPCContent : MonoBehaviour
                 LogError($"  - {error}");
             }
         }
-        
+
         return isValid;
     }
-    
+
     /// <summary>
     /// Get the main dialog tree for this NPC
     /// </summary>
@@ -146,7 +146,7 @@ public class NPCContent : MonoBehaviour
     {
         return mainDialogTree;
     }
-    
+
     /// <summary>
     /// Get a specific dialog tree that is attached to additionalDialogTrees array by name
     /// </summary>
@@ -157,14 +157,14 @@ public class NPCContent : MonoBehaviour
             LogWarning($"Attempted to get dialog tree with null/empty name from NPC '{npcName}'");
             return null;
         }
-        
+
         // Check main tree first
         if (mainDialogTree != null && mainDialogTree.treeName == treeName)
         {
             LogDebug($"Found dialog tree '{treeName}' in main tree for NPC '{npcName}'");
             return mainDialogTree;
         }
-        
+
         // Check additional trees
         if (additionalDialogTrees != null)
         {
@@ -177,23 +177,23 @@ public class NPCContent : MonoBehaviour
                 }
             }
         }
-        
+
         LogWarning($"Dialog tree '{treeName}' not found for NPC '{npcName}'");
         return null;
     }
-    
+
     /// <summary>
     /// Get all available dialog tree names
     /// </summary>
     public string[] GetAvailableTreeNames()
     {
         List<string> treeNames = new List<string>();
-        
+
         if (mainDialogTree != null && !string.IsNullOrEmpty(mainDialogTree.treeName))
         {
             treeNames.Add(mainDialogTree.treeName);
         }
-        
+
         if (additionalDialogTrees != null)
         {
             foreach (var tree in additionalDialogTrees)
@@ -204,19 +204,19 @@ public class NPCContent : MonoBehaviour
                 }
             }
         }
-        
+
         return treeNames.ToArray();
     }
-    
+
     /// <summary>
     /// Get the number of available dialog trees
     /// </summary>
     public int GetDialogTreeCount()
     {
         int count = 0;
-        
+
         if (mainDialogTree != null) count++;
-        
+
         if (additionalDialogTrees != null)
         {
             foreach (var tree in additionalDialogTrees)
@@ -224,10 +224,10 @@ public class NPCContent : MonoBehaviour
                 if (tree != null) count++;
             }
         }
-        
+
         return count;
     }
-    
+
     /// <summary>
     /// Check if this NPC has any valid dialog content
     /// </summary>
@@ -236,7 +236,7 @@ public class NPCContent : MonoBehaviour
         return (mainDialogTree != null && mainDialogTree.IsValid()) ||
                (additionalDialogTrees != null && System.Array.Exists(additionalDialogTrees, tree => tree != null && tree.IsValid()));
     }
-    
+
     /// <summary>
     /// Get the best dialog tree to use (main tree if valid, otherwise first valid additional tree)
     /// </summary>
@@ -247,7 +247,7 @@ public class NPCContent : MonoBehaviour
         {
             return mainDialogTree;
         }
-        
+
         // Fall back to first valid additional tree
         if (additionalDialogTrees != null)
         {
@@ -259,10 +259,10 @@ public class NPCContent : MonoBehaviour
                 }
             }
         }
-        
+
         return null;
     }
-    
+
     /// <summary>
     /// Override this method to handle custom actions triggered by dialog choices
     /// </summary>
@@ -278,7 +278,7 @@ public class NPCContent : MonoBehaviour
                 break;
         }
     }
-    
+
     /// <summary>
     /// Called when dialog with this NPC starts
     /// </summary>
@@ -286,30 +286,30 @@ public class NPCContent : MonoBehaviour
     {
         isInDialog = true;
         dialogCount++;
-        
+
         LogDebug($"Dialog started with NPC '{npcName}' (dialog #{dialogCount})");
-        
+
         // Fire event for external systems
         OnDialogStartedEvent?.Invoke(this);
-        
+
         // Override in derived classes for custom behavior
     }
-    
+
     /// <summary>
     /// Called when dialog with this NPC ends
     /// </summary>
     public virtual void OnDialogEnded()
     {
         isInDialog = false;
-        
+
         LogDebug($"Dialog ended with NPC '{npcName}'");
-        
+
         // Fire event for external systems
         OnDialogEndedEvent?.Invoke(this);
-        
+
         // Override in derived classes for custom behavior
     }
-    
+
     /// <summary>
     /// Check if this NPC is currently in dialog
     /// </summary>
@@ -317,7 +317,7 @@ public class NPCContent : MonoBehaviour
     {
         return isInDialog;
     }
-    
+
     /// <summary>
     /// Get the total number of dialogs this NPC has had
     /// </summary>
@@ -325,7 +325,7 @@ public class NPCContent : MonoBehaviour
     {
         return dialogCount;
     }
-    
+
     /// <summary>
     /// Reset dialog state (useful for testing or game state resets)
     /// </summary>
@@ -335,7 +335,7 @@ public class NPCContent : MonoBehaviour
         dialogCount = 0;
         LogDebug($"Dialog state reset for NPC '{npcName}'");
     }
-    
+
     /// <summary>
     /// Get debug information about this NPC's dialog setup
     /// </summary>
@@ -348,7 +348,7 @@ public class NPCContent : MonoBehaviour
         sb.AppendLine($"Dialog Count: {dialogCount}");
         sb.AppendLine($"Main Tree: {(mainDialogTree != null ? mainDialogTree.treeName : "None")}");
         sb.AppendLine($"Additional Trees: {(additionalDialogTrees?.Length ?? 0)}");
-        
+
         if (additionalDialogTrees != null && additionalDialogTrees.Length > 0)
         {
             for (int i = 0; i < additionalDialogTrees.Length; i++)
@@ -357,10 +357,10 @@ public class NPCContent : MonoBehaviour
                 sb.AppendLine($"  [{i}]: {(tree != null ? tree.treeName : "Null")}");
             }
         }
-        
+
         return sb.ToString();
     }
-    
+
     #region Logging Methods
     private void LogDebug(string message)
     {
@@ -369,18 +369,18 @@ public class NPCContent : MonoBehaviour
             Debug.Log($"[NPCContent] {message}");
         }
     }
-    
+
     private void LogWarning(string message)
     {
         Debug.LogWarning($"[NPCContent] {message}");
     }
-    
+
     private void LogError(string message)
     {
         Debug.LogError($"[NPCContent] {message}");
     }
     #endregion
-    
+
     #region Editor Support
     private void OnValidate()
     {
@@ -389,20 +389,20 @@ public class NPCContent : MonoBehaviour
         {
             npcName = gameObject.name;
         }
-        
+
         // Validate during edit time in play mode
         if (Application.isPlaying && validateOnStart)
         {
             ValidateDialogContent();
         }
     }
-    
+
     [ContextMenu("Validate Dialog Content")]
     private void EditorValidateDialogContent()
     {
         ValidateDialogContent();
     }
-    
+
     [ContextMenu("Print Debug Info")]
     private void EditorPrintDebugInfo()
     {

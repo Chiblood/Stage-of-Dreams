@@ -17,8 +17,8 @@
  * - Can create multiple configurations for different scenarios
  */
 
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
 /// Serializable game state data for saving/loading.
@@ -30,54 +30,54 @@ public class GameStateData : ScriptableObject
     [Header("Audience Metrics")]
     [Tooltip("Current applause score (0-100 scale)")]
     public float applauseScore = 50f;
-    
+
     [Tooltip("Current boo score (0-100 scale)")]
     public float booScore = 0f;
-    
+
     [Tooltip("Overall audience mood (0.0 = hostile, 1.0 = enthusiastic)")]
     [Range(0f, 1f)]
     public float audienceMood = 0.5f;
-    
+
     [Header("Performance Metrics")]
     [Tooltip("Score for current scene")]
     public int sceneScore = 0;
-    
+
     [Tooltip("Cumulative score for current dream")]
     public int dreamScore = 0;
-    
+
     [Tooltip("Total game score across all dreams")]
     public int totalScore = 0;
-    
+
     [Tooltip("Number of consecutive successes")]
     public int consecutiveSuccesses = 0;
-    
+
     [Tooltip("Number of consecutive failures")]
     public int consecutiveFailures = 0;
-    
+
     [Header("Progression")]
     [Tooltip("IDs of completed scenes")]
     public List<string> completedScenes = new List<string>();
-    
+
     [Tooltip("IDs of unlocked abilities")]
     public List<string> unlockedAbilities = new List<string>();
-    
+
     [Tooltip("IDs of earned achievements")]
     public List<string> earnedAchievements = new List<string>();
-    
+
     [Tooltip("Current dream index (0-based)")]
     public int currentDreamIndex = 0;
-    
+
     [Tooltip("Current act index (0 = Act I, 1 = Act II, 2 = Act III)")]
     [Range(0, 2)]
     public int currentActIndex = 0;
-    
+
     [Header("Session Data")]
     [Tooltip("Total minigames attempted this session")]
     public int totalMinigamesAttempted = 0;
-    
+
     [Tooltip("Total minigames completed successfully this session")]
     public int totalMinigamesCompleted = 0;
-    
+
     /// <summary>
     /// Reset all values to defaults
     /// </summary>
@@ -99,10 +99,10 @@ public class GameStateData : ScriptableObject
         currentActIndex = 0;
         totalMinigamesAttempted = 0;
         totalMinigamesCompleted = 0;
-        
+
         Debug.Log($"[GameStateData] '{name}' reset to defaults");
     }
-    
+
     /// <summary>
     /// Validate data integrity
     /// </summary>
@@ -110,39 +110,39 @@ public class GameStateData : ScriptableObject
     public void ValidateData()
     {
         bool isValid = true;
-        
+
         // Validate ranges
         if (applauseScore < 0f || applauseScore > 100f)
         {
             Debug.LogWarning($"[GameStateData] '{name}' - Applause score out of range: {applauseScore}");
             isValid = false;
         }
-        
+
         if (booScore < 0f || booScore > 100f)
         {
             Debug.LogWarning($"[GameStateData] '{name}' - Boo score out of range: {booScore}");
             isValid = false;
         }
-        
+
         if (audienceMood < 0f || audienceMood > 1f)
         {
             Debug.LogWarning($"[GameStateData] '{name}' - Audience mood out of range: {audienceMood}");
             isValid = false;
         }
-        
+
         if (currentActIndex < 0 || currentActIndex > 2)
         {
             Debug.LogWarning($"[GameStateData] '{name}' - Act index out of range: {currentActIndex}");
             isValid = false;
         }
-        
+
         // Validate scores
         if (sceneScore < 0 || dreamScore < 0 || totalScore < 0)
         {
             Debug.LogWarning($"[GameStateData] '{name}' - Negative scores detected");
             isValid = false;
         }
-        
+
         // Check for null lists
         if (completedScenes == null)
         {
@@ -150,21 +150,21 @@ public class GameStateData : ScriptableObject
             completedScenes = new List<string>();
             isValid = false;
         }
-        
+
         if (unlockedAbilities == null)
         {
             Debug.LogWarning($"[GameStateData] '{name}' - unlockedAbilities list is null");
             unlockedAbilities = new List<string>();
             isValid = false;
         }
-        
+
         if (earnedAchievements == null)
         {
             Debug.LogWarning($"[GameStateData] '{name}' - earnedAchievements list is null");
             earnedAchievements = new List<string>();
             isValid = false;
         }
-        
+
         if (isValid)
         {
             Debug.Log($"[GameStateData] '{name}' - Validation successful");
@@ -174,7 +174,7 @@ public class GameStateData : ScriptableObject
             Debug.LogWarning($"[GameStateData] '{name}' - Validation found issues");
         }
     }
-    
+
     /// <summary>
     /// Print current state summary
     /// </summary>
@@ -191,7 +191,7 @@ public class GameStateData : ScriptableObject
         Debug.Log($"Earned Achievements: {earnedAchievements.Count}");
         Debug.Log($"Minigames - Attempted: {totalMinigamesAttempted} | Completed: {totalMinigamesCompleted}");
     }
-    
+
     private void OnValidate()
     {
         // Clamp values in inspector
@@ -207,7 +207,7 @@ public class GameStateData : ScriptableObject
         currentDreamIndex = Mathf.Max(0, currentDreamIndex);
         totalMinigamesAttempted = Mathf.Max(0, totalMinigamesAttempted);
         totalMinigamesCompleted = Mathf.Max(0, totalMinigamesCompleted);
-        
+
         // Ensure lists are not null
         if (completedScenes == null) completedScenes = new List<string>();
         if (unlockedAbilities == null) unlockedAbilities = new List<string>();

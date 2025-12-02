@@ -1,7 +1,7 @@
 /* DialogEvent.cs - Enhanced with method delegate support */
 
-using UnityEngine;
 using System;
+using UnityEngine;
 
 /// <summary>
 /// Abstract base class for all dialog events.
@@ -73,7 +73,7 @@ public abstract class DialogEvent
         {
             // Execute delegate first if available
             onExecuteDelegate?.Invoke();
-            
+
             // Then execute the event's specific behavior
             OnExecute();
         }
@@ -242,7 +242,7 @@ public class StaticMethodCallEvent : DialogEvent
                     // Convert string parameters to appropriate types
                     var paramTypes = method.GetParameters();
                     object[] convertedParams = new object[paramTypes.Length];
-                    
+
                     for (int i = 0; i < paramTypes.Length && i < stringParameters.Length; i++)
                     {
                         convertedParams[i] = Convert.ChangeType(stringParameters[i], paramTypes[i].ParameterType);

@@ -24,7 +24,7 @@ public class PlayerScript : MonoBehaviour
     #region Editor Data
     [Header("Movement Attributes")]
     [SerializeField] private float _moveSpeed = 5f;
-    
+
     [Header("Animation Settings")]
     [SerializeField] private bool _scaleAnimationSpeed = true;
     [SerializeField] private float _minAnimationSpeed = 0.5f;
@@ -75,7 +75,7 @@ public class PlayerScript : MonoBehaviour
     private void Update() // update is called once per frame
     {
         GatherInput();
-        
+
         // Disable movement during dialogue
         if (DialogManager.Instance != null && DialogManager.Instance.IsDialogActive())
         {
@@ -104,7 +104,7 @@ public class PlayerScript : MonoBehaviour
                 _animator.SetBool("IsMoving", isMoving);
                 //_animator.SetFloat("MoveX", _moveDir.x);
                 //_animator.SetFloat("MoveY", _moveDir.y);
-                
+
                 // Speed parameter (uncomment if your Animator Controller has this parameter)
                 // float currentSpeed = _moveDir.sqrMagnitude;
                 // _animator.SetFloat("Speed", currentSpeed);
@@ -120,7 +120,7 @@ public class PlayerScript : MonoBehaviour
                 {
                     _animator.speed = 1f; // Reset to normal speed when idle or scaling disabled
                 }
-                
+
                 // Flip sprite based on movement direction
                 if (_moveDir.x > 0)
                 {

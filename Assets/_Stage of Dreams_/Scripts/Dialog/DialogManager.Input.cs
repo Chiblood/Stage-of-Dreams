@@ -4,7 +4,6 @@
  * Handles both standard dialog input and minigame-specific input routing.
  */
 
-using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
@@ -24,7 +23,7 @@ public partial class DialogManager
             HandleMinigameInput();
             return; // Don't process standard dialog input
         }
-        
+
         // Handle input for advancing dialog (when no choices)
         if (navigator != null && interactAction != null)
         {
@@ -36,7 +35,7 @@ public partial class DialogManager
                 {
                     LogDebug("Interact action pressed - advancing dialog");
                 }
-                
+
                 if (interactAction.WasPressedThisFrame())
                 {
                     AdvanceDialog();
@@ -44,7 +43,7 @@ public partial class DialogManager
             }
         }
     }
-    
+
     /// <summary>
     /// Handle input for active minigames
     /// Routes input to appropriate minigame handler based on minigame type
@@ -55,21 +54,21 @@ public partial class DialogManager
         {
             return;
         }
-        
+
         // Route to specific minigame input handler
         switch (minigameUIManager.CurrentMinigameType)
         {
             case MinigameType.RememberTheScript:
                 HandleRememberTheScriptInput();
                 break;
-            
-            // Future minigames:
-            // case MinigameType.CalmDialog:
-            //     HandleCalmDialogInput();
-            //     break;
+
+                // Future minigames:
+                // case MinigameType.CalmDialog:
+                //     HandleCalmDialogInput();
+                //     break;
         }
     }
-    
+
     /// <summary>
     /// Handle keyboard input for RememberTheScript minigame
     /// Captures character typing and passes to DialogNavigator for validation
@@ -78,24 +77,24 @@ public partial class DialogManager
     {
         // Use new Input System Keyboard API instead of old Input.inputString
         var keyboard = Keyboard.current;
-        
+
         if (keyboard == null)
         {
             // No keyboard available
             return;
         }
-        
+
         // Check all character keys for typing input
         // Process printable characters (letters, numbers, punctuation, space)
         string typedChars = "";
-        
+
         // Get text input from the new Input System
         // We need to check onTextInput event or iterate through keys
         // For now, we'll check individual keys that were pressed this frame
-        
+
         // ALTERNATIVE APPROACH: Subscribe to text input event in OnEnable
         // But for simplicity, we'll check key presses directly
-        
+
         // Check for alphabetic keys (a-z)
         for (int i = (int)Key.A; i <= (int)Key.Z; i++)
         {
@@ -109,7 +108,7 @@ public partial class DialogManager
                 }
             }
         }
-        
+
         // Check for number keys (0-9)
         for (int i = (int)Key.Digit0; i <= (int)Key.Digit9; i++)
         {
@@ -123,13 +122,13 @@ public partial class DialogManager
                 }
             }
         }
-        
+
         // Check for space
         if (keyboard[Key.Space].wasPressedThisFrame)
         {
             typedChars += ' ';
         }
-        
+
         // Check for common punctuation
         if (keyboard[Key.Period].wasPressedThisFrame) typedChars += '.';
         if (keyboard[Key.Comma].wasPressedThisFrame) typedChars += ',';
@@ -141,13 +140,13 @@ public partial class DialogManager
         if (keyboard[Key.RightBracket].wasPressedThisFrame) typedChars += ']';
         if (keyboard[Key.Minus].wasPressedThisFrame) typedChars += '-';
         if (keyboard[Key.Equals].wasPressedThisFrame) typedChars += '=';
-        
+
         // Process any typed characters
         if (string.IsNullOrEmpty(typedChars))
         {
             return;
         }
-        
+
         // Process each character typed this frame
         foreach (char c in typedChars)
         {
@@ -158,11 +157,11 @@ public partial class DialogManager
                 {
                     LogDebug($"[RememberTheScript] Character typed: '{c}'");
                 }
-                
+
                 try
                 {
                     bool correct = navigator.ProcessRememberScriptInput(c);
-                    
+
                     if (enableInputLogging)
                     {
                         LogDebug($"[RememberTheScript] Input result: {(correct ? "Correct" : "Mistake")}");
@@ -175,21 +174,21 @@ public partial class DialogManager
             }
         }
     }
-    
+
     /// <summary>
     /// Convert a Key enum to a character, respecting shift state
     /// </summary>
     private char GetCharFromKey(Key key, Keyboard keyboard)
     {
         bool shiftPressed = keyboard.shiftKey.isPressed;
-        
+
         // Handle letter keys (a-z)
         if (key >= Key.A && key <= Key.Z)
         {
             char letter = (char)('a' + (key - Key.A));
             return shiftPressed ? char.ToUpper(letter) : letter;
         }
-        
+
         // Handle number keys (0-9) - top row
         if (key >= Key.Digit0 && key <= Key.Digit9)
         {
@@ -216,7 +215,7 @@ public partial class DialogManager
                 return (char)('0' + (key - Key.Digit0));
             }
         }
-        
+
         return '\0';
     }
 }

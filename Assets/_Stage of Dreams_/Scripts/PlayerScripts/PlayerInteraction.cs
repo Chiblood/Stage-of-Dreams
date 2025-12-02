@@ -7,9 +7,8 @@
  *  
  */
 
-using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
@@ -23,11 +22,11 @@ public class PlayerInteraction : MonoBehaviour
     [SerializeField] private KeyCode interactKey = KeyCode.E;
     [SerializeField] private float interactionRange = 3f;
     [SerializeField] private LayerMask interactableLayer = -1;
-    
+
     [Header("UI Elements")]
     [SerializeField] private GameObject interactionPrompt; // UI element showing "Press E to interact"
     [SerializeField] private TextMeshProUGUI promptText;
-    
+
     [Header("Dependencies")]
     [SerializeField] private PlayerScript playerController; // Reference to player controller
     #endregion
@@ -35,62 +34,62 @@ public class PlayerInteraction : MonoBehaviour
     // Current state
     private Interactable currentInteractable;
     private PlayerInput playerInput; // For input system integration
-    
+
     private void Start()
     {
         // Get player controller if not assigned
         if (playerController == null)
             playerController = GetComponent<PlayerScript>();
-            
+
         // Get PlayerInput component
         playerInput = GetComponent<PlayerInput>();
-            
+
         // Hide interaction prompt initially
         if (interactionPrompt != null)
             interactionPrompt.SetActive(false);
     }
-    
+
     private void Update()
     {
         // Check for interactables in 2D space
         CheckForInteractables2D();
-        
+
         // Handle interaction input - support both legacy Input and Input System
         bool interactPressed = GetInteractInput();
-        
+
         // Handle object interaction if no dialogue is active
         if (interactPressed && currentInteractable != null)
         {
             // Don't interact if dialogue is already active
-            if (DialogManager.Instance != null && 
+            if (DialogManager.Instance != null &&
                 (DialogManager.Instance.IsDialogActive()))
             {
                 return;
             }
-            
+
             // Check if the interactable has a DialogueTrigger
             var dialogTrigger = currentInteractable.GetComponent<DialogueTrigger>();
             if (dialogTrigger != null)
             {
                 // Let the DialogueTrigger handle the interaction
                 dialogTrigger.ManualTrigger();
-                
+
                 // Disable player movement during interaction
                 if (playerController != null)
                     playerController.DisableMovement();
-                    
+
                 return;
             }
-            
+
             // For non-dialog interactables, use the old system
             // Disable player movement during interaction
             if (playerController != null)
                 playerController.DisableMovement();
-            
+
             currentInteractable.Interact();
         }
     }
-    
+
     /// <summary>
     /// Check for interactables using 2D physics
     /// </summary>
@@ -98,14 +97,14 @@ public class PlayerInteraction : MonoBehaviour
     {
         Interactable nearestInteractable = null;
         float nearestDistance = float.MaxValue;
-        
+
         // Use 2D physics to find all interactables in range
         Collider2D[] colliders2D = Physics2D.OverlapCircleAll(
-            transform.position, 
-            interactionRange, 
+            transform.position,
+            interactionRange,
             interactableLayer
         );
-        
+
         foreach (Collider2D col in colliders2D)
         {
             Interactable interactable = col.GetComponent<Interactable>();
@@ -120,7 +119,7 @@ public class PlayerInteraction : MonoBehaviour
                 }
             }
         }
-        
+
         // Update current interactable
         if (nearestInteractable != currentInteractable)
         {
@@ -128,14 +127,14 @@ public class PlayerInteraction : MonoBehaviour
             UpdateInteractionPrompt();
         }
     }
-    
+
     /// <summary>
     /// Get interaction input from multiple sources (Input System + Legacy)
     /// </summary>
     private bool GetInteractInput()
     {
         bool interactPressed = false;
-        
+
         if (playerInput != null)
         {
             // Try to get interact action from Input System
@@ -155,10 +154,10 @@ public class PlayerInteraction : MonoBehaviour
             // Legacy input only
             interactPressed = Input.GetKeyDown(interactKey);
         }
-        
+
         return interactPressed;
     }
-    
+
     /// <summary>
     /// Update the interaction prompt UI based on current interactable
     /// </summary>
@@ -169,14 +168,14 @@ public class PlayerInteraction : MonoBehaviour
         bool shouldShowPrompt = currentInteractable != null &&
                               DialogManager.Instance != null &&
                               !DialogManager.Instance.IsDialogActive();
-        
+
         interactionPrompt.SetActive(shouldShowPrompt);
-        
+
         if (shouldShowPrompt && promptText != null)
         {
             // Get the correct key name based on input method
             string keyName = GetInteractionKeyDisplayName();
-            
+
             // Check if it's a DialogueTrigger (NPC) or regular interactable
             var dialogTrigger = currentInteractable.GetComponent<DialogueTrigger>();
             if (dialogTrigger != null)
@@ -188,7 +187,7 @@ public class PlayerInteraction : MonoBehaviour
                 {
                     npcName = npcContent.npcName;
                 }
-                
+
                 promptText.text = $"Press {keyName} to talk to {npcName}";
             }
             else
@@ -199,19 +198,19 @@ public class PlayerInteraction : MonoBehaviour
                 {
                     interactionText = $"interact with {currentInteractable.name}";
                 }
-                
+
                 promptText.text = $"Press {keyName} to {interactionText}";
             }
         }
     }
-    
+
     /// <summary>
     /// Get the display name for the interaction key
     /// </summary>
     private string GetInteractionKeyDisplayName()
     {
         string keyName = interactKey.ToString();
-        
+
         if (playerInput != null)
         {
             var interactAction = playerInput.actions["Interact"];
@@ -220,10 +219,10 @@ public class PlayerInteraction : MonoBehaviour
                 keyName = interactAction.GetBindingDisplayString();
             }
         }
-        
+
         return keyName;
     }
-    
+
     /// <summary>
     /// Draw the 2D interaction range in Scene view
     /// </summary>
@@ -232,16 +231,16 @@ public class PlayerInteraction : MonoBehaviour
         // Draw 2D interaction range as a circle
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, interactionRange);
-        
+
         // For 2D, we can also draw it as a flat circle
         var originalMatrix = Gizmos.matrix;
         Gizmos.matrix = Matrix4x4.TRS(transform.position, Quaternion.identity, Vector3.one);
-        
+
         // Draw a flattened circle for 2D visualization
         const int segments = 32;
         float angleStep = 360f / segments;
         Vector3 prevPoint = Vector3.right * interactionRange;
-        
+
         for (int i = 1; i <= segments; i++)
         {
             float angle = i * angleStep * Mathf.Deg2Rad;
@@ -249,9 +248,9 @@ public class PlayerInteraction : MonoBehaviour
             Gizmos.DrawLine(prevPoint, newPoint);
             prevPoint = newPoint;
         }
-        
+
         Gizmos.matrix = originalMatrix;
-        
+
         // Show current interactable connection
         if (currentInteractable != null)
         {
@@ -259,7 +258,7 @@ public class PlayerInteraction : MonoBehaviour
             Gizmos.DrawLine(transform.position, currentInteractable.transform.position);
         }
     }
-    
+
     #region Public Interface
     /// <summary>
     /// Check if there's currently an interactable in range
@@ -268,7 +267,7 @@ public class PlayerInteraction : MonoBehaviour
     {
         return currentInteractable != null;
     }
-    
+
     /// <summary>
     /// Get the current interactable object
     /// </summary>
@@ -276,7 +275,7 @@ public class PlayerInteraction : MonoBehaviour
     {
         return currentInteractable;
     }
-    
+
     /// <summary>
     /// Force interaction with current interactable (for external calls)
     /// </summary>
@@ -296,7 +295,7 @@ public class PlayerInteraction : MonoBehaviour
             }
         }
     }
-    
+
     /// <summary>
     /// Check if player is within interaction range of a specific object
     /// </summary>
@@ -305,7 +304,7 @@ public class PlayerInteraction : MonoBehaviour
         if (target == null) return false;
         return Vector2.Distance(transform.position, target.position) <= interactionRange;
     }
-    
+
     /// <summary>
     /// Set the interaction range at runtime
     /// </summary>
@@ -313,14 +312,14 @@ public class PlayerInteraction : MonoBehaviour
     {
         interactionRange = Mathf.Max(0f, newRange);
     }
-    
+
     /// <summary>
     /// Enable or disable the interaction system
     /// </summary>
     public void SetInteractionEnabled(bool enabled)
     {
         this.enabled = enabled;
-        
+
         if (!enabled && interactionPrompt != null)
         {
             interactionPrompt.SetActive(false);

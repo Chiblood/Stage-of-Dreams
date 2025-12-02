@@ -19,9 +19,9 @@
  * GameStateManager.Instance.Instance.OnApplauseScoreChanged += UpdateUI;
  */
 
-using UnityEngine;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
 /// Centralized game state manager - tracks audience metrics, scores, progression, and session data.
@@ -39,7 +39,7 @@ public class GameStateManager : MonoBehaviour
             if (_instance == null)
             {
                 _instance = FindFirstObjectByType<GameStateManager>();
-                
+
                 if (_instance == null)
                 {
                     GameObject go = new GameObject("GameStateManager");
@@ -62,7 +62,7 @@ public class GameStateManager : MonoBehaviour
     [Header("Audience Settings")]
     [SerializeField] private float audienceDecayRate = 1f; // Points per second of inactivity
     [SerializeField] private float audienceMoodSmoothTime = 2f; // Smooth dampening for mood changes
-    
+
     [Header("Performance Settings")]
     [SerializeField] private int maxScorePerScene = 1000;
     [SerializeField] private int scoreThresholdForNextDream = 500;
@@ -76,27 +76,27 @@ public class GameStateManager : MonoBehaviour
     private float _currentBooScore = 0f; // 0-100 scale
     private float _audienceMood = 0.5f; // 0.0 (hostile) to 1.0 (enthusiastic)
     private float _audienceMoodVelocity; // For smooth dampening
-    
+
     // Performance Metrics
     private int _currentSceneScore = 0;
     private int _currentDreamScore = 0;
     private int _totalGameScore = 0;
     private int _consecutiveSuccesses = 0;
     private int _consecutiveFailures = 0;
-    
+
     // Progression
     private HashSet<string> _completedScenes = new HashSet<string>();
     private HashSet<string> _unlockedAbilities = new HashSet<string>();
     private HashSet<string> _earnedAchievements = new HashSet<string>();
     private int _currentDreamIndex = 0;
     private int _currentActIndex = 0; // Act I, II, III
-    
+
     // Turn-Based State
     private bool _isInTurnBasedMode = false;
     private int _currentTurn = 0;
     private int _playerActionsThisTurn = 0;
     private int _maxActionsPerTurn = 3;
-    
+
     // Session Data
     private float _sessionStartTime;
     private int _totalMinigamesAttempted = 0;
@@ -114,7 +114,7 @@ public class GameStateManager : MonoBehaviour
         {
             float oldValue = _currentApplauseScore;
             _currentApplauseScore = Mathf.Clamp(value, 0f, 100f);
-            
+
             if (Math.Abs(oldValue - _currentApplauseScore) > 0.01f)
             {
                 OnApplauseScoreChanged?.Invoke(_currentApplauseScore);
@@ -130,7 +130,7 @@ public class GameStateManager : MonoBehaviour
         {
             float oldValue = _currentBooScore;
             _currentBooScore = Mathf.Clamp(value, 0f, 100f);
-            
+
             if (Math.Abs(oldValue - _currentBooScore) > 0.01f)
             {
                 OnBooScoreChanged?.Invoke(_currentBooScore);
@@ -146,7 +146,7 @@ public class GameStateManager : MonoBehaviour
         {
             float oldValue = _audienceMood;
             _audienceMood = Mathf.Clamp01(value);
-            
+
             if (Math.Abs(oldValue - _audienceMood) > 0.01f)
             {
                 OnAudienceMoodChanged?.Invoke(_audienceMood);
@@ -180,7 +180,7 @@ public class GameStateManager : MonoBehaviour
         {
             int oldValue = _currentSceneScore;
             _currentSceneScore = Mathf.Clamp(value, 0, maxScorePerScene);
-            
+
             if (oldValue != _currentSceneScore)
             {
                 OnSceneScoreChanged?.Invoke(_currentSceneScore);
@@ -195,7 +195,7 @@ public class GameStateManager : MonoBehaviour
         {
             int oldValue = _currentDreamScore;
             _currentDreamScore = Mathf.Max(0, value);
-            
+
             if (oldValue != _currentDreamScore)
             {
                 OnDreamScoreChanged?.Invoke(_currentDreamScore);
@@ -210,7 +210,7 @@ public class GameStateManager : MonoBehaviour
         {
             int oldValue = _totalGameScore;
             _totalGameScore = Mathf.Max(0, value);
-            
+
             if (oldValue != _totalGameScore)
             {
                 OnTotalScoreChanged?.Invoke(_totalGameScore);
@@ -232,7 +232,7 @@ public class GameStateManager : MonoBehaviour
         {
             int oldValue = _currentDreamIndex;
             _currentDreamIndex = Mathf.Max(0, value);
-            
+
             if (oldValue != _currentDreamIndex)
             {
                 OnDreamIndexChanged?.Invoke(_currentDreamIndex);
@@ -247,7 +247,7 @@ public class GameStateManager : MonoBehaviour
         {
             int oldValue = _currentActIndex;
             _currentActIndex = Mathf.Clamp(value, 0, 2); // Act I (0), II (1), III (2)
-            
+
             if (oldValue != _currentActIndex)
             {
                 OnActIndexChanged?.Invoke(_currentActIndex);
@@ -276,8 +276,8 @@ public class GameStateManager : MonoBehaviour
     public float SessionDuration => Time.time - _sessionStartTime;
     public int TotalMinigamesAttempted => _totalMinigamesAttempted;
     public int TotalMinigamesCompleted => _totalMinigamesCompleted;
-    public float MinigameSuccessRate => _totalMinigamesAttempted > 0 
-        ? (float)_totalMinigamesCompleted / _totalMinigamesAttempted 
+    public float MinigameSuccessRate => _totalMinigamesAttempted > 0
+        ? (float)_totalMinigamesCompleted / _totalMinigamesAttempted
         : 0f;
 
     #endregion
@@ -288,25 +288,25 @@ public class GameStateManager : MonoBehaviour
     public event Action<float> OnApplauseScoreChanged;
     public event Action<float> OnBooScoreChanged;
     public event Action<float> OnAudienceMoodChanged;
-    
+
     // Performance Events
     public event Action<int> OnSceneScoreChanged;
     public event Action<int> OnDreamScoreChanged;
     public event Action<int> OnTotalScoreChanged;
-    
+
     // Progression Events
     public event Action<string> OnSceneCompleted;
     public event Action<string> OnAbilityUnlocked;
     public event Action<string> OnAchievementEarned;
     public event Action<int> OnDreamIndexChanged;
     public event Action<int> OnActIndexChanged;
-    
+
     // Turn-Based Events
     public event Action OnTurnBasedModeStarted;
     public event Action OnTurnBasedModeEnded;
     public event Action<int> OnTurnChanged;
     public event Action<int> OnActionsRemainingChanged;
-    
+
     // Minigame Events
     public event Action<string> OnMinigameStarted;
     public event Action<string, bool> OnMinigameEnded; // (minigame ID, success)
@@ -323,17 +323,17 @@ public class GameStateManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-        
+
         _instance = this;
         DontDestroyOnLoad(gameObject);
-        
+
         InitializeGameState();
     }
 
     private void InitializeGameState()
     {
         _sessionStartTime = Time.time;
-        
+
         if (defaultState != null)
         {
             LoadFromData(defaultState);
@@ -342,7 +342,7 @@ public class GameStateManager : MonoBehaviour
         {
             ResetToDefaults();
         }
-        
+
         LogDebug("GameStateManager initialized");
     }
 
@@ -381,7 +381,7 @@ public class GameStateManager : MonoBehaviour
             float targetMood = CalculateTargetMood();
             _audienceMood = Mathf.SmoothDamp(_audienceMood, targetMood, ref _audienceMoodVelocity, audienceMoodSmoothTime);
         }
-        
+
         // Audience decay over time (if enabled)
         if (audienceDecayRate > 0 && !_isInTurnBasedMode)
         {
@@ -396,12 +396,12 @@ public class GameStateManager : MonoBehaviour
     {
         // Mood is influenced by ratio of applause to boo
         float totalReaction = _currentApplauseScore + _currentBooScore;
-        
+
         if (totalReaction < 0.01f)
         {
             return 0.5f; // Neutral if no reactions
         }
-        
+
         float applauseRatio = _currentApplauseScore / totalReaction;
         return applauseRatio;
     }
@@ -477,7 +477,7 @@ public class GameStateManager : MonoBehaviour
         CurrentSceneScore += points;
         CurrentDreamScore += points;
         TotalGameScore += points;
-        
+
         LogDebug($"Added {points} points -> Scene: {CurrentSceneScore}, Dream: {CurrentDreamScore}, Total: {TotalGameScore}");
     }
 
@@ -488,7 +488,7 @@ public class GameStateManager : MonoBehaviour
     {
         _consecutiveSuccesses++;
         _consecutiveFailures = 0;
-        
+
         LogDebug($"Success recorded! Consecutive successes: {_consecutiveSuccesses}");
     }
 
@@ -499,7 +499,7 @@ public class GameStateManager : MonoBehaviour
     {
         _consecutiveFailures++;
         _consecutiveSuccesses = 0;
-        
+
         LogDebug($"Failure recorded! Consecutive failures: {_consecutiveFailures}");
     }
 
@@ -597,11 +597,11 @@ public class GameStateManager : MonoBehaviour
             LogWarning("Already in turn-based mode");
             return;
         }
-        
+
         _isInTurnBasedMode = true;
         _currentTurn = 0;
         _playerActionsThisTurn = 0;
-        
+
         OnTurnBasedModeStarted?.Invoke();
         LogDebug("Turn-based mode started");
     }
@@ -616,11 +616,11 @@ public class GameStateManager : MonoBehaviour
             LogWarning("Not in turn-based mode");
             return;
         }
-        
+
         _isInTurnBasedMode = false;
         _currentTurn = 0;
         _playerActionsThisTurn = 0;
-        
+
         OnTurnBasedModeEnded?.Invoke();
         LogDebug("Turn-based mode ended");
     }
@@ -635,13 +635,13 @@ public class GameStateManager : MonoBehaviour
             LogWarning("Not in turn-based mode - cannot advance turn");
             return;
         }
-        
+
         _currentTurn++;
         _playerActionsThisTurn = 0;
-        
+
         OnTurnChanged?.Invoke(_currentTurn);
         OnActionsRemainingChanged?.Invoke(RemainingActions);
-        
+
         LogDebug($"Advanced to turn {_currentTurn}");
     }
 
@@ -655,16 +655,16 @@ public class GameStateManager : MonoBehaviour
             LogWarning("Not in turn-based mode");
             return false;
         }
-        
+
         if (_playerActionsThisTurn >= _maxActionsPerTurn)
         {
             LogWarning("No actions remaining this turn");
             return false;
         }
-        
+
         _playerActionsThisTurn++;
         OnActionsRemainingChanged?.Invoke(RemainingActions);
-        
+
         LogDebug($"Player action used. Remaining: {RemainingActions}");
         return true;
     }
@@ -679,12 +679,12 @@ public class GameStateManager : MonoBehaviour
     public void StartMinigame(string minigameId)
     {
         _totalMinigamesAttempted++;
-        
+
         if (!_minigameRetries.ContainsKey(minigameId))
         {
             _minigameRetries[minigameId] = 0;
         }
-        
+
         OnMinigameStarted?.Invoke(minigameId);
         LogDebug($"Minigame started: {minigameId} (Attempt #{_minigameRetries[minigameId] + 1})");
     }
@@ -711,7 +711,7 @@ public class GameStateManager : MonoBehaviour
             }
             RecordFailure();
         }
-        
+
         OnMinigameEnded?.Invoke(minigameId, success);
         LogDebug($"Minigame ended: {minigameId} - Success: {success}");
     }
@@ -734,30 +734,30 @@ public class GameStateManager : MonoBehaviour
     public GameStateData SaveToData()
     {
         GameStateData data = ScriptableObject.CreateInstance<GameStateData>();
-        
+
         // Audience
         data.applauseScore = _currentApplauseScore;
         data.booScore = _currentBooScore;
         data.audienceMood = _audienceMood;
-        
+
         // Performance
         data.sceneScore = _currentSceneScore;
         data.dreamScore = _currentDreamScore;
         data.totalScore = _totalGameScore;
         data.consecutiveSuccesses = _consecutiveSuccesses;
         data.consecutiveFailures = _consecutiveFailures;
-        
+
         // Progression
         data.completedScenes = new List<string>(_completedScenes);
         data.unlockedAbilities = new List<string>(_unlockedAbilities);
         data.earnedAchievements = new List<string>(_earnedAchievements);
         data.currentDreamIndex = _currentDreamIndex;
         data.currentActIndex = _currentActIndex;
-        
+
         // Session
         data.totalMinigamesAttempted = _totalMinigamesAttempted;
         data.totalMinigamesCompleted = _totalMinigamesCompleted;
-        
+
         LogDebug("Game state saved to data");
         return data;
     }
@@ -772,30 +772,30 @@ public class GameStateManager : MonoBehaviour
             LogError("Cannot load from null data");
             return;
         }
-        
+
         // Audience
         _currentApplauseScore = data.applauseScore;
         _currentBooScore = data.booScore;
         _audienceMood = data.audienceMood;
-        
+
         // Performance
         _currentSceneScore = data.sceneScore;
         _currentDreamScore = data.dreamScore;
         _totalGameScore = data.totalScore;
         _consecutiveSuccesses = data.consecutiveSuccesses;
         _consecutiveFailures = data.consecutiveFailures;
-        
+
         // Progression
         _completedScenes = new HashSet<string>(data.completedScenes);
         _unlockedAbilities = new HashSet<string>(data.unlockedAbilities);
         _earnedAchievements = new HashSet<string>(data.earnedAchievements);
         _currentDreamIndex = data.currentDreamIndex;
         _currentActIndex = data.currentActIndex;
-        
+
         // Session
         _totalMinigamesAttempted = data.totalMinigamesAttempted;
         _totalMinigamesCompleted = data.totalMinigamesCompleted;
-        
+
         LogDebug("Game state loaded from data");
     }
 

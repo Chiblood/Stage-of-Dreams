@@ -1,12 +1,12 @@
-using UnityEngine;
-using UnityEditor;
 using System.IO;
+using UnityEditor;
+using UnityEngine;
 
 public class DialogTreeFactory
 {
     // Base directory for all dialog tree assets
     private const string DIALOG_TREE_BASE_PATH = "Assets/_Stage of Dreams_/World/Dialog Trees/Testing/";
-    
+
     /// <summary>
     /// Ensures the directory exists for the given asset path
     /// </summary>
@@ -19,7 +19,7 @@ public class DialogTreeFactory
             Debug.Log($"Created directory: {directory}");
         }
     }
-    
+
     [MenuItem("Dialog System/Create Test Dialog Tree")]
     public static void CreateTestDialogTree()
     {
@@ -344,7 +344,7 @@ public class DialogTreeFactory
             autoAdvanceDelay: 0f,
             nodeName: "npc_lighttech_leadup_01"
         );
-        
+
         // Connect to convergent story node
         tree.AddChoiceToNamedNode(veteranLead, "Sure, tell me!", "npc_convergence_story_01");
 
@@ -382,13 +382,13 @@ public class DialogTreeFactory
         // Connect curious path to final convergence
         DialogNode curiousFollow = tree.AddSequentialNode(
             parentNode: curiousResponse,
-            speakerName: "Lighting Tech", 
+            speakerName: "Lighting Tech",
             dialogText: "Remember: on stage, we're all in this together. Break a leg tonight!",
             isPlayerSpeaking: false,
             autoAdvanceDelay: 0f,
             nodeName: "npc_lighttech_teamwork_01"
         );
-        
+
         // Link to final solidarity
         tree.AddChoiceToNamedNode(curiousFollow, "Thanks for the support!", "npc_convergence_solidarity_01");
 
@@ -608,7 +608,8 @@ public class DialogTreeFactory
 
         // Add start event to reset audience scores
         var resetEvent = new MethodCallEvent();
-        resetEvent.SetMethod(() => {
+        resetEvent.SetMethod(() =>
+        {
             if (GameStateManager.Instance != null)
             {
                 GameStateManager.Instance.ResetAudienceScores();
@@ -630,7 +631,8 @@ public class DialogTreeFactory
 
         // Add end event to boost applause
         var confidentEvent = new MethodCallEvent();
-        confidentEvent.SetMethod(() => {
+        confidentEvent.SetMethod(() =>
+        {
             if (GameStateManager.Instance != null)
             {
                 GameStateManager.Instance.AdjustApplause(20f);
@@ -653,7 +655,8 @@ public class DialogTreeFactory
 
         // Add end event for minor penalty
         var nervousEvent = new MethodCallEvent();
-        nervousEvent.SetMethod(() => {
+        nervousEvent.SetMethod(() =>
+        {
             if (GameStateManager.Instance != null)
             {
                 GameStateManager.Instance.AdjustApplause(-5f);
@@ -676,7 +679,8 @@ public class DialogTreeFactory
 
         // Add end event for major penalty
         var forgetEvent = new MethodCallEvent();
-        forgetEvent.SetMethod(() => {
+        forgetEvent.SetMethod(() =>
+        {
             if (GameStateManager.Instance != null)
             {
                 GameStateManager.Instance.AdjustApplause(-15f);
@@ -700,7 +704,8 @@ public class DialogTreeFactory
 
         // Add end event for major boost
         var interactEvent = new MethodCallEvent();
-        interactEvent.SetMethod(() => {
+        interactEvent.SetMethod(() =>
+        {
             if (GameStateManager.Instance != null)
             {
                 GameStateManager.Instance.AdjustApplause(30f);
@@ -738,7 +743,8 @@ public class DialogTreeFactory
 
         // Add end event to print game state
         var printStateEvent = new MethodCallEvent();
-        printStateEvent.SetMethod(() => {
+        printStateEvent.SetMethod(() =>
+        {
             if (GameStateManager.Instance != null)
             {
                 GameStateManager.Instance.PrintCurrentState();
@@ -780,7 +786,8 @@ public class DialogTreeFactory
 
         // Add success event
         var successEvent = new MethodCallEvent();
-        successEvent.SetMethod(() => {
+        successEvent.SetMethod(() =>
+        {
             if (GameStateManager.Instance != null)
             {
                 GameStateManager.Instance.AdjustApplause(40f);
@@ -803,7 +810,8 @@ public class DialogTreeFactory
 
         // Add failure event
         var failureEvent = new MethodCallEvent();
-        failureEvent.SetMethod(() => {
+        failureEvent.SetMethod(() =>
+        {
             if (GameStateManager.Instance != null)
             {
                 GameStateManager.Instance.AdjustBoo(15f);
@@ -830,7 +838,8 @@ public class DialogTreeFactory
 
         // Add final state print
         var finalPrintEvent = new MethodCallEvent();
-        finalPrintEvent.SetMethod(() => {
+        finalPrintEvent.SetMethod(() =>
+        {
             if (GameStateManager.Instance != null)
             {
                 GameStateManager.Instance.PrintCurrentState();

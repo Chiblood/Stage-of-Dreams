@@ -13,8 +13,8 @@
  * - OnChoiceSelected: AudienceReaction("surprise") - Audience gasps at player choice
  */
 
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 
 public class AudienceManager : MonoBehaviour
 {
@@ -22,18 +22,18 @@ public class AudienceManager : MonoBehaviour
     [SerializeField] private AudioSource audienceAudioSource;
     [SerializeField] private ParticleSystem applauseParticles;
     [SerializeField] private Animator audienceAnimator;
-    
+
     [Header("Audio Clips")]
     [SerializeField] private AudioClip lightApplauseClip;
     [SerializeField] private AudioClip heavyApplauseClip;
     [SerializeField] private AudioClip laughterClip;
     [SerializeField] private AudioClip gaspClip;
     [SerializeField] private AudioClip booClip;
-    
+
     [Header("Settings")]
     [SerializeField] private float baseVolume = 0.7f;
     [SerializeField] private bool enableDebugLogs = true;
-    
+
     /// <summary>
     /// Trigger audience applause with specified intensity
     /// This method can be called from dialog UnityEvents with an intensity parameter
@@ -42,10 +42,10 @@ public class AudienceManager : MonoBehaviour
     public void AudienceApplause(int intensity)
     {
         intensity = Mathf.Clamp(intensity, 1, 10);
-        
+
         if (enableDebugLogs)
             Debug.Log($"Audience applause triggered with intensity: {intensity}");
-        
+
         // Play appropriate audio clip
         AudioClip clipToPlay = intensity <= 5 ? lightApplauseClip : heavyApplauseClip;
         if (clipToPlay != null && audienceAudioSource != null)
@@ -53,7 +53,7 @@ public class AudienceManager : MonoBehaviour
             audienceAudioSource.volume = baseVolume * (intensity / 10f);
             audienceAudioSource.PlayOneShot(clipToPlay);
         }
-        
+
         // Trigger particle effects
         if (applauseParticles != null)
         {
@@ -61,18 +61,18 @@ public class AudienceManager : MonoBehaviour
             emission.rateOverTime = intensity * 10; // More particles for higher intensity
             applauseParticles.Play();
         }
-        
+
         // Trigger animator
         if (audienceAnimator != null)
         {
             audienceAnimator.SetTrigger("Applause");
             audienceAnimator.SetFloat("ApplauseIntensity", intensity / 10f);
         }
-        
+
         // Stop particles after a delay
         StartCoroutine(StopApplauseAfterDelay(2f + (intensity * 0.3f)));
     }
-    
+
     /// <summary>
     /// Trigger specific audience reactions by name
     /// This method can be called from dialog UnityEvents with a reaction type
@@ -82,10 +82,10 @@ public class AudienceManager : MonoBehaviour
     {
         if (enableDebugLogs)
             Debug.Log($"Audience reaction triggered: {reactionType}");
-        
+
         AudioClip clipToPlay = null;
         string animationTrigger = "";
-        
+
         switch (reactionType.ToLower())
         {
             case "laugh":
@@ -112,21 +112,21 @@ public class AudienceManager : MonoBehaviour
                 Debug.LogWarning($"Unknown audience reaction type: {reactionType}");
                 return;
         }
-        
+
         // Play audio
         if (clipToPlay != null && audienceAudioSource != null)
         {
             audienceAudioSource.volume = baseVolume;
             audienceAudioSource.PlayOneShot(clipToPlay);
         }
-        
+
         // Trigger animation
         if (audienceAnimator != null && !string.IsNullOrEmpty(animationTrigger))
         {
             audienceAnimator.SetTrigger(animationTrigger);
         }
     }
-    
+
     /// <summary>
     /// Set the overall audience mood/energy level
     /// This can be called to build atmosphere during dialog
@@ -135,22 +135,22 @@ public class AudienceManager : MonoBehaviour
     public void SetAudienceMood(float moodLevel)
     {
         moodLevel = Mathf.Clamp01(moodLevel);
-        
+
         if (enableDebugLogs)
             Debug.Log($"Audience mood set to: {moodLevel:F2}");
-        
+
         if (audienceAnimator != null)
         {
             audienceAnimator.SetFloat("MoodLevel", moodLevel);
         }
-        
+
         // Adjust base volume based on mood
         if (audienceAudioSource != null)
         {
             audienceAudioSource.volume = baseVolume * (0.5f + (moodLevel * 0.5f));
         }
     }
-    
+
     /// <summary>
     /// Create dramatic silence (stop all audience sounds)
     /// Useful for dramatic moments in dialog
@@ -159,23 +159,23 @@ public class AudienceManager : MonoBehaviour
     {
         if (enableDebugLogs)
             Debug.Log("Audience falls silent...");
-        
+
         if (audienceAudioSource != null)
         {
             audienceAudioSource.Stop();
         }
-        
+
         if (applauseParticles != null)
         {
             applauseParticles.Stop();
         }
-        
+
         if (audienceAnimator != null)
         {
             audienceAnimator.SetTrigger("Silence");
         }
     }
-    
+
     /// <summary>
     /// Trigger standing ovation (maximum applause)
     /// For the end of an excellent performance
@@ -184,18 +184,18 @@ public class AudienceManager : MonoBehaviour
     {
         if (enableDebugLogs)
             Debug.Log("Standing ovation!");
-        
+
         AudienceApplause(10);
-        
+
         if (audienceAnimator != null)
         {
             audienceAnimator.SetTrigger("StandingOvation");
         }
-        
+
         // Extended applause duration
         StartCoroutine(StopApplauseAfterDelay(8f));
     }
-    
+
     /// <summary>
     /// Increase audience engagement gradually
     /// Can be called multiple times during a performance to build energy
@@ -210,36 +210,36 @@ public class AudienceManager : MonoBehaviour
             SetAudienceMood(newMood);
         }
     }
-    
+
     private IEnumerator StopApplauseAfterDelay(float delay)
     {
         yield return new WaitForSeconds(delay);
-        
+
         if (applauseParticles != null)
         {
             applauseParticles.Stop();
         }
     }
-    
+
     // Example of a static method that can also be called from UnityEvents
     public static void LogPerformanceEvent(string eventDescription)
     {
         Debug.Log($"[Performance Log] {eventDescription}");
     }
-    
+
     #region Setup Helper Methods
-    
+
     private void Start()
     {
         // Initialize audience to neutral mood
         SetAudienceMood(0.5f);
     }
-    
+
     private void OnValidate()
     {
         // Ensure volume stays within reasonable bounds
         baseVolume = Mathf.Clamp01(baseVolume);
     }
-    
+
     #endregion
 }

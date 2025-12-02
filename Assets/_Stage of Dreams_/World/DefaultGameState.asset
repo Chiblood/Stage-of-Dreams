@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameStateData
   applauseScore: 50
   booScore: 1
-  audienceMood: 1
+  audienceMood: 0.5
   sceneScore: 0
   dreamScore: 0
   totalScore: 0

@@ -55,7 +55,8 @@ Please assist me in learning by:
 - Keep Mermaid diagrams in sync with actual architecture
 - Include code examples in documentation when helpful
 - Cross-reference related documentation files
-- Date major documentation updates
+- **Always verify current date** - Use `Get-Date` command before adding dates to documentation
+- Date major documentation updates with accurate month/year
 - **Class Hierarchy**: Focus on *what exists* - architecture, classes, methods
 - **AI Instructions**: Focus on *how to code* - patterns, conventions, workflows
 

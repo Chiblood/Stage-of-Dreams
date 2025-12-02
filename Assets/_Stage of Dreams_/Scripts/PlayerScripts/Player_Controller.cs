@@ -102,17 +102,18 @@ public class PlayerScript : MonoBehaviour
                 // Only set IsMoving to true if there's actual movement input
                 bool isMoving = _moveDir.sqrMagnitude > 0.01f;
                 _animator.SetBool("IsMoving", isMoving);
-                _animator.SetFloat("MoveX", _moveDir.x);
-                _animator.SetFloat("MoveY", _moveDir.y);
+                //_animator.SetFloat("MoveX", _moveDir.x);
+                //_animator.SetFloat("MoveY", _moveDir.y);
                 
-                float currentSpeed = _moveDir.sqrMagnitude;
-                _animator.SetFloat("Speed", currentSpeed);
-                
+                // Speed parameter (uncomment if your Animator Controller has this parameter)
+                // float currentSpeed = _moveDir.sqrMagnitude;
+                // _animator.SetFloat("Speed", currentSpeed);
+
                 // Scale animation speed based on movement speed (if enabled)
                 if (_scaleAnimationSpeed && isMoving)
                 {
                     // Normalize speed relative to max speed for smooth animation scaling
-                    float speedRatio = Mathf.Sqrt(currentSpeed); // Use sqrt to counteract sqrMagnitude
+                    float speedRatio = Mathf.Sqrt(_moveDir.sqrMagnitude); // Use sqrt to counteract sqrMagnitude
                     _animator.speed = Mathf.Clamp(speedRatio, _minAnimationSpeed, _maxAnimationSpeed);
                 }
                 else
@@ -137,7 +138,7 @@ public class PlayerScript : MonoBehaviour
             if (_animator != null)
             {
                 _animator.SetBool("IsMoving", false);
-                _animator.SetFloat("Speed", 0f);
+                // _animator.SetFloat("Speed", 0f); // Commented out - add "Speed" parameter to Animator if needed
                 _animator.speed = 1f; // Reset animator speed
             }
         }

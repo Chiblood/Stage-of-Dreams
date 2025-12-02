@@ -1,8 +1,25 @@
 using UnityEngine;
 using UnityEditor;
+using System.IO;
 
 public class DialogTreeFactory
 {
+    // Base directory for all dialog tree assets
+    private const string DIALOG_TREE_BASE_PATH = "Assets/_Stage of Dreams_/World/Dialog Trees/Testing/";
+    
+    /// <summary>
+    /// Ensures the directory exists for the given asset path
+    /// </summary>
+    private static void EnsureDirectoryExists(string assetPath)
+    {
+        string directory = Path.GetDirectoryName(assetPath);
+        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory);
+            Debug.Log($"Created directory: {directory}");
+        }
+    }
+    
     [MenuItem("Dialog System/Create Test Dialog Tree")]
     public static void CreateTestDialogTree()
     {
@@ -60,7 +77,8 @@ public class DialogTreeFactory
         );
 
         // Save the asset to disk
-        string path = "Assets/_Stage of Dreams_/World/Dream 1/Test Dialog Tree.asset";
+        string path = DIALOG_TREE_BASE_PATH + "Test Dialog Tree.asset";
+        EnsureDirectoryExists(path);
         AssetDatabase.CreateAsset(tree, path);
 
         // Refresh and select
@@ -155,7 +173,8 @@ public class DialogTreeFactory
         tree.AddChoiceToNamedNode(supportPath, "Perform character study", "npc_convergence_accepted_01", "complete_support_audition");
 
         // Save the asset
-        string path = "Assets/_Stage of Dreams_/World/Dream 1/Director Audition Template.asset";
+        string path = DIALOG_TREE_BASE_PATH + "Director Audition Template.asset";
+        EnsureDirectoryExists(path);
         AssetDatabase.CreateAsset(tree, path);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
@@ -258,7 +277,8 @@ public class DialogTreeFactory
         );
 
         // Save the asset
-        string path = "Assets/_Stage of Dreams_/World/Dream 1/Rehearsal Feedback Template.asset";
+        string path = DIALOG_TREE_BASE_PATH + "Rehearsal Feedback Template.asset";
+        EnsureDirectoryExists(path);
         AssetDatabase.CreateAsset(tree, path);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
@@ -373,7 +393,8 @@ public class DialogTreeFactory
         tree.AddChoiceToNamedNode(curiousFollow, "Thanks for the support!", "npc_convergence_solidarity_01");
 
         // Save the asset
-        string path = "Assets/_Stage of Dreams_/World/Dream 1/Stage Crew Banter Template.asset";
+        string path = DIALOG_TREE_BASE_PATH + "Stage Crew Banter Template.asset";
+        EnsureDirectoryExists(path);
         AssetDatabase.CreateAsset(tree, path);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
@@ -555,7 +576,8 @@ public class DialogTreeFactory
         tree.AddChoiceToNamedNode(skipNode, "I'm ready!", "npc_convergence_finalcall_01");
 
         // Save the asset
-        string path = "Assets/_Stage of Dreams_/World/Dream 1/Minigame Test Tree.asset";
+        string path = DIALOG_TREE_BASE_PATH + "Minigame Test Tree.asset";
+        EnsureDirectoryExists(path);
         AssetDatabase.CreateAsset(tree, path);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
@@ -822,7 +844,8 @@ public class DialogTreeFactory
         endNode.AddEndEvent(finalPrintEvent);
 
         // Save the asset
-        string path = "Assets/_Stage of Dreams_/World/Dream 1/GameState Test Tree.asset";
+        string path = DIALOG_TREE_BASE_PATH + "GameState Test Tree.asset";
+        EnsureDirectoryExists(path);
         AssetDatabase.CreateAsset(tree, path);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();

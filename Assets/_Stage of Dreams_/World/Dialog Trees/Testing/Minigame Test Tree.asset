@@ -1,0 +1,903 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60bb80c9727209d4db564d14f667a070, type: 3}
+  m_Name: Minigame Test Tree
+  m_EditorClassIdentifier: Assembly-CSharp::DialogTree
+  treeName: Minigame System Test
+  description: Test tree demonstrating minigame nodes (RememberTheScript) as choice
+    branches
+  startingNode:
+    rid: 6262275121932141097
+  allNodes:
+  - rid: 6262275121932141097
+  - rid: 6262275121932141098
+  - rid: 6262275121932141099
+  - rid: 6262275121932141100
+  - rid: 6262275121932141101
+  - rid: 6262275121932141102
+  - rid: 6262275121932141103
+  - rid: 6262275121932141104
+  - rid: 6262275121932141105
+  - rid: 6262275121932141106
+  - rid: 6262275121932141107
+  - rid: 6262275121932141108
+  autoUpdateNodeList: 1
+  validateOnSave: 1
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 6262275121932141097
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        _nodeType: 0
+        _nodeId: npc_director_warmup_01
+        _characterName: Director
+        _dialogText: Let's warm up before the big performance! What would you like
+          to practice?
+        _isPlayerSpeaking: 0
+        _autoAdvanceDelay: 0
+        _parentNodes: []
+        _childNode:
+          rid: -2
+        _choices:
+        - rid: 6262275121932141109
+        - rid: 6262275121932141110
+        - rid: 6262275121932141111
+        - rid: 6262275121932141112
+        _startEvents: []
+        _endEvents: []
+        _onDialogStart:
+          m_PersistentCalls:
+            m_Calls: []
+        _onDialogEnd:
+          m_PersistentCalls:
+            m_Calls: []
+        _isRememberScriptNode: 0
+        _targetPhrase: 
+        _maxMistakes: 3
+        _timeLimit: 30
+        _scorePerMistake: -5
+        _scoreOnSuccess: 20
+        _caseSensitive: 0
+        _failureNode:
+          rid: -2
+        _failureNodeName: 
+    - rid: 6262275121932141098
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        _nodeType: 1
+        _nodeId: minigame_easy_phrase_01
+        _characterName: Director
+        _dialogText: 'Good choice! Let''s start with something simple. Type this
+          line exactly as I say it:'
+        _isPlayerSpeaking: 0
+        _autoAdvanceDelay: 0
+        _parentNodes:
+        - rid: 6262275121932141097
+        _childNode:
+          rid: 6262275121932141099
+        _choices: []
+        _startEvents: []
+        _endEvents: []
+        _onDialogStart:
+          m_PersistentCalls:
+            m_Calls: []
+        _onDialogEnd:
+          m_PersistentCalls:
+            m_Calls: []
+        _isRememberScriptNode: 1
+        _targetPhrase: To be or not to be
+        _maxMistakes: 5
+        _timeLimit: 15
+        _scorePerMistake: -2
+        _scoreOnSuccess: 10
+        _caseSensitive: 0
+        _failureNode:
+          rid: 6262275121932141101
+        _failureNodeName: minigame_easy_failure_01
+    - rid: 6262275121932141099
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        _nodeType: 0
+        _nodeId: minigame_easy_success_01
+        _characterName: Director
+        _dialogText: Perfect! You nailed it! That was a classic line, delivered with
+          confidence.
+        _isPlayerSpeaking: 0
+        _autoAdvanceDelay: 0
+        _parentNodes:
+        - rid: 6262275121932141098
+        _childNode:
+          rid: 6262275121932141100
+        _choices: []
+        _startEvents: []
+        _endEvents: []
+        _onDialogStart:
+          m_PersistentCalls:
+            m_Calls: []
+        _onDialogEnd:
+          m_PersistentCalls:
+            m_Calls: []
+        _isRememberScriptNode: 0
+        _targetPhrase: 
+        _maxMistakes: 3
+        _timeLimit: 30
+        _scorePerMistake: -5
+        _scoreOnSuccess: 20
+        _caseSensitive: 0
+        _failureNode:
+          rid: -2
+        _failureNodeName: 
+    - rid: 6262275121932141100
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        _nodeType: 0
+        _nodeId: npc_convergence_finalcall_01
+        _characterName: Director
+        _dialogText: Alright, warm-up's over. Time for the real performance. Places
+          everyone!
+        _isPlayerSpeaking: 0
+        _autoAdvanceDelay: 0
+        _parentNodes:
+        - rid: 6262275121932141099
+        - rid: 6262275121932141103
+        - rid: 6262275121932141106
+        - rid: 6262275121932141101
+        - rid: 6262275121932141104
+        - rid: 6262275121932141107
+        - rid: 6262275121932141108
+        _childNode:
+          rid: -2
+        _choices: []
+        _startEvents: []
+        _endEvents: []
+        _onDialogStart:
+          m_PersistentCalls:
+            m_Calls: []
+        _onDialogEnd:
+          m_PersistentCalls:
+            m_Calls: []
+        _isRememberScriptNode: 0
+        _targetPhrase: 
+        _maxMistakes: 3
+        _timeLimit: 30
+        _scorePerMistake: -5
+        _scoreOnSuccess: 20
+        _caseSensitive: 0
+        _failureNode:
+          rid: -2
+        _failureNodeName: 
+    - rid: 6262275121932141101
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        _nodeType: 0
+        _nodeId: minigame_easy_failure_01
+        _characterName: Director
+        _dialogText: Don't worry, even the greats stumble on their lines. Let's try
+          something else!
+        _isPlayerSpeaking: 0
+        _autoAdvanceDelay: 0
+        _parentNodes: []
+        _childNode:
+          rid: -2
+        _choices:
+        - rid: 6262275121932141113
+        _startEvents: []
+        _endEvents: []
+        _onDialogStart:
+          m_PersistentCalls:
+            m_Calls: []
+        _onDialogEnd:
+          m_PersistentCalls:
+            m_Calls: []
+        _isRememberScriptNode: 0
+        _targetPhrase: 
+        _maxMistakes: 3
+        _timeLimit: 30
+        _scorePerMistake: -5
+        _scoreOnSuccess: 20
+        _caseSensitive: 0
+        _failureNode:
+          rid: -2
+        _failureNodeName: 
+    - rid: 6262275121932141102
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        _nodeType: 1
+        _nodeId: minigame_medium_phrase_01
+        _characterName: Director
+        _dialogText: 'Excellent! This one requires more focus. Type exactly what
+          you hear:'
+        _isPlayerSpeaking: 0
+        _autoAdvanceDelay: 0
+        _parentNodes:
+        - rid: 6262275121932141097
+        _childNode:
+          rid: 6262275121932141103
+        _choices: []
+        _startEvents: []
+        _endEvents: []
+        _onDialogStart:
+          m_PersistentCalls:
+            m_Calls: []
+        _onDialogEnd:
+          m_PersistentCalls:
+            m_Calls: []
+        _isRememberScriptNode: 1
+        _targetPhrase: All the world's a stage, and all the men and women merely
+          players
+        _maxMistakes: 3
+        _timeLimit: 25
+        _scorePerMistake: -5
+        _scoreOnSuccess: 25
+        _caseSensitive: 0
+        _failureNode:
+          rid: 6262275121932141104
+        _failureNodeName: minigame_medium_failure_01
+    - rid: 6262275121932141103
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        _nodeType: 0
+        _nodeId: minigame_medium_success_01
+        _characterName: Director
+        _dialogText: Magnificent! You've captured the essence of Shakespeare himself!
+          The audience will love this!
+        _isPlayerSpeaking: 0
+        _autoAdvanceDelay: 0
+        _parentNodes:
+        - rid: 6262275121932141102
+        _childNode:
+          rid: -2
+        _choices:
+        - rid: 6262275121932141114
+        _startEvents: []
+        _endEvents: []
+        _onDialogStart:
+          m_PersistentCalls:
+            m_Calls: []
+        _onDialogEnd:
+          m_PersistentCalls:
+            m_Calls: []
+        _isRememberScriptNode: 0
+        _targetPhrase: 
+        _maxMistakes: 3
+        _timeLimit: 30
+        _scorePerMistake: -5
+        _scoreOnSuccess: 20
+        _caseSensitive: 0
+        _failureNode:
+          rid: -2
+        _failureNodeName: 
+    - rid: 6262275121932141104
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        _nodeType: 0
+        _nodeId: minigame_medium_failure_01
+        _characterName: Director
+        _dialogText: That's a tough one. Remember, precision is key in theater. Let's
+          keep working on it!
+        _isPlayerSpeaking: 0
+        _autoAdvanceDelay: 0
+        _parentNodes: []
+        _childNode:
+          rid: -2
+        _choices:
+        - rid: 6262275121932141115
+        _startEvents: []
+        _endEvents: []
+        _onDialogStart:
+          m_PersistentCalls:
+            m_Calls: []
+        _onDialogEnd:
+          m_PersistentCalls:
+            m_Calls: []
+        _isRememberScriptNode: 0
+        _targetPhrase: 
+        _maxMistakes: 3
+        _timeLimit: 30
+        _scorePerMistake: -5
+        _scoreOnSuccess: 20
+        _caseSensitive: 0
+        _failureNode:
+          rid: -2
+        _failureNodeName: 
+    - rid: 6262275121932141105
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        _nodeType: 1
+        _nodeId: minigame_hard_phrase_01
+        _characterName: Director
+        _dialogText: 'Bold choice! This is advanced material. Focus and type carefully:'
+        _isPlayerSpeaking: 0
+        _autoAdvanceDelay: 0
+        _parentNodes:
+        - rid: 6262275121932141097
+        _childNode:
+          rid: 6262275121932141106
+        _choices: []
+        _startEvents: []
+        _endEvents: []
+        _onDialogStart:
+          m_PersistentCalls:
+            m_Calls: []
+        _onDialogEnd:
+          m_PersistentCalls:
+            m_Calls: []
+        _isRememberScriptNode: 1
+        _targetPhrase: Now is the winter of our discontent made glorious summer by
+          this sun of York
+        _maxMistakes: 2
+        _timeLimit: 30
+        _scorePerMistake: -10
+        _scoreOnSuccess: 50
+        _caseSensitive: 1
+        _failureNode:
+          rid: 6262275121932141107
+        _failureNodeName: minigame_hard_failure_01
+    - rid: 6262275121932141106
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        _nodeType: 0
+        _nodeId: minigame_hard_success_01
+        _characterName: Director
+        _dialogText: OUTSTANDING! You're a natural! That level of precision is rare.
+          The stage awaits you!
+        _isPlayerSpeaking: 0
+        _autoAdvanceDelay: 0
+        _parentNodes:
+        - rid: 6262275121932141105
+        _childNode:
+          rid: -2
+        _choices:
+        - rid: 6262275121932141116
+        _startEvents: []
+        _endEvents: []
+        _onDialogStart:
+          m_PersistentCalls:
+            m_Calls: []
+        _onDialogEnd:
+          m_PersistentCalls:
+            m_Calls: []
+        _isRememberScriptNode: 0
+        _targetPhrase: 
+        _maxMistakes: 3
+        _timeLimit: 30
+        _scorePerMistake: -5
+        _scoreOnSuccess: 20
+        _caseSensitive: 0
+        _failureNode:
+          rid: -2
+        _failureNodeName: 
+    - rid: 6262275121932141107
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        _nodeType: 0
+        _nodeId: minigame_hard_failure_01
+        _characterName: Director
+        _dialogText: That's master-level material. Don't be discouraged - few can
+          master it. Let's try something else.
+        _isPlayerSpeaking: 0
+        _autoAdvanceDelay: 0
+        _parentNodes: []
+        _childNode:
+          rid: -2
+        _choices:
+        - rid: 6262275121932141117
+        _startEvents: []
+        _endEvents: []
+        _onDialogStart:
+          m_PersistentCalls:
+            m_Calls: []
+        _onDialogEnd:
+          m_PersistentCalls:
+            m_Calls: []
+        _isRememberScriptNode: 0
+        _targetPhrase: 
+        _maxMistakes: 3
+        _timeLimit: 30
+        _scorePerMistake: -5
+        _scoreOnSuccess: 20
+        _caseSensitive: 0
+        _failureNode:
+          rid: -2
+        _failureNodeName: 
+    - rid: 6262275121932141108
+      type: {class: DialogNode, ns: , asm: Assembly-CSharp}
+      data:
+        _nodeType: 0
+        _nodeId: npc_director_confident_01
+        _characterName: Director
+        _dialogText: Confidence! I like it. Just remember - the show must go on.
+          Break a leg!
+        _isPlayerSpeaking: 0
+        _autoAdvanceDelay: 0
+        _parentNodes:
+        - rid: 6262275121932141097
+        _childNode:
+          rid: -2
+        _choices:
+        - rid: 6262275121932141118
+        _startEvents: []
+        _endEvents: []
+        _onDialogStart:
+          m_PersistentCalls:
+            m_Calls: []
+        _onDialogEnd:
+          m_PersistentCalls:
+            m_Calls: []
+        _isRememberScriptNode: 0
+        _targetPhrase: 
+        _maxMistakes: 3
+        _timeLimit: 30
+        _scorePerMistake: -5
+        _scoreOnSuccess: 20
+        _caseSensitive: 0
+        _failureNode:
+          rid: -2
+        _failureNodeName: 
+    - rid: 6262275121932141109
+      type: {class: DialogChoice, ns: , asm: Assembly-CSharp}
+      data:
+        _choiceText: Practice a short line
+        _choiceId: minigame_easy
+        _conditions: 
+        _parentNode:
+          _nodeType: 0
+          _nodeId: npc_director_warmup_01
+          _characterName: Director
+          _dialogText: Let's warm up before the big performance! What would you like
+            to practice?
+          _isPlayerSpeaking: 0
+          _autoAdvanceDelay: 0
+          _parentNodes: []
+          _childNode:
+            rid: -2
+          _choices:
+          - rid: 6262275121932141109
+          - rid: 6262275121932141110
+          - rid: 6262275121932141111
+          - rid: 6262275121932141112
+          _startEvents: []
+          _endEvents: []
+          _onDialogStart:
+            m_PersistentCalls:
+              m_Calls: []
+          _onDialogEnd:
+            m_PersistentCalls:
+              m_Calls: []
+          _isRememberScriptNode: 0
+          _targetPhrase: 
+          _maxMistakes: 3
+          _timeLimit: 30
+          _scorePerMistake: -5
+          _scoreOnSuccess: 20
+          _caseSensitive: 0
+          _failureNode:
+            rid: -2
+          _failureNodeName: 
+        _targetNode:
+          rid: 6262275121932141098
+        _targetNodeName: 
+        _choiceEvents: []
+        _onChoiceSelected:
+          m_PersistentCalls:
+            m_Calls: []
+    - rid: 6262275121932141110
+      type: {class: DialogChoice, ns: , asm: Assembly-CSharp}
+      data:
+        _choiceText: Practice a dramatic monologue
+        _choiceId: minigame_medium
+        _conditions: 
+        _parentNode:
+          _nodeType: 0
+          _nodeId: npc_director_warmup_01
+          _characterName: Director
+          _dialogText: Let's warm up before the big performance! What would you like
+            to practice?
+          _isPlayerSpeaking: 0
+          _autoAdvanceDelay: 0
+          _parentNodes: []
+          _childNode:
+            rid: -2
+          _choices:
+          - rid: 6262275121932141109
+          - rid: 6262275121932141110
+          - rid: 6262275121932141111
+          - rid: 6262275121932141112
+          _startEvents: []
+          _endEvents: []
+          _onDialogStart:
+            m_PersistentCalls:
+              m_Calls: []
+          _onDialogEnd:
+            m_PersistentCalls:
+              m_Calls: []
+          _isRememberScriptNode: 0
+          _targetPhrase: 
+          _maxMistakes: 3
+          _timeLimit: 30
+          _scorePerMistake: -5
+          _scoreOnSuccess: 20
+          _caseSensitive: 0
+          _failureNode:
+            rid: -2
+          _failureNodeName: 
+        _targetNode:
+          rid: 6262275121932141102
+        _targetNodeName: 
+        _choiceEvents: []
+        _onChoiceSelected:
+          m_PersistentCalls:
+            m_Calls: []
+    - rid: 6262275121932141111
+      type: {class: DialogChoice, ns: , asm: Assembly-CSharp}
+      data:
+        _choiceText: Practice a complex speech
+        _choiceId: minigame_hard
+        _conditions: 
+        _parentNode:
+          _nodeType: 0
+          _nodeId: npc_director_warmup_01
+          _characterName: Director
+          _dialogText: Let's warm up before the big performance! What would you like
+            to practice?
+          _isPlayerSpeaking: 0
+          _autoAdvanceDelay: 0
+          _parentNodes: []
+          _childNode:
+            rid: -2
+          _choices:
+          - rid: 6262275121932141109
+          - rid: 6262275121932141110
+          - rid: 6262275121932141111
+          - rid: 6262275121932141112
+          _startEvents: []
+          _endEvents: []
+          _onDialogStart:
+            m_PersistentCalls:
+              m_Calls: []
+          _onDialogEnd:
+            m_PersistentCalls:
+              m_Calls: []
+          _isRememberScriptNode: 0
+          _targetPhrase: 
+          _maxMistakes: 3
+          _timeLimit: 30
+          _scorePerMistake: -5
+          _scoreOnSuccess: 20
+          _caseSensitive: 0
+          _failureNode:
+            rid: -2
+          _failureNodeName: 
+        _targetNode:
+          rid: 6262275121932141105
+        _targetNodeName: 
+        _choiceEvents: []
+        _onChoiceSelected:
+          m_PersistentCalls:
+            m_Calls: []
+    - rid: 6262275121932141112
+      type: {class: DialogChoice, ns: , asm: Assembly-CSharp}
+      data:
+        _choiceText: I'm ready, no practice needed
+        _choiceId: skip_practice
+        _conditions: 
+        _parentNode:
+          _nodeType: 0
+          _nodeId: npc_director_warmup_01
+          _characterName: Director
+          _dialogText: Let's warm up before the big performance! What would you like
+            to practice?
+          _isPlayerSpeaking: 0
+          _autoAdvanceDelay: 0
+          _parentNodes: []
+          _childNode:
+            rid: -2
+          _choices:
+          - rid: 6262275121932141109
+          - rid: 6262275121932141110
+          - rid: 6262275121932141111
+          - rid: 6262275121932141112
+          _startEvents: []
+          _endEvents: []
+          _onDialogStart:
+            m_PersistentCalls:
+              m_Calls: []
+          _onDialogEnd:
+            m_PersistentCalls:
+              m_Calls: []
+          _isRememberScriptNode: 0
+          _targetPhrase: 
+          _maxMistakes: 3
+          _timeLimit: 30
+          _scorePerMistake: -5
+          _scoreOnSuccess: 20
+          _caseSensitive: 0
+          _failureNode:
+            rid: -2
+          _failureNodeName: 
+        _targetNode:
+          rid: 6262275121932141108
+        _targetNodeName: 
+        _choiceEvents: []
+        _onChoiceSelected:
+          m_PersistentCalls:
+            m_Calls: []
+    - rid: 6262275121932141113
+      type: {class: DialogChoice, ns: , asm: Assembly-CSharp}
+      data:
+        _choiceText: I'll do better in the performance
+        _choiceId: 
+        _conditions: 
+        _parentNode:
+          _nodeType: 0
+          _nodeId: minigame_easy_failure_01
+          _characterName: Director
+          _dialogText: Don't worry, even the greats stumble on their lines. Let's
+            try something else!
+          _isPlayerSpeaking: 0
+          _autoAdvanceDelay: 0
+          _parentNodes: []
+          _childNode:
+            rid: -2
+          _choices:
+          - rid: 6262275121932141113
+          _startEvents: []
+          _endEvents: []
+          _onDialogStart:
+            m_PersistentCalls:
+              m_Calls: []
+          _onDialogEnd:
+            m_PersistentCalls:
+              m_Calls: []
+          _isRememberScriptNode: 0
+          _targetPhrase: 
+          _maxMistakes: 3
+          _timeLimit: 30
+          _scorePerMistake: -5
+          _scoreOnSuccess: 20
+          _caseSensitive: 0
+          _failureNode:
+            rid: -2
+          _failureNodeName: 
+        _targetNode:
+          rid: 6262275121932141100
+        _targetNodeName: npc_convergence_finalcall_01
+        _choiceEvents: []
+        _onChoiceSelected:
+          m_PersistentCalls:
+            m_Calls: []
+    - rid: 6262275121932141114
+      type: {class: DialogChoice, ns: , asm: Assembly-CSharp}
+      data:
+        _choiceText: Ready for the show!
+        _choiceId: 
+        _conditions: 
+        _parentNode:
+          _nodeType: 0
+          _nodeId: minigame_medium_success_01
+          _characterName: Director
+          _dialogText: Magnificent! You've captured the essence of Shakespeare himself!
+            The audience will love this!
+          _isPlayerSpeaking: 0
+          _autoAdvanceDelay: 0
+          _parentNodes:
+          - rid: 6262275121932141102
+          _childNode:
+            rid: -2
+          _choices:
+          - rid: 6262275121932141114
+          _startEvents: []
+          _endEvents: []
+          _onDialogStart:
+            m_PersistentCalls:
+              m_Calls: []
+          _onDialogEnd:
+            m_PersistentCalls:
+              m_Calls: []
+          _isRememberScriptNode: 0
+          _targetPhrase: 
+          _maxMistakes: 3
+          _timeLimit: 30
+          _scorePerMistake: -5
+          _scoreOnSuccess: 20
+          _caseSensitive: 0
+          _failureNode:
+            rid: -2
+          _failureNodeName: 
+        _targetNode:
+          rid: 6262275121932141100
+        _targetNodeName: npc_convergence_finalcall_01
+        _choiceEvents: []
+        _onChoiceSelected:
+          m_PersistentCalls:
+            m_Calls: []
+    - rid: 6262275121932141115
+      type: {class: DialogChoice, ns: , asm: Assembly-CSharp}
+      data:
+        _choiceText: Let's move on
+        _choiceId: 
+        _conditions: 
+        _parentNode:
+          _nodeType: 0
+          _nodeId: minigame_medium_failure_01
+          _characterName: Director
+          _dialogText: That's a tough one. Remember, precision is key in theater.
+            Let's keep working on it!
+          _isPlayerSpeaking: 0
+          _autoAdvanceDelay: 0
+          _parentNodes: []
+          _childNode:
+            rid: -2
+          _choices:
+          - rid: 6262275121932141115
+          _startEvents: []
+          _endEvents: []
+          _onDialogStart:
+            m_PersistentCalls:
+              m_Calls: []
+          _onDialogEnd:
+            m_PersistentCalls:
+              m_Calls: []
+          _isRememberScriptNode: 0
+          _targetPhrase: 
+          _maxMistakes: 3
+          _timeLimit: 30
+          _scorePerMistake: -5
+          _scoreOnSuccess: 20
+          _caseSensitive: 0
+          _failureNode:
+            rid: -2
+          _failureNodeName: 
+        _targetNode:
+          rid: 6262275121932141100
+        _targetNodeName: npc_convergence_finalcall_01
+        _choiceEvents: []
+        _onChoiceSelected:
+          m_PersistentCalls:
+            m_Calls: []
+    - rid: 6262275121932141116
+      type: {class: DialogChoice, ns: , asm: Assembly-CSharp}
+      data:
+        _choiceText: Let's do this!
+        _choiceId: 
+        _conditions: 
+        _parentNode:
+          _nodeType: 0
+          _nodeId: minigame_hard_success_01
+          _characterName: Director
+          _dialogText: OUTSTANDING! You're a natural! That level of precision is
+            rare. The stage awaits you!
+          _isPlayerSpeaking: 0
+          _autoAdvanceDelay: 0
+          _parentNodes:
+          - rid: 6262275121932141105
+          _childNode:
+            rid: -2
+          _choices:
+          - rid: 6262275121932141116
+          _startEvents: []
+          _endEvents: []
+          _onDialogStart:
+            m_PersistentCalls:
+              m_Calls: []
+          _onDialogEnd:
+            m_PersistentCalls:
+              m_Calls: []
+          _isRememberScriptNode: 0
+          _targetPhrase: 
+          _maxMistakes: 3
+          _timeLimit: 30
+          _scorePerMistake: -5
+          _scoreOnSuccess: 20
+          _caseSensitive: 0
+          _failureNode:
+            rid: -2
+          _failureNodeName: 
+        _targetNode:
+          rid: 6262275121932141100
+        _targetNodeName: npc_convergence_finalcall_01
+        _choiceEvents: []
+        _onChoiceSelected:
+          m_PersistentCalls:
+            m_Calls: []
+    - rid: 6262275121932141117
+      type: {class: DialogChoice, ns: , asm: Assembly-CSharp}
+      data:
+        _choiceText: I'll give it my all anyway
+        _choiceId: 
+        _conditions: 
+        _parentNode:
+          _nodeType: 0
+          _nodeId: minigame_hard_failure_01
+          _characterName: Director
+          _dialogText: That's master-level material. Don't be discouraged - few can
+            master it. Let's try something else.
+          _isPlayerSpeaking: 0
+          _autoAdvanceDelay: 0
+          _parentNodes: []
+          _childNode:
+            rid: -2
+          _choices:
+          - rid: 6262275121932141117
+          _startEvents: []
+          _endEvents: []
+          _onDialogStart:
+            m_PersistentCalls:
+              m_Calls: []
+          _onDialogEnd:
+            m_PersistentCalls:
+              m_Calls: []
+          _isRememberScriptNode: 0
+          _targetPhrase: 
+          _maxMistakes: 3
+          _timeLimit: 30
+          _scorePerMistake: -5
+          _scoreOnSuccess: 20
+          _caseSensitive: 0
+          _failureNode:
+            rid: -2
+          _failureNodeName: 
+        _targetNode:
+          rid: 6262275121932141100
+        _targetNodeName: npc_convergence_finalcall_01
+        _choiceEvents: []
+        _onChoiceSelected:
+          m_PersistentCalls:
+            m_Calls: []
+    - rid: 6262275121932141118
+      type: {class: DialogChoice, ns: , asm: Assembly-CSharp}
+      data:
+        _choiceText: I'm ready!
+        _choiceId: 
+        _conditions: 
+        _parentNode:
+          _nodeType: 0
+          _nodeId: npc_director_confident_01
+          _characterName: Director
+          _dialogText: Confidence! I like it. Just remember - the show must go on.
+            Break a leg!
+          _isPlayerSpeaking: 0
+          _autoAdvanceDelay: 0
+          _parentNodes:
+          - rid: 6262275121932141097
+          _childNode:
+            rid: -2
+          _choices:
+          - rid: 6262275121932141118
+          _startEvents: []
+          _endEvents: []
+          _onDialogStart:
+            m_PersistentCalls:
+              m_Calls: []
+          _onDialogEnd:
+            m_PersistentCalls:
+              m_Calls: []
+          _isRememberScriptNode: 0
+          _targetPhrase: 
+          _maxMistakes: 3
+          _timeLimit: 30
+          _scorePerMistake: -5
+          _scoreOnSuccess: 20
+          _caseSensitive: 0
+          _failureNode:
+            rid: -2
+          _failureNodeName: 
+        _targetNode:
+          rid: 6262275121932141100
+        _targetNodeName: npc_convergence_finalcall_01
+        _choiceEvents: []
+        _onChoiceSelected:
+          m_PersistentCalls:
+            m_Calls: []

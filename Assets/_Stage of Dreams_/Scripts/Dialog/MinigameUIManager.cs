@@ -255,17 +255,26 @@ public class MinigameUIManager : MonoBehaviour
     /// </summary>
     private IEnumerator TransitionToMinigame()
     {
-        // Fade out dialog box
-        yield return FadeOut(dialogBox, transitionDuration);
+        LogDebug("Starting transition to minigame");
         
-        // Hide dialog elements
+        // Hide dialog elements FIRST (but keep dialogBox visible)
         HideDialogElements();
         
-        // Show minigame UI
+        // Show minigame UI (adds to dialogBox)
         ShowMinigameUI();
         
-        // Fade in minigame
-        yield return FadeIn(minigameContainer, transitionDuration);
+        // CRITICAL: Ensure dialogBox stays visible for minigame
+        dialogBox.style.display = DisplayStyle.Flex;
+        dialogBox.style.opacity = 1f;
+        
+        // Make minigame container visible immediately
+        minigameContainer.style.opacity = 1f;
+        minigameContainer.style.display = DisplayStyle.Flex;
+        
+        LogDebug("Minigame UI shown (no fade for testing)");
+        
+        // Skip fades for now - testing mode
+        yield return null;
     }
     
     /// <summary>
@@ -273,11 +282,12 @@ public class MinigameUIManager : MonoBehaviour
     /// </summary>
     private IEnumerator TransitionBackToDialog(float delay)
     {
+        LogDebug($"Waiting {delay}s before transitioning back to dialog");
+        
         // Wait for delay (for success/failure animation to show)
         yield return new WaitForSeconds(delay);
         
-        // Fade out minigame
-        yield return FadeOut(minigameContainer, transitionDuration);
+        LogDebug("Transitioning back to dialog");
         
         // Hide minigame UI
         HideMinigameUI();
@@ -285,8 +295,9 @@ public class MinigameUIManager : MonoBehaviour
         // Show dialog elements
         ShowDialogElements();
         
-        // Fade in dialog
-        yield return FadeIn(dialogBox, transitionDuration);
+        // Ensure dialogBox is visible
+        dialogBox.style.display = DisplayStyle.Flex;
+        dialogBox.style.opacity = 1f;
         
         // Reset state
         isMinigameActive = false;
@@ -340,8 +351,11 @@ public class MinigameUIManager : MonoBehaviour
     /// </summary>
     private void ShowMinigameUI()
     {
+        LogDebug($"ShowMinigameUI called - Type: {currentMinigameType}");
+        
         // Add minigame container to DialogBox
         dialogBox.Add(minigameContainer);
+        LogDebug($"Minigame container added to DialogBox. Parent: {minigameContainer.parent?.name}");
         
         // Add appropriate minigame component
         switch (currentMinigameType)
@@ -349,7 +363,14 @@ public class MinigameUIManager : MonoBehaviour
             case MinigameType.RememberTheScript:
                 if (rememberScriptUI != null)
                 {
-                    minigameContainer.Add(rememberScriptUI.GetRootElement());
+                    var rootElement = rememberScriptUI.GetRootElement();
+                    minigameContainer.Add(rootElement);
+                    LogDebug($"RememberTheScriptUI root added. Children: {minigameContainer.childCount}");
+                    LogDebug($"Root element classes: {string.Join(", ", rootElement.GetClasses())}");
+                }
+                else
+                {
+                    LogError("rememberScriptUI is null!");
                 }
                 break;
             
@@ -359,9 +380,12 @@ public class MinigameUIManager : MonoBehaviour
             //     break;
         }
         
+        // Make container visible
         minigameContainer.style.display = DisplayStyle.Flex;
+        minigameContainer.style.opacity = 1f;
         
-        LogDebug("Minigame UI shown");
+        LogDebug($"Minigame UI shown - Display: {minigameContainer.style.display.value}, Opacity: {minigameContainer.style.opacity.value}");
+        LogDebug($"DialogBox - Display: {dialogBox.style.display.value}, Opacity: {dialogBox.style.opacity.value}");
     }
     
     /// <summary>

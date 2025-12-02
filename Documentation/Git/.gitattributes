@@ -1,0 +1,45 @@
+# Git attributes for Stage of Dreams
+# Ensures consistent encoding and line endings across platforms
+
+# Auto detect text files and normalize line endings to CRLF on checkout
+* text=auto eol=crlf
+
+# Explicitly declare files as text with UTF-8 encoding
+*.md text eol=crlf encoding=UTF-8
+*.cs text eol=crlf encoding=UTF-8
+*.txt text eol=crlf encoding=UTF-8
+
+# Unity-specific text files
+*.asset text eol=crlf encoding=UTF-8
+*.prefab text eol=crlf encoding=UTF-8
+*.unity text eol=crlf encoding=UTF-8
+*.meta text eol=crlf encoding=UTF-8
+*.mat text eol=crlf encoding=UTF-8
+*.anim text eol=crlf encoding=UTF-8
+*.controller text eol=crlf encoding=UTF-8
+
+# UI Toolkit files
+*.uxml text eol=crlf encoding=UTF-8
+*.uss text eol=crlf encoding=UTF-8
+
+# JSON and XML files
+*.json text eol=crlf encoding=UTF-8
+*.xml text eol=crlf encoding=UTF-8
+*.csproj text eol=crlf encoding=UTF-8
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.psd binary
+*.ai binary
+*.mp3 binary
+*.wav binary
+*.ogg binary
+*.ttf binary
+*.otf binary
+*.dll binary
+*.so binary
+*.dylib binary
+*.unitypackage binary

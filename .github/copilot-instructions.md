@@ -88,6 +88,7 @@ Please assist me in learning by:
 	- GameStateManager integration
 	- Test helper script available
 	- UI integration pending
+- **SolutionFileModifier implemented** - Automatic documentation inclusion in Visual Studio
 - Working on: RememberTheScript UI integration, CalmDialog implementation
 - Next up: Demo scene creation, deployment
 
@@ -107,8 +108,10 @@ Please assist me in learning by:
 13. **Auto-creation of minigame outcome nodes** - Success/failure nodes created automatically
 14. **Node linking system** - Link minigame outcomes to existing nodes
 15. **Clean Architecture** - DialogNode (Data) → DialogNavigator (Logic with Events) → DialogManager (UI subscribes to events)
+16. **SolutionFileModifier** - Automatic documentation file inclusion in Visual Studio Solution Explorer
 
 **Known Issues/Technical Debt**:
 - Need to implement minigame UI components in DialogManager
 - DialogNavigator has RememberTheScript events ready, DialogManager needs to subscribe when UI is implemented
 - Need to implement turn-based system
+- SolutionFileModifier requires legacy .sln format (Unity 2022+ defaults to .slnx)

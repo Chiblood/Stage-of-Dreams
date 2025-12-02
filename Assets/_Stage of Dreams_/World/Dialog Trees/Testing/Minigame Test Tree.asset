@@ -99,7 +99,7 @@ MonoBehaviour:
         _isRememberScriptNode: 1
         _targetPhrase: To be or not to be
         _maxMistakes: 5
-        _timeLimit: 15
+        _timeLimit: 2
         _scorePerMistake: -2
         _scoreOnSuccess: 10
         _caseSensitive: 0

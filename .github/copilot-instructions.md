@@ -55,7 +55,8 @@ Please assist me in learning by:
 - Keep Mermaid diagrams in sync with actual architecture
 - Include code examples in documentation when helpful
 - Cross-reference related documentation files
-- Date major documentation updates
+- **Always verify current date** - Use `Get-Date` command before adding dates to documentation
+- Date major documentation updates with accurate month/year
 - **Class Hierarchy**: Focus on *what exists* - architecture, classes, methods
 - **AI Instructions**: Focus on *how to code* - patterns, conventions, workflows
 
@@ -70,16 +71,26 @@ Please assist me in learning by:
 - **Needs explanations for**: Game architecture patterns, Unity best practices, event systems
 
 ### Project Progress Tracking
-**Current Sprint**: Dialog System Enhancement (Feature/DialogNode-Functionality branch)
-- âœ“ Dialog Tree system implemented with ScriptableObjects
-- âœ“ Dialog Node structure with choices and auto-advance
-- âœ“ Dialog Event system with method delegates
-- âœ“ Integration between NPCContent, DialogueTrigger, DialogManager, and DialogNavigator
-- âœ“ UI Toolkit integration for dialog display
-- âœ“ Mermaid architecture diagrams added to Class Hierarchy
-- âœ“ Documentation consolidated and standardized
-- â³ Working on: Dialog node functionality refinement and testing
-- â³ Next up: Audience interaction system, turn-based combat
+**Current Sprint**: GameState Management & Minigame Implementation (Feature/Minigames branch) - LAST DAY!
+- Dialog Tree system implemented with ScriptableObjects
+- Dialog Node structure with choices and auto-advance
+- Dialog Event system with method delegates
+- Integration between NPCContent, DialogueTrigger, DialogManager, and DialogNavigator
+- UI Toolkit integration for dialog display
+- Mermaid architecture diagrams added to Class Hierarchy
+- Documentation consolidated and standardized
+- **GameStateManager singleton implemented** - centralized state tracking
+- **GameStateData ScriptableObject** - save/load infrastructure
+- **RememberTheScript minigame CORE COMPLETE** ✅
+	- Full typing validation system
+	- Mistake tracking and reset logic
+	- Timer system
+	- GameStateManager integration
+	- Test helper script available
+	- UI integration pending
+- **SolutionFileModifier implemented** - Automatic documentation inclusion in Visual Studio
+- Working on: RememberTheScript UI integration, CalmDialog implementation
+- Next up: Demo scene creation, deployment
 
 **Completed Features**:
 1. Core dialog tree system with convergent path support
@@ -89,326 +100,18 @@ Please assist me in learning by:
 5. Basic stage and spotlight system
 6. Comprehensive documentation with visual diagrams
 7. Consolidated documentation structure
+8. **GameState management system** (audience metrics, scores, progression, session tracking)
+9. **Event-driven state updates** for UI integration
+10. **RememberTheScript minigame core logic** ⚠️ NEW!
+11. **Node type system with conversion** - Switch between dialog and minigame nodes
+12. **Specialized editor windows** - Dedicated editors for each node type
+13. **Auto-creation of minigame outcome nodes** - Success/failure nodes created automatically
+14. **Node linking system** - Link minigame outcomes to existing nodes
+15. **Clean Architecture** - DialogNode (Data) → DialogNavigator (Logic with Events) → DialogManager (UI subscribes to events)
+16. **SolutionFileModifier** - Automatic documentation file inclusion in Visual Studio Solution Explorer
 
 **Known Issues/Technical Debt**:
+- Need to implement minigame UI components in DialogManager
+- DialogNavigator has RememberTheScript events ready, DialogManager needs to subscribe when UI is implemented
 - Need to implement turn-based system
-- Audience mood/reaction system pending
-- Performance testing for large dialog trees needed
-
-### Code Quality Standards Jack is Learning
-- Use XML documentation comments for public methods
-- Implement validation methods (`IsValid()`) for data structures
-- Include context menu debugging options for ScriptableObjects
-- Follow Unity serialization best practices with `[SerializeField]` and `[SerializeReference]`
-- Use properties with backing fields for better encapsulation
-- **Keep documentation in sync with code changes**
-
----
-
-## Stage of Dreams â€“ Project Overview
-
-### Game Concept
-**Genre**: Linear Top-down 2D RPG with theatrical elements
-**Core Mechanic**: An actor performing on stage, interacting with audience and other performers
-**Progression**: Each "Dream" is a unique level/story with its own narrative and objectives
-
-### Target Features
-- **Turn-Based Gameplay**: Strategic actions between player, audience, and NPCs
-- **Linear Storytelling**: Narrative-driven gameplay with character interactions
-- **Dialog System**: Complex branching conversations with choices and consequences
-- **Audience Interaction**: Dynamic mood states affecting gameplay
-- **Stage Abilities**: Unique performer abilities (improvise, interact, perform)
-- **Story Progression**: Multiple "Dreams" (levels) with narrative continuity
-
----
-
-## Project Architecture
-
-> **Note**: For complete architecture diagrams, see `Docs\Class Hierarchy.md`
-
-### Folder Structure
-```
-Assets/
-â”œâ”€â”€ _Stage of Dreams_/
-â”‚   â”œâ”€â”€ Scripts/
-â”‚   â”‚   â”œâ”€â”€ Dialog/              # Dialog system components
-â”‚   â”‚   â”‚   â”œâ”€â”€ DialogManager.cs       # UI controller
-â”‚   â”‚   â”‚   â”œâ”€â”€ DialogNavigator.cs     # Navigation logic
-â”‚   â”‚   â”‚   â”œâ”€â”€ DialogueTrigger.cs     # Interaction trigger
-â”‚   â”‚   â”‚   â”œâ”€â”€ DialogEvents.cs        # Event system
-â”‚   â”‚   â”‚   â””â”€â”€ Examples and Guides/   # Utility classes (not in main docs)
-â”‚   â”‚   â”‚       â”œâ”€â”€ CreateLinearDialog.cs
-â”‚   â”‚   â”‚       â””â”€â”€ DialogTreeFactory.cs
-â”‚   â”‚   â”œâ”€â”€ PlayerScripts/       # Player-related scripts
-â”‚   â”‚   â”‚   â”œâ”€â”€ Player_Controller.cs
-â”‚   â”‚   â”‚   â”œâ”€â”€ PlayerInteraction.cs
-â”‚   â”‚   â”‚   â””â”€â”€ Interactable.cs
-â”‚   â”‚   â””â”€â”€ StageScripts/        # Stage environment scripts
-â”‚   â”‚       â”œâ”€â”€ AudienceManager.cs
-â”‚   â”‚       â”œâ”€â”€ LightingManager.cs
-â”‚   â”‚       â”œâ”€â”€ Spotlight.cs
-â”‚   â”‚       â””â”€â”€ SpotlightController.cs
-â”‚   â””â”€â”€ World/                   # Data structures (ScriptableObjects)
-â”‚       â”œâ”€â”€ Dialog Tree.cs       # Dialog tree container
-â”‚       â”œâ”€â”€ Dialog Node.cs       # Individual dialog node
-â”‚       â”œâ”€â”€ Dialog Choice.cs     # Dialog choice data
-â”‚       â”œâ”€â”€ Character Content.cs # Base character data
-â”‚       â””â”€â”€ Dream 1/             # Level-specific content
-â”œâ”€â”€ Scenes/                      # Unity scenes
-â”œâ”€â”€ Prefabs/                     # Reusable game objects
-â””â”€â”€ UI/                          # UI Toolkit assets (UXML/USS)
-
-Docs/                            # Documentation folder
-â”œâ”€â”€ Class Hierarchy.md           # Complete architecture & class reference
-â”œâ”€â”€ Project_Roadmap.md           # Feature planning & milestones
-â”œâ”€â”€ TROUBLESHOOTING.MD           # Known issues & solutions
-â””â”€â”€ Requirements.md              # Project requirements
-```
-
-### Technology Stack
-- **Unity Version**: 2D project (Unity 2022+)
-- **.NET Version**: .NET Framework 4.7.1
-- **UI System**: Unity UI Toolkit (UXML/USS)
-- **Text Rendering**: TextMesh Pro
-- **Version Control**: Git (GitHub repository)
-- **Documentation**: Markdown with Mermaid diagrams
-
-### Utility Classes & Examples
-**Location**: `Assets\_Stage of Dreams_\Scripts\Dialog\Examples and Guides\`
-
-These utility classes are for development convenience and are **not documented in Class Hierarchy**:
-- **`CreateLinearDialog.cs`**: Helper for quickly creating linear conversation chains
-- **`DialogTreeFactory.cs`**: Factory methods for programmatically generating dialog trees
-- **Other utilities**: Document here as needed
-
-**When to add utilities**:
-- Add to this section when creating helper/example classes
-- Keep Class Hierarchy focused on core production classes
-- Update this list when new utilities are added
-
----
-
-## Coding Patterns & Best Practices
-
-### Unity ScriptableObject Pattern
-```csharp
-[CreateAssetMenu(fileName = "New Dialog Tree", menuName = "Dialog System/Dialog Tree")]
-public class DialogTree : ScriptableObject
-{
-    [SerializeField] private string treeName;
-    [SerializeReference] private DialogNode startingNode;
-    
-    // Include validation
-    public bool IsValid() { /* ... */ }
-    
-    // Include debug tools
-    [ContextMenu("Validate Tree")]
-    public void ValidateTree() { /* ... */ }
-}
-```
-
-### Property Pattern with Backing Fields
-```csharp
-[SerializeField] private string _characterName;
-
-public string CharacterName
-{
-    get => _characterName ?? string.Empty;
-    set => _characterName = value;
-}
-```
-
-### Validation Pattern
-```csharp
-public virtual bool IsValid()
-{
-    // Check required fields
-    if (string.IsNullOrEmpty(requiredField))
-        return false;
-    
-    // Validate child objects
-    foreach (var child in children)
-    {
-        if (!child.IsValid())
-            return false;
-    }
-    
-    return true;
-}
-```
-
-### Event Subscription Pattern
-```csharp
-private void OnEnable()
-{
-    dialogNavigator.OnNodeChanged += HandleNodeChanged;
-    dialogNavigator.OnDialogEnded += HandleDialogEnded;
-}
-
-private void OnDisable()
-{
-    dialogNavigator.OnNodeChanged -= HandleNodeChanged;
-    dialogNavigator.OnDialogEnded -= HandleDialogEnded;
-}
-```
-
-### Context Menu Debugging
-```csharp
-[ContextMenu("Validate Setup")]
-private void ValidateSetup()
-{
-    Debug.Log("Validation results...");
-}
-
-[ContextMenu("Test Functionality")]
-private void TestFunctionality()
-{
-    // Test code here
-}
-```
-
----
-
-## Future Implementation Plans
-
-### Phase 1: Core Systems (Current)
-- âœ“ Dialog system with branching conversations
-- âœ“ Player movement and interaction
-- âœ“ Dialog event system refinement
-- âœ“ Documentation structure
-
-### Phase 2: Game Mechanics
-- â³ Turn-based combat/action system
-- â³ Audience mood and reaction system
-- â³ Stage ability system (improvise, interact, perform)
-- â³ Performance scoring system
-
-### Phase 3: Content & Polish
-- â³ Complete first "Dream" level
-- â³ Multiple NPC interactions
-- â³ Sound effects and music
-- â³ Animations and visual effects
-- â³ UI polish and transitions
-
-### Phase 4: Advanced Features
-- â³ Save/load system
-- â³ Multiple "Dreams" (levels)
-- â³ Character progression
-- â³ Achievements/unlockables
-
----
-
-## AI Assistance Guidelines
-
-### When I Ask for Help With...
-
-**Architecture Questions**:
-- Reference the existing MVC pattern in dialog system
-- Check `Docs\Class Hierarchy.md` for current architecture diagrams
-- Consider event-driven approaches
-- Suggest ScriptableObject-based data structures
-- **Update Class Hierarchy documentation if suggesting architectural changes**
-
-**Code Examples**:
-- Follow the property pattern with backing fields
-- Include validation methods
-- Add context menu debug options
-- Use XML documentation comments
-- **Update documentation with new patterns if they deviate from established ones**
-
-**Bug Fixes**:
-- Ask me to run context menu validation tools first
-- Check Unity console for errors
-- Verify serialization and references
-- Test in both Edit and Play modes
-- **Document the issue and solution in TROUBLESHOOTING.MD**
-
-**New Features**:
-- Break down into small, testable components
-- Consider how it integrates with existing systems
-- Plan for validation and debugging tools
-- Think about ScriptableObject data storage
-- **Update Class Hierarchy.md when adding new core classes**
-- **Add to Utility Classes section if creating helper/example code**
-- **Change â³ status to âœ“ when complete**
-
-**Documentation Tasks**:
-- When asked to update documentation, check ALL related docs
-- Identify and resolve any conflicting information
-- Maintain consistency across documentation files
-- Keep Mermaid diagrams in sync with code
-- Ask for clarification if documentation conflicts with code
-
-### Communication Style
-- Explain *why*, not just *how*
-- Reference Unity documentation when relevant
-- Reference `Docs\Class Hierarchy.md` for architecture context
-- Provide step-by-step instructions
-- Include warnings about common pitfalls
-- Suggest testing approaches
-- **Remind Jack to update documentation after making changes**
-- **Use ASCII-safe characters in Debug.Log statements (no emojis)**
-
----
-
-## Unity Best Practices
-
-### Debug Logging Standards
-
-Unity's Console window has limited Unicode support. **Always use ASCII-safe characters in debug logs.**
-
-#### ✅ DO Use:
-```csharp
-Debug.Log("[OK] Operation successful");
-Debug.LogWarning("[WARNING] Potential issue detected");
-Debug.LogError("[ERROR] Operation failed");
-Debug.Log("[INFO] Status update");
-Debug.Log("[FIXED] Issue resolved");
-```
-
-#### ❌ DON'T Use:
-```csharp
-Debug.Log("✅ Operation successful");  // Displays as ?
-Debug.LogWarning("⚠️ Warning");        // Displays as ?
-Debug.LogError("❌ Error");            // Displays as ?
-Debug.Log("📊 Statistics");            // Displays as ?
-```
-
-#### Emoji Replacement Guide
-
-| Emoji | ASCII Replacement | Use Case |
-|-------|------------------|----------|
-| ✅ | `[OK]` or `[SUCCESS]` | Success/Valid |
-| ❌ | `[ERROR]` or `[!]` | Error/Invalid |
-| ⚠️ | `[WARNING]` or `[WARN]` | Warning |
-| 🔧 | `[FIXED]` | Fixed/Repaired |
-| 📊 | `[STATS]` or `[#]` | Statistics |
-| ✨ | `[NEW]` or `[CREATED]` | Created |
-| 🎯 | `[TARGET]` | Goal/Objective |
-| 💡 | `[TIP]` or `[INFO]` | Information |
-| 🚀 | `[START]` | Started |
-| 🎉 | `[DONE]` or `[COMPLETE]` | Completed |
-| 🐛 | `[BUG]` | Bug/Issue |
-| 🔍 | `[SEARCH]` or `[FIND]` | Searching |
-| ⏱️ | `[TIME]` | Timing/Duration |
-| 🎭 | `[DIALOG]` or `[STAGE]` | Stage/Dialog system |
-
-#### Example Implementations
-
-**Before (with emojis)**:
-```csharp
-Debug.Log($"✅ DialogTree validated: {nodeCount} nodes");
-Debug.LogWarning($"⚠️ Missing speaker name in node");
-Debug.LogError($"❌ Failed to load dialog tree");
-Debug.Log($"🎭 Starting dialog with {npcName}");
-```
-
-**After (ASCII-safe)**:
-```csharp
-Debug.Log($"[OK] DialogTree validated: {nodeCount} nodes");
-Debug.LogWarning($"[WARNING] Missing speaker name in node");
-Debug.LogError($"[ERROR] Failed to load dialog tree");
-Debug.Log($"[DIALOG] Starting dialog with {npcName}");
-```
-
----
+- SolutionFileModifier requires legacy .sln format (Unity 2022+ defaults to .slnx)

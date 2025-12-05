@@ -16,20 +16,20 @@ public class LightingManager : MonoBehaviour
     [Header("Global Lighting")]
     [SerializeField] private Light2D globalLight; // Main global light (usually set to Global type)
     [SerializeField] private Camera mainCamera; // Reference to main camera for background color
-    
+
     [Header("Lighting States")]
     [SerializeField] private float normalAmbientIntensity = 1f; // Normal lighting intensity
     [SerializeField] private float darkAmbientIntensity = 0.1f; // Dark/dramatic lighting intensity
     [SerializeField] private Color normalBackgroundColor = Color.black; // Normal background color
     [SerializeField] private Color darkBackgroundColor = Color.black; // Dark background color
-    
+
     [Header("Transition Settings")]
     [SerializeField] private float transitionSpeed = 2f; // Speed of lighting transitions
     [SerializeField] private bool startInDarkMode = false; // Whether to start with dramatic lighting
-    
+
     [Header("Named Spotlights (For Dialog Events)")]
     [SerializeField] private Spotlight[] namedSpotlights; // Array of spotlights for direct dialog access
-    
+
     // Current state
     private bool isDarkMode = false;
     private bool isTransitioning = false;
@@ -37,12 +37,12 @@ public class LightingManager : MonoBehaviour
     private float targetIntensity;
     private Color currentBackgroundColor;
     private Color targetBackgroundColor;
-    
+
     // Events
     public System.Action OnDarkModeEnabled;
     public System.Action OnDarkModeDisabled;
     public System.Action OnLightingTransitionComplete;
-    
+
     private void Awake()
     {
         // Find components if not assigned
@@ -63,7 +63,7 @@ public class LightingManager : MonoBehaviour
                 }
             }
         }
-        
+
         if (mainCamera == null)
         {
             mainCamera = Camera.main;
@@ -72,24 +72,24 @@ public class LightingManager : MonoBehaviour
                 mainCamera = FindFirstObjectByType<Camera>();
             }
         }
-        
+
         // Auto-populate named spotlights if empty
         if (namedSpotlights == null || namedSpotlights.Length == 0)
         {
             RefreshNamedSpotlights();
         }
-        
+
         // Initialize state
         isDarkMode = startInDarkMode;
         currentIntensity = isDarkMode ? darkAmbientIntensity : normalAmbientIntensity;
         targetIntensity = currentIntensity;
         currentBackgroundColor = isDarkMode ? darkBackgroundColor : normalBackgroundColor;
         targetBackgroundColor = currentBackgroundColor;
-        
+
         // Apply initial state
         ApplyLightingImmediate();
     }
-    
+
     private void Update()
     {
         if (isTransitioning)
@@ -97,9 +97,9 @@ public class LightingManager : MonoBehaviour
             UpdateLightingTransition();
         }
     }
-    
+
     #region Public Interface
-    
+
     /// <summary>
     /// Enable dark/dramatic lighting mode
     /// Can be called by Dialog Nodes and Choices
@@ -107,17 +107,17 @@ public class LightingManager : MonoBehaviour
     public void EnableDarkMode()
     {
         if (isDarkMode && !isTransitioning) return;
-        
+
         Debug.Log("Enabling dark lighting mode");
-        
+
         isDarkMode = true;
         targetIntensity = darkAmbientIntensity;
         targetBackgroundColor = darkBackgroundColor;
         isTransitioning = true;
-        
+
         OnDarkModeEnabled?.Invoke();
     }
-    
+
     /// <summary>
     /// Disable dark mode and return to normal lighting
     /// Can be called by Dialog Nodes and Choices
@@ -125,17 +125,17 @@ public class LightingManager : MonoBehaviour
     public void DisableDarkMode()
     {
         if (!isDarkMode && !isTransitioning) return;
-        
+
         Debug.Log("Disabling dark lighting mode");
-        
+
         isDarkMode = false;
         targetIntensity = normalAmbientIntensity;
         targetBackgroundColor = normalBackgroundColor;
         isTransitioning = true;
-        
+
         OnDarkModeDisabled?.Invoke();
     }
-    
+
     /// <summary>
     /// Toggle between dark and normal lighting modes
     /// </summary>
@@ -146,7 +146,7 @@ public class LightingManager : MonoBehaviour
         else
             EnableDarkMode();
     }
-    
+
     /// <summary>
     /// Instantly set dark mode without transition
     /// </summary>
@@ -157,17 +157,17 @@ public class LightingManager : MonoBehaviour
         targetIntensity = currentIntensity;
         currentBackgroundColor = darkMode ? darkBackgroundColor : normalBackgroundColor;
         targetBackgroundColor = currentBackgroundColor;
-        
+
         ApplyLightingImmediate();
-        
+
         if (darkMode)
             OnDarkModeEnabled?.Invoke();
         else
             OnDarkModeDisabled?.Invoke();
-        
+
         OnLightingTransitionComplete?.Invoke();
     }
-    
+
     /// <summary>
     /// Set custom ambient lighting intensity
     /// </summary>
@@ -180,7 +180,7 @@ public class LightingManager : MonoBehaviour
             targetIntensity = intensity;
         }
     }
-    
+
     /// <summary>
     /// Set custom background color
     /// </summary>
@@ -193,7 +193,7 @@ public class LightingManager : MonoBehaviour
             targetBackgroundColor = color;
         }
     }
-    
+
     /// <summary>
     /// Get current lighting state
     /// </summary>
@@ -201,7 +201,7 @@ public class LightingManager : MonoBehaviour
     {
         return isDarkMode;
     }
-    
+
     /// <summary>
     /// Check if lighting is currently transitioning
     /// </summary>
@@ -209,11 +209,11 @@ public class LightingManager : MonoBehaviour
     {
         return isTransitioning;
     }
-    
+
     #endregion
-    
+
     #region Named Spotlight Control (For Dialog Events)
-    
+
     /// <summary>
     /// Show a specific spotlight by index in the named spotlights array
     /// Can be called by Dialog Nodes and Choices
@@ -223,7 +223,7 @@ public class LightingManager : MonoBehaviour
     public void ShowSpotlight3() { ShowSpotlightByIndex(2); }
     public void ShowSpotlight4() { ShowSpotlightByIndex(3); }
     public void ShowSpotlight5() { ShowSpotlightByIndex(4); }
-    
+
     /// <summary>
     /// Hide a specific spotlight by index in the named spotlights array
     /// Can be called by Dialog Nodes and Choices
@@ -233,7 +233,7 @@ public class LightingManager : MonoBehaviour
     public void HideSpotlight3() { HideSpotlightByIndex(2); }
     public void HideSpotlight4() { HideSpotlightByIndex(3); }
     public void HideSpotlight5() { HideSpotlightByIndex(4); }
-    
+
     // Descriptive Named Methods (These will appear clearly in Unity Inspector dropdown)
     /// <summary>Show the main stage spotlight (first in array)</summary>
     public void ShowMainStageSpotlight() { ShowSpotlightByIndex(0); }
@@ -243,7 +243,7 @@ public class LightingManager : MonoBehaviour
     public void ShowRightSideSpotlight() { ShowSpotlightByIndex(2); }
     /// <summary>Show the back spotlight (fourth in array)</summary>
     public void ShowBackSpotlight() { ShowSpotlightByIndex(3); }
-    
+
     /// <summary>Hide the main stage spotlight (first in array)</summary>
     public void HideMainStageSpotlight() { HideSpotlightByIndex(0); }
     /// <summary>Hide the left side spotlight (second in array)</summary>
@@ -252,7 +252,7 @@ public class LightingManager : MonoBehaviour
     public void HideRightSideSpotlight() { HideSpotlightByIndex(2); }
     /// <summary>Hide the back spotlight (fourth in array)</summary>
     public void HideBackSpotlight() { HideSpotlightByIndex(3); }
-    
+
     /// <summary>
     /// Show spotlight by index
     /// </summary>
@@ -268,7 +268,7 @@ public class LightingManager : MonoBehaviour
             Debug.LogWarning($"Cannot show spotlight {index + 1} - not found in named spotlights array");
         }
     }
-    
+
     /// <summary>
     /// Hide spotlight by index
     /// </summary>
@@ -284,7 +284,7 @@ public class LightingManager : MonoBehaviour
             Debug.LogWarning($"Cannot hide spotlight {index + 1} - not found in named spotlights array");
         }
     }
-    
+
     /// <summary>
     /// Show all named spotlights
     /// Can be called by Dialog Nodes and Choices
@@ -292,7 +292,7 @@ public class LightingManager : MonoBehaviour
     public void ShowAllNamedSpotlights()
     {
         if (namedSpotlights == null) return;
-        
+
         foreach (var spotlight in namedSpotlights)
         {
             if (spotlight != null)
@@ -300,7 +300,7 @@ public class LightingManager : MonoBehaviour
         }
         Debug.Log("Dialog triggered all named spotlights to appear");
     }
-    
+
     /// <summary>
     /// Hide all named spotlights
     /// Can be called by Dialog Nodes and Choices
@@ -308,7 +308,7 @@ public class LightingManager : MonoBehaviour
     public void HideAllNamedSpotlights()
     {
         if (namedSpotlights == null) return;
-        
+
         foreach (var spotlight in namedSpotlights)
         {
             if (spotlight != null)
@@ -316,7 +316,7 @@ public class LightingManager : MonoBehaviour
         }
         Debug.Log("Dialog triggered all named spotlights to disappear");
     }
-    
+
     /// <summary>
     /// Refresh the named spotlights array with all spotlights in the scene
     /// </summary>
@@ -327,11 +327,11 @@ public class LightingManager : MonoBehaviour
         namedSpotlights = allSpotlights;
         Debug.Log($"Found and assigned {namedSpotlights.Length} spotlights for dialog control");
     }
-    
+
     #endregion
-    
+
     #region Private Methods
-    
+
     /// <summary>
     /// Update lighting transition animation
     /// </summary>
@@ -339,7 +339,7 @@ public class LightingManager : MonoBehaviour
     {
         bool intensityComplete = false;
         bool colorComplete = false;
-        
+
         // Transition intensity
         if (!Mathf.Approximately(currentIntensity, targetIntensity))
         {
@@ -353,7 +353,7 @@ public class LightingManager : MonoBehaviour
         {
             intensityComplete = true;
         }
-        
+
         // Transition background color
         if (currentBackgroundColor != targetBackgroundColor)
         {
@@ -362,7 +362,7 @@ public class LightingManager : MonoBehaviour
             {
                 mainCamera.backgroundColor = currentBackgroundColor;
             }
-            
+
             // Check if close enough to target
             if (Vector4.Distance(currentBackgroundColor, targetBackgroundColor) < 0.01f)
             {
@@ -378,7 +378,7 @@ public class LightingManager : MonoBehaviour
         {
             colorComplete = true;
         }
-        
+
         // Check if transition is complete
         if (intensityComplete && colorComplete)
         {
@@ -387,7 +387,7 @@ public class LightingManager : MonoBehaviour
             Debug.Log($"Lighting transition complete - Dark Mode: {isDarkMode}");
         }
     }
-    
+
     /// <summary>
     /// Apply lighting settings immediately without transition
     /// </summary>
@@ -397,17 +397,17 @@ public class LightingManager : MonoBehaviour
         {
             globalLight.intensity = currentIntensity;
         }
-        
+
         if (mainCamera != null)
         {
             mainCamera.backgroundColor = currentBackgroundColor;
         }
     }
-    
+
     #endregion
-    
+
     #region Editor Utilities
-    
+
     /// <summary>
     /// Set up default lighting configuration
     /// </summary>
@@ -426,25 +426,25 @@ public class LightingManager : MonoBehaviour
                     break;
                 }
             }
-            
+
             if (globalLight == null)
             {
                 Debug.LogWarning("No Global Light2D found. Please create one for proper lighting control.");
             }
         }
-        
+
         // Set reasonable defaults
         normalAmbientIntensity = 1f;
         darkAmbientIntensity = 0.1f;
         normalBackgroundColor = Color.black;
         darkBackgroundColor = Color.black;
-        
+
         // Refresh named spotlights
         RefreshNamedSpotlights();
-        
+
         Debug.Log("Default lighting configuration applied.");
     }
-    
+
     /// <summary>
     /// Test dark mode toggle
     /// </summary>
@@ -453,6 +453,6 @@ public class LightingManager : MonoBehaviour
     {
         ToggleDarkMode();
     }
-    
+
     #endregion
 }

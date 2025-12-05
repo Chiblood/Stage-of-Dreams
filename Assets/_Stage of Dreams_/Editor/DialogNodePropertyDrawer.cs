@@ -7,8 +7,8 @@
  * Users should use DialogTreeEditor inspector with "Edit" buttons to open nodes in dedicated windows.
  */
 
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 [CustomPropertyDrawer(typeof(DialogNode))]
 public class DialogNodePropertyDrawer : PropertyDrawer
@@ -18,71 +18,101 @@ public class DialogNodePropertyDrawer : PropertyDrawer
         EditorGUI.BeginProperty(position, label, property);
 
         // Get node info for better label display
+        var nodeTypeProp = property.FindPropertyRelative("_nodeType");
         var nodeNameProp = property.FindPropertyRelative("_nodeId");
         var speakerNameProp = property.FindPropertyRelative("_characterName");
         var dialogTextProp = property.FindPropertyRelative("_dialogText");
-        
+
         string displayLabel = label.text;
-        
+        string typeLabel = "";
+
+        // Show node type in label
+        if (nodeTypeProp != null)
+        {
+            DialogNodeType nodeType = (DialogNodeType)nodeTypeProp.enumValueIndex;
+
+            switch (nodeType)
+            {
+                case DialogNodeType.RememberTheScript:
+                    typeLabel = " [🎭 RememberTheScript]";
+                    break;
+                case DialogNodeType.StandardDialog:
+                    typeLabel = " [💬]";
+                    break;
+            }
+        }
+
         // Enhanced label with node name if available
         if (nodeNameProp != null && !string.IsNullOrEmpty(nodeNameProp.stringValue))
         {
-            displayLabel = $"[{nodeNameProp.stringValue}]";
+            displayLabel = $"[{nodeNameProp.stringValue}]{typeLabel}";
         }
         else if (speakerNameProp != null && !string.IsNullOrEmpty(speakerNameProp.stringValue))
         {
             string previewText = "";
             if (dialogTextProp != null && !string.IsNullOrEmpty(dialogTextProp.stringValue))
             {
-                previewText = dialogTextProp.stringValue.Length > 20 
-                    ? dialogTextProp.stringValue.Substring(0, 20) + "..." 
+                previewText = dialogTextProp.stringValue.Length > 20
+                    ? dialogTextProp.stringValue.Substring(0, 20) + "..."
                     : dialogTextProp.stringValue;
             }
-            displayLabel = $"{speakerNameProp.stringValue}: {previewText}";
+            displayLabel = $"{speakerNameProp.stringValue}: {previewText}{typeLabel}";
+        }
+        else
+        {
+            displayLabel = $"{label.text}{typeLabel}";
         }
 
         // Simple foldout with minimal info
         var foldoutRect = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
         property.isExpanded = EditorGUI.Foldout(foldoutRect, property.isExpanded, displayLabel, true);
-        
+
         if (property.isExpanded)
         {
             float yPos = position.y + EditorGUIUtility.singleLineHeight + 2;
             float lineHeight = EditorGUIUtility.singleLineHeight + 2;
-            
+
             EditorGUI.indentLevel++;
-            
+
+            // Show node type
+            if (nodeTypeProp != null)
+            {
+                var typeRect = new Rect(position.x, yPos, position.width, EditorGUIUtility.singleLineHeight);
+                EditorGUI.LabelField(typeRect, "Type:", ((DialogNodeType)nodeTypeProp.enumValueIndex).ToString());
+                yPos += lineHeight;
+            }
+
             // Show minimal read-only info
             if (nodeNameProp != null)
             {
-                EditorGUI.LabelField(new Rect(position.x, yPos, position.width, EditorGUIUtility.singleLineHeight), 
+                EditorGUI.LabelField(new Rect(position.x, yPos, position.width, EditorGUIUtility.singleLineHeight),
                     "Node ID:", nodeNameProp.stringValue);
                 yPos += lineHeight;
             }
-            
+
             if (speakerNameProp != null)
             {
-                EditorGUI.LabelField(new Rect(position.x, yPos, position.width, EditorGUIUtility.singleLineHeight), 
+                EditorGUI.LabelField(new Rect(position.x, yPos, position.width, EditorGUIUtility.singleLineHeight),
                     "Speaker:", speakerNameProp.stringValue);
                 yPos += lineHeight;
             }
-            
+
             if (dialogTextProp != null)
             {
                 string preview = string.IsNullOrEmpty(dialogTextProp.stringValue) ? "<No text>" :
-                    (dialogTextProp.stringValue.Length > 100 
-                        ? dialogTextProp.stringValue.Substring(0, 100) + "..." 
+                    (dialogTextProp.stringValue.Length > 100
+                        ? dialogTextProp.stringValue.Substring(0, 100) + "..."
                         : dialogTextProp.stringValue);
-                
-                EditorGUI.LabelField(new Rect(position.x, yPos, position.width, EditorGUIUtility.singleLineHeight * 2), 
+
+                EditorGUI.LabelField(new Rect(position.x, yPos, position.width, EditorGUIUtility.singleLineHeight * 2),
                     $"Preview: \"{preview}\"", EditorStyles.wordWrappedLabel);
                 yPos += lineHeight * 2;
             }
-            
+
             // Help message
             var helpRect = new Rect(position.x, yPos, position.width, EditorGUIUtility.singleLineHeight * 2);
             EditorGUI.HelpBox(helpRect, "Use 'Edit' button in DialogTree inspector to edit this node in a dedicated window.", MessageType.Info);
-            
+
             EditorGUI.indentLevel--;
         }
 
@@ -93,8 +123,8 @@ public class DialogNodePropertyDrawer : PropertyDrawer
     {
         if (!property.isExpanded)
             return EditorGUIUtility.singleLineHeight;
-        
-        // Height when expanded: foldout + ID + Speaker + Preview (2 lines) + Help (2 lines) + spacing
-        return EditorGUIUtility.singleLineHeight * 7 + 10;
+
+        // Height when expanded: foldout + Type + ID + Speaker + Preview (2 lines) + Help (2 lines) + spacing
+        return EditorGUIUtility.singleLineHeight * 8 + 10;
     }
 }

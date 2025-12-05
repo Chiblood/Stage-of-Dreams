@@ -4,10 +4,9 @@
  * Includes the choice text, target Dialog Node, and any associated events to fire once the player selects the choice.
  */
 
-using UnityEngine;
-using System;
-using UnityEngine.Events;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Events;
 
 /// <summary> Represents a choice the player can make in dialog </summary>
 [System.Serializable]
@@ -21,13 +20,13 @@ public class DialogChoice
     [SerializeField] private List<bool> _conditions; // Conditions to show this choice (not implemented yet)
     [SerializeField] private DialogNode _parentNode; // The node this choice belongs to
     [SerializeReference] private DialogNode _targetNode; // Where this choice leads
-    
+
     [SerializeField, Tooltip("Name of target node (for convergent paths) - will be resolved at runtime")]
     private string _targetNodeName; // For referencing nodes by name
-    
+
     // Choice Events - SerializeReference for polymorphic event handling
     [SerializeReference] private List<DialogEvent> _choiceEvents;
-    
+
     // Legacy Unity Events for backwards compatibility (optional)
     [SerializeField] private UnityEvent _onChoiceSelected; // Single UnityEvent for simple cases
 
@@ -36,29 +35,29 @@ public class DialogChoice
     #region Properties with Get/Set Methods
 
     /// <summary> The display text for this choice </summary>
-    public string ChoiceText 
-    { 
+    public string ChoiceText
+    {
         get => _choiceText ?? string.Empty;
         set => _choiceText = value;
     }
 
     /// <summary> Unique identifier for this choice </summary>
-    public string ChoiceId 
-    { 
+    public string ChoiceId
+    {
         get => _choiceId ?? string.Empty;
         set => _choiceId = value;
     }
 
     /// <summary> The dialog node this choice belongs to </summary>
-    public DialogNode ParentNode 
-    { 
+    public DialogNode ParentNode
+    {
         get => _parentNode;
         set => _parentNode = value;
     }
 
     /// <summary> The target dialog node this choice leads to </summary>
-    public DialogNode TargetNode 
-    { 
+    public DialogNode TargetNode
+    {
         get => _targetNode;
         set => _targetNode = value;
     }
@@ -71,10 +70,10 @@ public class DialogChoice
     }
 
     /// <summary> Events triggered when this choice is selected (DialogEvent system) </summary>
-    public List<DialogEvent> ChoiceEvents 
+    public List<DialogEvent> ChoiceEvents
     {
-        get 
-        { 
+        get
+        {
             if (_choiceEvents == null)
                 _choiceEvents = new List<DialogEvent>();
             return _choiceEvents;
@@ -83,10 +82,10 @@ public class DialogChoice
     }
 
     /// <summary> Legacy Unity Events for choice selection (for backwards compatibility) </summary>
-    public UnityEvent OnChoiceSelected 
+    public UnityEvent OnChoiceSelected
     {
-        get 
-        { 
+        get
+        {
             if (_onChoiceSelected == null)
                 _onChoiceSelected = new UnityEvent();
             return _onChoiceSelected;
@@ -103,20 +102,20 @@ public class DialogChoice
 
     /// <summary> Check if this choice has a valid target (either direct reference or named) </summary>
     public bool HasValidTarget => _targetNode != null || HasNamedTarget;
-    
+
     /// <summary> Check if named target has been resolved to actual node </summary>
     public bool IsTargetResolved()
     {
         // If has named target, check if it's been resolved to actual node
         if (HasNamedTarget)
             return _targetNode != null;
-        
+
         // Otherwise just check if direct target exists
         return _targetNode != null;
     }
 
     /// <summary> Check if this choice has events to execute </summary>
-    public bool HasEvents => (_choiceEvents != null && _choiceEvents.Count > 0) || 
+    public bool HasEvents => (_choiceEvents != null && _choiceEvents.Count > 0) ||
                             (_onChoiceSelected != null && _onChoiceSelected.GetPersistentEventCount() > 0);
 
     #endregion
@@ -229,14 +228,14 @@ public class DialogChoice
     public bool ResolveNamedTarget(DialogTree tree)
     {
         if (!HasNamedTarget) return _targetNode != null;
-        
+
         var namedNode = tree.FindNodeByName(_targetNodeName);
         if (namedNode != null)
         {
             SetTarget(namedNode);
             return true;
         }
-        
+
         Debug.LogWarning($"Could not resolve target node name '{_targetNodeName}' in tree '{tree.treeName}'");
         return false;
     }
@@ -283,10 +282,10 @@ public class DialogChoice
     {
         if (_targetNode != null)
             return $"Direct -> {_targetNode.GetDisplayName()}";
-        
+
         if (HasNamedTarget)
             return $"Named -> [{_targetNodeName}]";
-        
+
         return "No Target";
     }
 

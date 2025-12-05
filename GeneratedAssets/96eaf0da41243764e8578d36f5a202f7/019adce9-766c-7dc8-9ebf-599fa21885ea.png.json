@@ -1,0 +1,20 @@
+{
+    "asset": "96eaf0da41243764e8578d36f5a202f7",
+    "fileName": "019adce9-766c-7dc8-9ebf-599fa21885ea.png",
+    "prompt": "Pixel art 2D sprite of a green‑haired hero wearing a yellow tunic and green hat, standing in a neutral idle pose, facing forward, with simple shading and retro RPG style, transparent background.",
+    "negativePrompt": "",
+    "model": "9b6d7135-dd33-43ae-b148-cd1212ca7052",
+    "modelName": "16-bit Pixel",
+    "customSeed": -1,
+    "w3CTraceId": "e3ec48c9feb71ab928728fa9e8eade98",
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0
+}

@@ -1,7 +1,7 @@
 /* Dialog Choice.cs
  * Defines a single choice as a part of a dialog node. 
- * Choices link to other dialog nodes.
- * Includes the choice text, target Dialog Node, and any associated events to fire once the player selects the choice.
+ * Choices link to other nodes (DialogNode or any DataNode subclass).
+ * Includes the choice text, target node, and any associated events to fire once the player selects the choice.
  */
 
 using System.Collections.Generic;
@@ -18,8 +18,8 @@ public class DialogChoice
     [SerializeField] private string _choiceText;
     [SerializeField] private string _choiceId;
     [SerializeField] private List<bool> _conditions; // Conditions to show this choice (not implemented yet)
-    [SerializeField] private DialogNode _parentNode; // The node this choice belongs to
-    [SerializeReference] private DialogNode _targetNode; // Where this choice leads
+    [SerializeField] private DataNode _parentNode; // The node this choice belongs to
+    [SerializeReference] private DataNode _targetNode; // Where this choice leads
 
     [SerializeField, Tooltip("Name of target node (for convergent paths) - will be resolved at runtime")]
     private string _targetNodeName; // For referencing nodes by name
@@ -48,15 +48,15 @@ public class DialogChoice
         set => _choiceId = value;
     }
 
-    /// <summary> The dialog node this choice belongs to </summary>
-    public DialogNode ParentNode
+    /// <summary> The node this choice belongs to </summary>
+    public DataNode ParentNode
     {
         get => _parentNode;
         set => _parentNode = value;
     }
 
-    /// <summary> The target dialog node this choice leads to </summary>
-    public DialogNode TargetNode
+    /// <summary> The target node this choice leads to </summary>
+    public DataNode TargetNode
     {
         get => _targetNode;
         set => _targetNode = value;
@@ -128,8 +128,8 @@ public class DialogChoice
         Initialize();
     }
 
-    /// <summary> Constructor with parameters </summary>
-    public DialogChoice(string choiceText, DialogNode parentNode = null, DialogNode targetNode = null, string choiceId = null)
+    /// <summary> Constructor with parameters - accepts DataNode for compatibility </summary>
+    public DialogChoice(string choiceText, DataNode parentNode = null, DataNode targetNode = null, string choiceId = null)
     {
         _choiceText = choiceText;
         _choiceId = choiceId;
@@ -187,8 +187,8 @@ public class DialogChoice
 
     #region Target Management
 
-    /// <summary> Create and set a target node for this choice </summary>
-    public DialogNode CreateTargetNode(string speaker, string text, bool playerSpeaking = false, string nodeId = null)
+    /// <summary> Create and set a target node for this choice (creates DialogNode by default) </summary>
+    public DataNode CreateTargetNode(string speaker, string text, bool playerSpeaking = false, string nodeId = null)
     {
         _targetNode = new DialogNode(speaker, text, playerSpeaking, nodeId);
         if (_targetNode != null && _parentNode != null)
@@ -199,7 +199,7 @@ public class DialogChoice
     }
 
     /// <summary> Set the target node for this choice </summary>
-    public void SetTarget(DialogNode target)
+    public void SetTarget(DataNode target)
     {
         // Remove old parent reference if changing target
         if (_targetNode != null && _parentNode != null)

@@ -105,57 +105,6 @@ sequenceDiagram
     end
 ```
 
-### Dialog Event System
-
-```mermaid
-classDiagram
-    class DialogEvent {
-        <<abstract>>
-        +Execute()
-        +IsValid() bool
-        +SetExecuteDelegate(Action)
-    }
-    
-    class MethodCallEvent {
-        -UnityEvent methodCall
-        +Execute()
-        +IsValid() bool
-    }
-    
-    class ParameterizedMethodEvent~T~ {
-        -UnityEvent~T~ methodCall
-        -T parameter
-        +Execute()
-        +IsValid() bool
-    }
-    
-    class StaticMethodCallEvent {
-        -string className
-        -string methodName
-        +Execute()
-        +IsValid() bool
-    }
-    
-    class DialogNode {
-        -List~DialogEvent~ startEvents
-        -List~DialogEvent~ endEvents
-        +ExecuteStartEvents()
-        +ExecuteEndEvents()
-    }
-    
-    class DialogChoice {
-        -List~DialogEvent~ choiceEvents
-        +ExecuteChoiceEvents()
-    }
-    
-    DialogEvent <|-- MethodCallEvent
-    DialogEvent <|-- ParameterizedMethodEvent
-    DialogEvent <|-- StaticMethodCallEvent
-    
-    DialogNode *-- DialogEvent
-    DialogChoice *-- DialogEvent
-```
-
 ### Complete Class Hierarchy Overview
 
 ```mermaid

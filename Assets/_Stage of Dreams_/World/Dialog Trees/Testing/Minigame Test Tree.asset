@@ -193,6 +193,7 @@ MonoBehaviour:
           rid: -2
         _choices:
         - rid: 6262275121932141113
+        - rid: -2
         _startEvents: []
         _endEvents: []
         _onDialogStart:

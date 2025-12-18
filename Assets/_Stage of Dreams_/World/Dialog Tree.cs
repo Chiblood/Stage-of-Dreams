@@ -1,6 +1,7 @@
 /* DialogTree.cs
  * The dialog tree structure for managing NPC dialogues and player choices. 
  * Enhanced with true tree structure, node naming, convergent path support, and advanced tree management.
+ * Now works with DataNode base class to support multiple node types (DialogNode, future minigame nodes, etc.)
  * Headers and visual organization are handled by DialogTreeEditor.cs to avoid conflicts in the Inspector.
  * 
  * How to use in Unity:
@@ -19,25 +20,24 @@ using UnityEngine;
 /// <summary>
 /// Contains a complete dialog tree structure starting from one node.
 /// Enhanced with automatic node creation, tree building capabilities, convergent path support, and DialogEvent integration.
+/// Works with DataNode base class to support DialogNode and future minigame-specific nodes.
 /// </summary>
-[CreateAssetMenu(fileName = "New Dialog Tree", menuName = "Dialog System/Dialog Tree")] // Allows creation from Unity Editor
-
+[CreateAssetMenu(fileName = "New Dialog Tree", menuName = "Dialog System/Dialog Tree")]
 public class DialogTree : ScriptableObject
 {
-    // Header information and labels are provided by DialogTreeEditor for a cleaner inspector view.
     [SerializeField] public string treeName;
     [SerializeField, TextArea(2, 4)] public string description;
 
-    [SerializeReference] public DialogNode startingNode;
+    [SerializeReference] public DataNode startingNode;
 
-    [SerializeReference] private List<DialogNode> allNodes = new List<DialogNode>();
+    [SerializeReference] private List<DataNode> allNodes = new List<DataNode>();
     [SerializeField] private bool autoUpdateNodeList = true;
     [SerializeField] private bool validateOnSave = true;
 
     #region Tree Management
 
     /// <summary> Get the first node to start the conversation </summary>
-    public DialogNode GetStartingNode()
+    public DataNode GetStartingNode()
     {
         return startingNode;
     }
@@ -49,17 +49,17 @@ public class DialogTree : ScriptableObject
     }
 
     /// <summary> Get all nodes in this tree </summary>
-    public List<DialogNode> GetAllNodes()
+    public List<DataNode> GetAllNodes()
     {
         if (autoUpdateNodeList)
         {
             RefreshNodeList();
         }
-        return new List<DialogNode>(allNodes);
+        return new List<DataNode>(allNodes);
     }
 
     /// <summary> Find a node by its name </summary>
-    public DialogNode FindNodeByName(string nodeName)
+    public DataNode FindNodeByName(string nodeName)
     {
         if (string.IsNullOrEmpty(nodeName)) return null;
 
@@ -68,21 +68,21 @@ public class DialogTree : ScriptableObject
     }
 
     /// <summary> Get all nodes with names (useful for convergent path setup) </summary>
-    public List<DialogNode> GetNamedNodes()
+    public List<DataNode> GetNamedNodes()
     {
         var nodes = GetAllNodes();
         return nodes.Where(node => !string.IsNullOrEmpty(node.NodeName)).ToList();
     }
 
     /// <summary> Get all convergent nodes (nodes with multiple incoming references) </summary>
-    public List<DialogNode> GetConvergentNodes()
+    public List<DataNode> GetConvergentNodes()
     {
         var nodes = GetAllNodes();
         return nodes.Where(node => node.ParentNodes != null && node.ParentNodes.Count > 1).ToList();
     }
 
     /// <summary> Get all end nodes (nodes with no outgoing connections) </summary>
-    public List<DialogNode> GetEndNodes()
+    public List<DataNode> GetEndNodes()
     {
         var nodes = GetAllNodes();
         return nodes.Where(node => !node.HasChoices && node.ChildNode == null).ToList();
@@ -92,10 +92,10 @@ public class DialogTree : ScriptableObject
     public int GetMaxDepth()
     {
         if (startingNode == null) return 0;
-        return CalculateDepth(startingNode, new HashSet<DialogNode>());
+        return CalculateDepth(startingNode, new HashSet<DataNode>());
     }
 
-    private int CalculateDepth(DialogNode node, HashSet<DialogNode> visited)
+    private int CalculateDepth(DataNode node, HashSet<DataNode> visited)
     {
         if (node == null || visited.Contains(node)) return 0;
 
@@ -120,12 +120,18 @@ public class DialogTree : ScriptableObject
             }
         }
 
+        // Check failure node for minigames (DialogNode specific, but safe to check)
+        if (node is DialogNode dialogNode && dialogNode.FailureNode != null)
+        {
+            maxDepth = Math.Max(maxDepth, CalculateDepth(dialogNode.FailureNode, visited));
+        }
+
         visited.Remove(node);
         return maxDepth + 1;
     }
 
     /// <summary> Check if a node name is unique in this tree </summary>
-    public bool IsNodeNameUnique(string nodeName, DialogNode excludeNode = null)
+    public bool IsNodeNameUnique(string nodeName, DataNode excludeNode = null)
     {
         if (string.IsNullOrEmpty(nodeName)) return true; // Empty names are allowed
 
@@ -142,11 +148,11 @@ public class DialogTree : ScriptableObject
         allNodes.Clear();
         if (startingNode != null)
         {
-            TraverseAndCollectNodes(startingNode, new HashSet<DialogNode>());
+            TraverseAndCollectNodes(startingNode, new HashSet<DataNode>());
         }
     }
 
-    private void TraverseAndCollectNodes(DialogNode node, HashSet<DialogNode> visited)
+    private void TraverseAndCollectNodes(DataNode node, HashSet<DataNode> visited)
     {
         if (node == null || visited.Contains(node)) return;
 
@@ -159,10 +165,10 @@ public class DialogTree : ScriptableObject
             TraverseAndCollectNodes(node.ChildNode, visited);
         }
 
-        // Check failure node for minigames (FAILURE PATH)
-        if (node.FailureNode != null)
+        // Check failure node for minigames (FAILURE PATH) - DialogNode specific
+        if (node is DialogNode dialogNode && dialogNode.FailureNode != null)
         {
-            TraverseAndCollectNodes(node.FailureNode, visited);
+            TraverseAndCollectNodes(dialogNode.FailureNode, visited);
         }
 
         // Check all choice targets
@@ -209,7 +215,7 @@ public class DialogTree : ScriptableObject
     /// <summary>
     /// Add a standalone node to the tree (useful for minigame outcome nodes)
     /// </summary>
-    public void AddNode(DialogNode node)
+    public void AddNode(DataNode node)
     {
         if (node == null)
         {
@@ -231,21 +237,20 @@ public class DialogTree : ScriptableObject
     }
 
     /// <summary>
-    /// Create the starting node for this tree
+    /// Create the starting node for this tree (creates DialogNode by default)
     /// </summary>
     public DialogNode CreateStartingNode(string speakerName, string dialogText, bool isPlayerSpeaking = false, string nodeName = null)
     {
-        // DialogNode is now a regular class, just use new
         startingNode = new DialogNode(speakerName, dialogText, isPlayerSpeaking, nodeName);
 
         RefreshNodeList();
-        return startingNode;
+        return startingNode as DialogNode;
     }
 
     /// <summary>
-    /// Add a node as a choice from a parent node
+    /// Add a node as a choice from a parent node (creates DialogNode by default)
     /// </summary>
-    public DialogNode AddChoiceNode(DialogNode parentNode, string choiceText, string speakerName, string dialogText, bool isPlayerSpeaking = false, string customActionId = null, string nodeName = null)
+    public DialogNode AddChoiceNode(DataNode parentNode, string choiceText, string speakerName, string dialogText, bool isPlayerSpeaking = false, string customActionId = null, string nodeName = null)
     {
         if (parentNode == null)
         {
@@ -253,11 +258,9 @@ public class DialogTree : ScriptableObject
             return null;
         }
 
-        // DialogNode is now a regular class, just use new
         DialogNode newNode = new DialogNode(speakerName, dialogText, isPlayerSpeaking, nodeName);
 
         // Add the choice to parent that leads to this new node
-        // Use customActionId as choiceId parameter
         var choice = parentNode.AddChoice(choiceText, newNode, customActionId ?? "choice_" + parentNode.Choices.Count);
         newNode.AddParentNode(parentNode);
 
@@ -268,7 +271,7 @@ public class DialogTree : ScriptableObject
     /// <summary>
     /// Add a choice that points to an existing named node (for convergent paths)
     /// </summary>
-    public DialogChoice AddChoiceToNamedNode(DialogNode parentNode, string choiceText, string targetNodeName, string customActionId = null)
+    public DialogChoice AddChoiceToNamedNode(DataNode parentNode, string choiceText, string targetNodeName, string customActionId = null)
     {
         if (parentNode == null)
         {
@@ -276,7 +279,6 @@ public class DialogTree : ScriptableObject
             return null;
         }
 
-        // DialogChoice is now a regular class, just use new
         var choice = new DialogChoice(choiceText, parentNode);
         choice.TargetNodeName = targetNodeName;
 
@@ -289,9 +291,9 @@ public class DialogTree : ScriptableObject
     }
 
     /// <summary>
-    /// Add a node that auto-advances from a parent node
+    /// Add a node that auto-advances from a parent node (creates DialogNode by default)
     /// </summary>
-    public DialogNode AddSequentialNode(DialogNode parentNode, string speakerName, string dialogText, bool isPlayerSpeaking = false, float autoAdvanceDelay = 0f, string nodeName = null)
+    public DialogNode AddSequentialNode(DataNode parentNode, string speakerName, string dialogText, bool isPlayerSpeaking = false, float autoAdvanceDelay = 0f, string nodeName = null)
     {
         if (parentNode == null)
         {
@@ -299,7 +301,6 @@ public class DialogTree : ScriptableObject
             return null;
         }
 
-        // DialogNode is now a regular class, just use new
         DialogNode newNode = new DialogNode(speakerName, dialogText, isPlayerSpeaking, nodeName);
 
         if (autoAdvanceDelay > 0f)
@@ -325,7 +326,7 @@ public class DialogTree : ScriptableObject
             return;
         }
 
-        DialogNode currentNode = null;
+        DataNode currentNode = null;
 
         for (int i = 0; i < speakers.Length; i++)
         {
@@ -367,25 +368,9 @@ public class DialogTree : ScriptableObject
     }
 
     /// <summary>
-    /// Execute all start events for a given node (called by dialog system)
-    /// </summary>
-    public void ExecuteNodeStartEvents(DialogNode node)
-    {
-
-    }
-
-    /// <summary>
-    /// Execute all end events for a given node (called by dialog system)
-    /// </summary>
-    public void ExecuteNodeEndEvents(DialogNode node)
-    {
-
-    }
-
-    /// <summary>
     /// Get all nodes that have start events
     /// </summary>
-    public List<DialogNode> GetNodesWithStartEvents()
+    public List<DataNode> GetNodesWithStartEvents()
     {
         var nodes = GetAllNodes();
         return nodes.Where(node => node.StartEvents != null && node.StartEvents.Count > 0).ToList();
@@ -394,7 +379,7 @@ public class DialogTree : ScriptableObject
     /// <summary>
     /// Get all nodes that have end events
     /// </summary>
-    public List<DialogNode> GetNodesWithEndEvents()
+    public List<DataNode> GetNodesWithEndEvents()
     {
         var nodes = GetAllNodes();
         return nodes.Where(node => node.EndEvents != null && node.EndEvents.Count > 0).ToList();
@@ -434,7 +419,7 @@ public class DialogTree : ScriptableObject
     }
 
     /// <summary> Find the last node in the tree (node with no choices or child node) </summary>
-    private DialogNode FindLastNode()
+    private DataNode FindLastNode()
     {
         if (startingNode == null) return null;
 
@@ -530,14 +515,14 @@ public class DialogTree : ScriptableObject
 
     private void ValidateNodeNames()
     {
-        var nodeNames = new Dictionary<string, List<DialogNode>>();
+        var nodeNames = new Dictionary<string, List<DataNode>>();
 
         foreach (var node in allNodes)
         {
             if (!string.IsNullOrEmpty(node.NodeName))
             {
                 if (!nodeNames.ContainsKey(node.NodeName))
-                    nodeNames[node.NodeName] = new List<DialogNode>();
+                    nodeNames[node.NodeName] = new List<DataNode>();
 
                 nodeNames[node.NodeName].Add(node);
             }
@@ -626,10 +611,10 @@ public class DialogTree : ScriptableObject
         }
 
         Debug.Log($"Dialog Tree: {treeName}");
-        PrintNodeStructure(startingNode, "", new HashSet<DialogNode>());
+        PrintNodeStructure(startingNode, "", new HashSet<DataNode>());
     }
 
-    private void PrintNodeStructure(DialogNode node, string indent, HashSet<DialogNode> visited)
+    private void PrintNodeStructure(DataNode node, string indent, HashSet<DataNode> visited)
     {
         if (node == null || visited.Contains(node)) return;
 
@@ -661,22 +646,18 @@ public class DialogTree : ScriptableObject
                 }
             }
         }
-        else if (node.ChildNode != null || node.FailureNode != null)
+        else if (node.ChildNode != null)
         {
-            // Print success path (child node)
-            if (node.ChildNode != null)
-            {
-                string autoAdvanceText = node.AutoAdvanceDelay > 0 ? $" ({node.AutoAdvanceDelay}s)" : "";
-                Debug.Log($"{indent}  (Success/Auto-advance{autoAdvanceText})");
-                PrintNodeStructure(node.ChildNode, indent + "  ", visited);
-            }
+            string autoAdvanceText = node.AutoAdvanceDelay > 0 ? $" ({node.AutoAdvanceDelay}s)" : "";
+            Debug.Log($"{indent}  (Success/Auto-advance{autoAdvanceText})");
+            PrintNodeStructure(node.ChildNode, indent + "  ", visited);
+        }
 
-            // Print failure path (minigame failure)
-            if (node.FailureNode != null)
-            {
-                Debug.Log($"{indent}  (Failure - minigame)");
-                PrintNodeStructure(node.FailureNode, indent + "  ", visited);
-            }
+        // Handle failure node for DialogNode (minigames)
+        if (node is DialogNode dialogNode && dialogNode.FailureNode != null)
+        {
+            Debug.Log($"{indent}  (Failure - minigame)");
+            PrintNodeStructure(dialogNode.FailureNode, indent + "  ", visited);
         }
     }
 
